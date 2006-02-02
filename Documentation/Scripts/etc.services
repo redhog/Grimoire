@@ -1,0 +1,7 @@
+# The contents of this file is intended to be appended to /etc/services
+
+# Note: You may want to firewall off both of these in some cases, and
+# only in very rare cases should you let the non-encrypted protocol
+# open for anyone on the internet to connect to.
+dirt		8445/tcp			# Direct Invocation of Remote Tasks, the Grimoire RPC protocol
+ssl.dirt	8446/tcp			# SSL Encrypted dirt

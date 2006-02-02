@@ -1,0 +1,20 @@
+The configuration for various parts of Grimoire are spread out over
+several sub-directories of this directory. If you would like to know
+more about the structure and loading of these files, and why some
+directories have a leading underscore in their names, please look
+under "The Directory" in the overview  documentation.
+
+In these files, commented-out commands do have usefull defaults and
+need not be set in all situations. Usually, the first commented-out
+example is also the default (if the default is not to have no value at
+all). If a configuration value does need change for Grimoire to work
+at all, it is not commented out.
+
+If a configuration value need to be set, and is a password, an invalid
+value that will be rejected (such as a non-string-value, e.g. None) is
+set by the non-commented-out command, and another commented-out copy
+of the command exists on the previous line, that sets the password to
+"changethisdefaultpassword".
+
+NEVER LEAVE A DEFAULT PASSWORD as that
+would leave your system SUSCEPTIBLE TO BREAK-INS!

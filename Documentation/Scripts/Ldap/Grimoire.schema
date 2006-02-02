@@ -1,0 +1,191 @@
+# Note about OID assignement:
+#
+# The Grimoire OID space is organized as follows:
+#
+# <prefix>.1   		<objectclass>
+# <prefix>.1.1		<attribute of objectclass>
+# <prefix>.1.2		<attribute of objectclass>
+# <prefix>.1.3		<sub-objectclass>
+# <prefix>.1.3.1	<attribute of sub-objectclass>
+# etc.
+#
+# If an attribute is assigned to multiple object classes, put the OID
+# for the attribute under the OID of the most commonly used object
+# class. The same applies to object classes in cases of multiple
+# inheritance.
+#
+# NOTE: If you create or change an attribute or object class, use your
+# own OID prefix from your own OID space but try to assign or keep the
+# suffix of the object in accord with the structure described
+# above. This simplifies any later merge of your specific
+# attributes/classes with the rest of the Grimoire OID space.
+#
+
+objectclass ( 1.3.6.1.4.1.15304.1.2 NAME 'grimoireLowestAvailIDNumbers' SUP top STRUCTURAL
+        DESC 'Counter of used UID and GID numbers. The numbers written to this object are the lowest available numbers.'
+        MUST ( cn $ uidNumber $ gidNumber )
+        MAY ( description ) )
+
+attributetype ( 1.3.6.1.4.1.15304.1.3.1 NAME 'grimoireSwedishIDNumber'
+	DESC 'The social security number / identification number of Swedish citizens'
+        EQUALITY caseIgnoreMatch
+        SUBSTR caseIgnoreSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{32768} )
+
+objectclass ( 1.3.6.1.4.1.15304.1.3 NAME 'grimoirePerson' SUP inetOrgPerson STRUCTURAL
+        DESC 'Grimoire Person'
+	MUST ( owner )
+        MAY ( grimoireSwedishIDNumber) )
+
+attributetype ( 1.3.6.1.4.1.15304.1.4.1 NAME 'grimoireAbility'
+        DESC 'Ability-path matcher. Syntax is a set of dot-separated names and ?:s (? means any name). Matches on prefixes of paths.'
+        EQUALITY caseIgnoreMatch
+        SUBSTR caseIgnoreSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{32768} )
+
+attributetype ( 1.3.6.1.4.1.15304.1.4.2 NAME 'grimoireAbilityAllow' SUP grimoireAbility )
+attributetype ( 1.3.6.1.4.1.15304.1.4.3 NAME 'grimoireAbilityDeny' SUP grimoireAbility )
+attributetype ( 1.3.6.1.4.1.15304.1.4.4 NAME 'grimoireAbilityIgnore' SUP grimoireAbility )
+
+objectclass (1.3.6.1.4.1.15304.1.4 NAME 'grimoireAbilityList' SUP top STRUCTURAL
+	MUST cn
+        MAY ( grimoireAbilityAllow $ grimoireAbilityDeny $ grimoireAbilityIgnore ) )
+
+attributetype ( 1.3.6.1.4.1.15304.1.5.1 NAME 'grimoireExpression'
+        DESC 'Grimoire Expression'
+        EQUALITY caseIgnoreMatch
+        SUBSTR caseIgnoreSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{32768} )
+
+attributetype ( 1.3.6.1.4.1.15304.1.5.2 NAME 'grimoireMailDomain'
+	DESC 'Domain at which users should have their e-mail-adresses'
+	SUP associatedDomain )
+
+attributetype ( 1.3.6.1.4.1.15304.1.5.3
+	NAME 'grimoireSecondaryMailDomain'
+	DESC 'Domain for mail-aliased e-mail-adresses'
+	SUP grimoireMailDomain )
+
+attributetype ( 1.3.6.1.4.1.15304.1.5.4 SUP grimoireExpression
+	NAME 'grimoireHomedirPath'
+        SINGLE-VALUE
+	DESC 'Dot-separated path to reach home-directories from Grimoire' )
+
+attributetype ( 1.3.6.1.4.1.15304.1.5.5 SUP grimoireExpression
+	NAME 'grimoireClientHomedirPath'
+        SINGLE-VALUE
+	DESC 'Dot-separated path to reach home-directories from clients / from Linux' )
+
+attributetype ( 1.3.6.1.4.1.15304.1.5.6 SUP grimoireExpression
+	NAME 'grimoireMaildirPath'
+        SINGLE-VALUE
+	DESC 'Dot-separated path to reach mail-directories from Grimoire' )
+
+attributetype ( 1.3.6.1.4.1.15304.1.5.7 SUP grimoireExpression
+	NAME 'grimoireClientMaildirPath'
+        SINGLE-VALUE
+	DESC 'Dot-separated path to reach mail-directories from the mail-server' )
+
+attributetype ( 1.3.6.1.4.1.15304.1.5.8 SUP grimoireExpression
+	NAME 'grimoireInitCommand'
+	DESC 'Expression to execute at login' )
+
+objectclass (1.3.6.1.4.1.15304.1.5 NAME 'grimoireDefaults' SUP applicationProcess
+	MAY (grimoireMailDomain $
+	     grimoireSecondaryMailDomain $
+             grimoireHomedirPath $
+             grimoireClientHomedirPath $
+             grimoireMaildirPath $
+             grimoireClientMaildirPath $
+             grimoireInitCommand ) )
+
+objectclass (1.3.6.1.4.1.15304.1.6.1 NAME 'grimoireDraftPerson' AUXILIARY
+        MAY (sn $ cn $ userPassword $ telephoneNumber $ seeAlso $
+	     description))
+
+objectclass (1.3.6.1.4.1.15304.1.6.1.1 NAME 'grimoireDraftOrganizationalPerson' SUP grimoireDraftPerson AUXILIARY
+        MAY (title $ x121Address $ registeredAddress $
+	     destinationIndicator $ preferredDeliveryMethod $
+	     telexNumber $ teletexTerminalIdentifier $ telephoneNumber
+	     $ internationaliSDNNumber $ facsimileTelephoneNumber $
+	     street $ postOfficeBox $ postalCode $ postalAddress $
+	     physicalDeliveryOfficeName $ ou $ st $ l))
+
+objectclass (1.3.6.1.4.1.15304.1.6.1.1.1 NAME 'grimoireDraftInetorgPerson' SUP grimoireDraftOrganizationalPerson AUXILIARY
+        MAY (audio $ businessCategory $ carLicense $ departmentNumber
+	     $ displayName $ employeeNumber $ employeeType $ givenName
+	     $ homePhone $ homePostalAddress $ initials $ jpegPhoto $
+	     labeledURI $ mail $ manager $ mobile $ o $ pager $ photo
+	     $ roomNumber $ secretary $ uid $ userCertificate $
+	     x500uniqueIdentifier $ preferredLanguage $
+	     userSMIMECertificate $ userPKCS12))
+
+objectclass (1.3.6.1.4.1.15304.1.6.1.1.1.1 NAME 'grimoireDraftGrimoirePerson' SUP 'grimoireDraftInetorgPerson' AUXILIARY
+        MUST (grimoireSwedishIDNumber))
+
+objectclass (1.3.6.1.4.1.15304.1.6.2 NAME 'grimoireDraftPosixAccount' AUXILIARY
+        MAY (cn $ uid $ uidNumber $ gidNumber $ homeDirectory $
+	     userPassword $ loginShell $ gecos $ description))
+
+objectclass (1.3.6.1.4.1.15304.1.6.3 NAME 'grimoireDraftCourierMailAccount' AUXILIARY
+        MAY (mail $ homeDirectory $ uidNumber $ gidNumber $ mailbox $
+	     uid $ cn $ gecos $ description $ loginShell $ quota $
+	     userPassword $ clearPassword))
+
+objectclass (1.3.6.1.4.1.15304.1.6.4 NAME 'grimoireDraftSambaAccount' AUXILIARY
+        MAY (uid $ gidNumber $ uidNumber $ ou $ cn $ description $ 
+             sambaSID $ sambaLMPassword $ sambaNTPassword $ sambaPwdLastSet $
+             sambaLogonTime $ sambaLogoffTime $ sambaKickoffTime $
+             sambaPwdCanChange $ sambaPwdMustChange $ sambaAcctFlags $
+             displayName $ sambaHomePath $ sambaHomeDrive $ sambaLogonScript $ 
+             sambaProfilePath $ sambaUserWorkstations $ sambaPrimaryGroupSID $
+             sambaDomainName $ sambaMungedDial))
+
+attributetype ( 1.3.6.1.4.1.15304.1.6.5.1 NAME 'grimoireDraftReady'
+        DESC 'Draft is ready for instantiation'
+        SINGLE-VALUE
+        EQUALITY octetStringMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{0})
+
+attributetype ( 1.3.6.1.4.1.15304.1.6.5.2 NAME 'grimoireSecondaryUid' SUP uid
+        DESC 'Secondary uid, for use with secondary mail domain' )
+
+objectclass (1.3.6.1.4.1.15304.1.6.5 NAME 'grimoireDraftAccount' AUXILIARY
+        SUP (grimoireDraftGrimoirePerson $ grimoireDraftPosixAccount $
+             grimoireDraftCourierMailAccount $ grimoireDraftSambaAccount)
+        MAY (grimoireDraftReady $ member $ grimoireSecondaryUid))
+
+attributetype ( 1.3.6.1.4.1.15304.1.7.1 NAME 'grimoirePrinterMailbox'
+        DESC 'Mapping between printer name and printer mailbox to print to for user. Format is printername;mailboxnumber'
+        EQUALITY caseIgnoreMatch
+        SUBSTR caseIgnoreSubstringsMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{1024} )
+
+attributetype ( 1.3.6.1.4.1.15304.1.7.2 NAME 'grimoirePrinterCredits'
+	DESC 'Printer credits on account'
+	EQUALITY integerMatch
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE)
+
+attributetype ( 1.3.6.1.4.1.15304.1.7.3 NAME 'grimoirePrinterCreditLimit'
+	DESC 'Lower limit of printer credits on account'
+	EQUALITY integerMatch
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE)
+
+objectclass ( 1.3.6.1.4.1.15304.1.7 NAME 'grimoireAccount' AUXILIARY
+        DESC 'Contains Grimoire-specific attributes for user accounts'
+        MAY ( grimoirePrinterMailbox $
+	      grimoirePrinterCredits $
+	      grimoirePrinterCreditLimit ) )
+
+objectclass ( 1.3.6.1.4.1.15304.1.8 NAME 'grimoireGroup' AUXILIARY
+        DESC 'Contains Grimoire-specific attributes for user groups'
+        MUST ( ou $ owner ) )
+
+objectclass ( 1.3.6.1.4.1.15304.1.9 NAME 'grimoireMachine' AUXILIARY
+        DESC 'Contains Grimoire-specific attributes for machines'
+        MUST ( owner ) )
+
+objectclass ( 1.3.6.1.4.1.15304.1.10 NAME 'grimoireSambaDomain' AUXILIARY
+        DESC 'Contains Grimoire-specific attributes for the sambaDomain object'
+        MUST ( cn ) )
+

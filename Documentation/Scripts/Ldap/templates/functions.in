@@ -1,0 +1,9 @@
+divert(-1)
+
+changequote(<m4quote>, </m4quote>)
+
+dnl Load a skeleton value from the environment
+define(<m4quote>skeleton</m4quote>, <m4quote>esyscmd(echo -n "$skeleton_$1")</m4quote>)
+
+
+divert<m4quote></m4quote>dnl

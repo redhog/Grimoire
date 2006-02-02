@@ -1,0 +1,129 @@
+* {
+ vertical-align: top;
+ horizontal-align: left;
+}
+
+body {
+ position: absolute;
+ display: block;
+ width: 100%;
+ height: 100%;
+ margin: 0px 0px;
+ padding: 0px 0px;
+}
+
+.main {
+ border-collapse: collapse;
+ width: 100%;
+ height: 100%;
+ margin: 0px 0px;
+}
+
+.menu {
+ background-color: '#dfdfdf';
+ color: #000000;
+ width: 20%;
+}
+
+.menu a {
+ color: #000000;
+}
+
+.menu a:vlink {
+ color: #000000;
+}
+
+.menuIcon {
+ vertical-align: top;
+ border-width: 0px;
+}
+
+.menuItem {
+}
+
+.shadedMenuItem {
+ color: #555555;
+}
+
+.menuRow {
+ font-size: 12px;
+ font-family: sans-serif,Arial,geneva,helvetica;
+ border-color: #ff0000;
+ color: #000000;
+ white-space: nowrap;
+}
+
+.menuRow a {
+ text-decoration: none;
+}
+
+
+.form {
+ background-color: '#ffffff';
+ color: #000000;
+ width: 100%;
+ vertical-align: top;
+}
+
+td.form {
+ padding: 0px 0px;
+ margin: 0px 0px;
+}
+
+table.form {
+ border-collapse: collapse;
+ height: 100%;
+ width: 100%;
+}
+
+.form a {
+ color: #000000;
+}
+
+.form a:vlink {
+ color: #000000;
+}
+
+.formRow {
+ padding: 10px 10px;
+ width: 100%;
+ vertical-align: top;
+ horizontal-align: left;
+}
+
+.formRowFirst {}
+
+.formRowMiddle {}
+
+.formRowLast {
+ height: 100%;
+}
+
+.errorMsg {
+ color:#ff0000;
+}
+
+
+.pageDividerV {
+ padding: 0px 0px;
+ margin: 0px 0px;
+ vertical-align: top;
+}
+
+.pageDividerVExtension {
+ padding: 0px 0px;
+ margin: 0px 0px;
+ vertical-align: top;
+}
+
+
+.pageDividerH {
+ padding: 0px 0px;
+ margin: 0px 0px;
+ vertical-align: top;
+ height: 14px;
+}
+
+.pageDividerH img {
+ display: block;
+}

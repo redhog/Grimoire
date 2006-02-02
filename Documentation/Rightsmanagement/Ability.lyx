@@ -1,0 +1,1100 @@
+#LyX 1.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 221
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize default
+\spacing single 
+\papersize a4paper
+\paperpackage widemarginsa4
+\use_geometry 0
+\use_amsmath 0
+\use_natbib 0
+\use_numerical_citations 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 2
+\paperpagestyle default
+
+\layout Title
+
+Ignoresets
+\layout Author
+
+Egil Möller
+\layout Standard
+
+
+\begin_inset LatexCommand \tableofcontents{}
+
+\end_inset 
+
+
+\layout Section
+
+Notations
+\layout Standard
+
+A variable is denoted by a small letter, a constant with a capital one.
+ There are three main constants denoting different roles for pairs; A (Allow),
+ D (Deny) and I (Ignore).
+ A pair is a tuple of a role and a set and is denoted by 
+\begin_inset Formula $\left\langle r,s\right\rangle $
+\end_inset 
+
+ (where r is one of the three role-constants, and s is a set).
+ A list is an ordered sequence of such pairs, and is written as a sequence
+ of pairs and/or variables (variables denotes whole sub-lists, not just
+ one element), e.g.
+ 
+\begin_inset Formula $\left\langle A,x\right\rangle \left\langle D,y\right\rangle l\left\langle I,z\right\rangle m$
+\end_inset 
+
+.
+ To conserve space and give a clearer presentation, an equivalence between
+ two lists or sets, under some condition on the sets, usually written 
+\begin_inset Formula $c_{1}\wedge c_{2}\Rightarrow l_{1}=l_{2}$
+\end_inset 
+
+ (where 
+\begin_inset Formula $c_{1}$
+\end_inset 
+
+ only restricts variables in the definition of 
+\begin_inset Formula $l_{1}$
+\end_inset 
+
+, and 
+\begin_inset Formula $c_{2}$
+\end_inset 
+
+ only in 
+\begin_inset Formula $l_{2}$
+\end_inset 
+
+ respectively), is hereafter written 
+\begin_inset Formula $l_{1}\wedge c_{1}\Leftrightarrow l_{2}\wedge c_{2}$
+\end_inset 
+
+.
+\layout Section
+
+Definitions
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{2.1-def-1}
+
+\end_inset 
+
+
+\begin_inset Formula $\left\langle A,x\right\rangle l\Leftrightarrow x\cup l$
+\end_inset 
+
+
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{2.1-def-2}
+
+\end_inset 
+
+
+\begin_inset Formula $\left\langle D,x\right\rangle l\Leftrightarrow l-x$
+\end_inset 
+
+
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{2.1-def-3}
+
+\end_inset 
+
+
+\begin_inset Formula $\left\langle I,x\right\rangle \left\langle a_{1},b_{1}\right\rangle ...\left\langle a_{n},b_{n}\right\rangle \left\langle y,z\right\rangle l\wedge b_{i}\cap x=\emptyset\forall1\leq i\leq n\Leftrightarrow\left\langle a_{1},b_{1}\right\rangle ...\left\langle a_{n},b_{n}\right\rangle \left\langle y,z-x\right\rangle \left\langle I,x-z\right\rangle l$
+\end_inset 
+
+
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{2.1-def-4}
+
+\end_inset 
+
+
+\begin_inset Formula $l\left\langle I,x\right\rangle \Leftrightarrow l$
+\end_inset 
+
+
+\layout Enumerate
+
+
+\begin_inset LatexCommand \label{2.1-def-5}
+
+\end_inset 
+
+
+\begin_inset Formula $\Leftrightarrow\emptyset$
+\end_inset 
+
+ (the empty list is equivalent to the empty set)
+\layout Section
+
+Teorems
+\layout Subsection
+
+
+\begin_inset LatexCommand \label{sub:Aliens-can-move-freely-in-space}
+
+\end_inset 
+
+Aliens can move freely in space
+\layout Standard
+
+
+\begin_inset Formula $\left\langle x_{1},y_{1}\right\rangle \left\langle x_{2},y_{2}\right\rangle l\wedge y_{1}\cap y_{2}=\emptyset\Leftrightarrow\left\langle x_{2},y_{2}\right\rangle \left\langle x_{1},y_{1}\right\rangle l$
+\end_inset 
+
+
+\layout Paragraph
+
+Proof:
+\layout Standard
+
+
+\begin_inset Formula $\left\langle A,y_{1}\right\rangle \left\langle A,y_{2}\right\rangle l\Leftrightarrow y_{1}\cup y_{2}\cup l\Leftrightarrow y_{2}\cup y_{1}\cup l\Leftrightarrow\left\langle A,y_{2}\right\rangle \left\langle A,y_{1}\right\rangle l$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle A,y_{1}\right\rangle \left\langle D,y_{2}\right\rangle l\Leftrightarrow y_{1}\cup(l-y_{2})\Leftarrow$
+\end_inset 
+
+since 
+\begin_inset Formula $y_{1}\cap y_{2}=\emptyset$
+\end_inset 
+
+ 
+\begin_inset Formula $\Rightarrow(y_{1}\cup l)-y_{2}\Leftrightarrow\left\langle D,y_{2}\right\rangle \left\langle A,y_{1}\right\rangle l$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle A,y_{1}\right\rangle \left\langle I,y_{2}\right\rangle l\Leftarrow$
+\end_inset 
+
+since 
+\begin_inset Formula $y_{1}\cap y_{2}=\emptyset$
+\end_inset 
+
+ 
+\begin_inset Formula $\Rightarrow\left\langle A,y_{1}-y_{2}\right\rangle \left\langle I,y_{2}\right\rangle l\Leftarrow\left(\textrm{since def III}\right)$
+\end_inset 
+
+
+\begin_inset Formula $\Rightarrow\left\langle I,y_{2}\right\rangle \left\langle A,y_{1}\right\rangle l$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle D,y_{1}\right\rangle \left\langle A,y_{2}\right\rangle l\Leftrightarrow y_{2}\cup l-y_{1}\Leftarrow$
+\end_inset 
+
+
+\begin_inset Formula $\left(\textrm{since }y_{1}\cap y_{2}=\emptyset\right)$
+\end_inset 
+
+
+\begin_inset Formula $\Rightarrow y_{2}\cup(l-y_{1})\Leftrightarrow\left\langle A,y_{2}\right\rangle \left\langle D,y_{1}\right\rangle l$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle D,y_{1}\right\rangle \left\langle D,y_{2}\right\rangle l\Leftrightarrow l-y_{2}-y_{1}\Leftrightarrow l-y_{1}-y_{2}\Leftrightarrow\left\langle D,y_{2}\right\rangle \left\langle D,y_{1}\right\rangle l$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle D,y_{1}\right\rangle \left\langle I,y_{2}\right\rangle l\Leftarrow\left(\textrm{since }y_{1}\cap y_{2}\neq\emptyset\right)\Rightarrow\left\langle D,y_{1}-y_{2}\right\rangle \left\langle I,y_{2}\right\rangle l\Leftarrow\left(\textrm{since def III}\right)\Rightarrow\left\langle I,y_{2}\right\rangle \left\langle D,y_{1}\right\rangle l$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,y_{1}\right\rangle \left\langle x_{2},y_{2}\right\rangle l\Leftarrow\left(\textrm{since def III}\right)\Rightarrow\left\langle x_{2},y_{2}-y_{1}\right\rangle \left\langle I,y_{1}\right\rangle l\Leftarrow\left(\textrm{since }y_{1}\cap y_{2}\neq\emptyset\right)\Rightarrow\left\langle x_{2},y_{2}\right\rangle \left\langle I,y_{1}\right\rangle l$
+\end_inset 
+
+
+\layout Subsection
+
+
+\begin_inset LatexCommand \label{sub:All-aliens-can-move-freely-in-space}
+
+\end_inset 
+
+All aliens can move freely in space
+\layout Standard
+
+
+\begin_inset Formula $l_{1}\left\langle x_{1},y_{1}\right\rangle \left\langle x_{2},y_{2}\right\rangle l_{2}\wedge y_{1}\cap y_{2}=\emptyset\Leftrightarrow I_{1}\left\langle x_{2},y_{2}\right\rangle \left\langle x_{1},y_{1}\right\rangle l_{2}$
+\end_inset 
+
+
+\layout Paragraph
+
+Proof:
+\layout Standard
+
+
+\begin_inset Formula $I_{1}\left\langle x_{1},y_{1}\right\rangle \left\langle x_{2},y_{2}\right\rangle l_{2}\Leftrightarrow a\cup\left\langle x_{1},y_{1}-b\right\rangle \left\langle x_{2},y_{2}-c\right\rangle l_{2}^{'}-d$
+\end_inset 
+
+ (for some 
+\begin_inset Formula $a$
+\end_inset 
+
+, 
+\begin_inset Formula $b$
+\end_inset 
+
+, 
+\begin_inset Formula $c$
+\end_inset 
+
+, 
+\begin_inset Formula $d$
+\end_inset 
+
+ and 
+\begin_inset Formula $l_{2}^{'}$
+\end_inset 
+
+)
+\newline 
+
+\begin_inset Formula $y_{1}\cap y_{2}=\emptyset\Rightarrow y_{1}-b\cap y_{2}-c=\emptyset$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle x_{1},y_{1}-b\right\rangle \left\langle x_{2},y_{2}-c\right\rangle l_{2}^{'}\Leftarrow\left(\textrm{since theorem \ref{sub:Aliens-can-move-freely-in-space}}\right)\Rightarrow\left\langle x_{2},y_{2}-c\right\rangle \left\langle x_{1},y_{1}-b\right\rangle l_{2}^{'}$
+\end_inset 
+
+
+\layout Subsection
+
+
+\begin_inset LatexCommand \label{sub:Items-can-freely-be-divided}
+
+\end_inset 
+
+Items can freely be divided
+\layout Standard
+
+
+\begin_inset Formula $l_{1}\left\langle x,y\right\rangle l_{2}\Leftrightarrow l_{1}\left\langle x,y\cap a\right\rangle \left\langle x,y-a\right\rangle l_{2}$
+\end_inset 
+
+
+\layout Paragraph
+
+Proof:
+\layout Standard
+
+
+\begin_inset Formula $l_{1}\left\langle x,y\right\rangle l_{2}\Leftrightarrow b\cup\left\langle x,y-c\right\rangle l_{2}^{'}-d$
+\end_inset 
+
+ (for some 
+\begin_inset Formula $b$
+\end_inset 
+
+, 
+\begin_inset Formula $c$
+\end_inset 
+
+, 
+\begin_inset Formula $d$
+\end_inset 
+
+ and 
+\begin_inset Formula $l_{2}^{'}$
+\end_inset 
+
+)
+\newline 
+
+\begin_inset Formula $\left\langle A,y-c\right\rangle l_{2}^{'}\Leftrightarrow\left(y-c\right)\cup l_{2}^{'}\Leftrightarrow\left((y\cap a)-c\right)\cup\left(\left(y-a\right)-c\right)\cup l_{2}^{'}\Leftrightarrow\left\langle A,y\cap a-c\right\rangle \left\langle A,y-a-c\right\rangle l_{2}^{'}$
+\end_inset 
+
+
+\newline 
+...
+\layout Subsection
+
+
+\begin_inset LatexCommand \label{sub:Anywhere-proofs}
+
+\end_inset 
+
+Anywhere-proofs
+\layout Standard
+
+
+\begin_inset Formula $l_{1}l_{2}\Leftrightarrow A\cup\left(\left\langle I,x\right\rangle l_{2}-B\right)$
+\end_inset 
+
+for some 
+\begin_inset Formula $A$
+\end_inset 
+
+, 
+\begin_inset Formula $B$
+\end_inset 
+
+ and 
+\begin_inset Formula $x$
+\end_inset 
+
+.
+\layout Paragraph
+
+Proof:
+\layout Standard
+
+Base case:
+\begin_inset Formula $\left\{ \begin{array}{c}
+\left\langle I,x\right\rangle l_{2}\Leftrightarrow\emptyset\cup\left(\left\langle I,x\right\rangle l_{2}-\emptyset\right)\\
+\left\langle A,x\right\rangle l_{2}\Leftrightarrow x\cup\left(\left\langle I,\emptyset\right\rangle l_{2}-\emptyset\right)\\
+\left\langle D,x\right\rangle l_{2}\Leftrightarrow\emptyset\cup\left(\left\langle I,\emptyset\right\rangle l_{2}-x\right)\end{array}\right.$
+\end_inset 
+
+
+\newline 
+Recursive case:
+\begin_inset Formula $\left\{ \begin{array}{c}
+\left\langle I,x\right\rangle \left\langle y,z\right\rangle l_{1}l_{2}\wedge x\cap z\neq\emptyset\Leftrightarrow\left\langle y,z-x\right\rangle \left\langle I,x-z\right\rangle l_{1}l_{2}\\
+\left\langle I,x\right\rangle \left\langle I,z\right\rangle l_{1}l_{2}\wedge x\cap z=\emptyset\Leftarrow\left(\textrm{since theorem \ref{sub:Items-can-freely-be-divided}}\right)\Rightarrow\left\langle I,x\cup z\right\rangle l_{1}l_{2}\\
+\left\langle I,x\right\rangle \left\langle A,z\right\rangle l_{1}l_{2}\wedge x\cap z=\emptyset\Leftrightarrow\left\langle A,z\right\rangle \left\langle I,x\right\rangle l_{1}l_{2}\\
+\left\langle I,x\right\rangle \left\langle D,z\right\rangle l_{1}l_{2}\wedge x\cap z=\emptyset\Leftrightarrow\left\langle D,z\right\rangle \left\langle I,x\right\rangle l_{1}l_{2}\\
+\left\langle A,x\right\rangle l_{1}l_{2}\Leftrightarrow x\cup l_{1}l_{2}\\
+\left\langle D,x\right\rangle l_{1}l_{2}\Leftrightarrow l_{1}l_{2}-x\end{array}\right.$
+\end_inset 
+
+
+\newline 
+The theorem follows by induction.
+\layout Subsection
+
+
+\begin_inset LatexCommand \label{sub:The-empty-item-can-be-removed}
+
+\end_inset 
+
+The empty item can be removed
+\layout Standard
+
+
+\begin_inset Formula $l_{1}\left\langle x,\emptyset\right\rangle l_{2}\Leftrightarrow l_{1}l_{2}$
+\end_inset 
+
+
+\layout Paragraph
+
+Proof:
+\layout Standard
+
+There are three cases:
+\newline 
+Case 1 (Allow):
+\newline 
+
+\begin_inset Formula $l_{1}\left\langle A,\emptyset\right\rangle l_{2}\Leftarrow\left(\textrm{since theorem \ref{sub:All-aliens-can-move-freely-in-space}}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle A,\emptyset\right\rangle l_{1}l_{2}\Leftarrow\left(\textrm{since def. }\ref{2.1-def-1}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $l_{1}l_{2}\cup\emptyset\Leftrightarrow l_{1}l_{2}$
+\end_inset 
+
+
+\newline 
+Case 2 (Deny):
+\newline 
+
+\begin_inset Formula $l_{1}\left\langle D,\emptyset\right\rangle l_{2}\Leftarrow\left(\textrm{since theorem \ref{sub:All-aliens-can-move-freely-in-space}}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle D,\emptyset\right\rangle l_{1}l_{2}\Leftarrow\left(\textrm{since def. }\ref{2.1-def-1}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $l_{1}l_{2}-\emptyset\Leftrightarrow l_{1}l_{2}$
+\end_inset 
+
+
+\newline 
+Case 3 (Ignore):
+\newline 
+
+\begin_inset Formula $l_{1}\left\langle I,\emptyset\right\rangle l_{2}\Leftarrow\left(\textrm{since theorem \ref{sub:All-aliens-can-move-freely-in-space}}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $l_{1}l_{2}\left\langle I,\emptyset\right\rangle \Leftarrow\left(\textrm{since def. \ref{2.1-def-4}}\right)\Rightarrow l_{1}l_{2}$
+\end_inset 
+
+
+\layout Subsection
+
+
+\begin_inset LatexCommand \label{sub:If-it-can't-be-seen-it-can't-be-there}
+
+\end_inset 
+
+If it can't be seen, it can't be there
+\layout Standard
+
+
+\begin_inset Formula $\left.\begin{array}{c}
+\left\langle a_{1},b_{1}\right\rangle ...\left\langle a_{n},b_{n}\right\rangle \left\langle y,z\right\rangle l_{1}\left\langle c,d\right\rangle l_{2}\\
+\wedge y\neq I\\
+\wedge\neg\left(a_{i}=I\wedge b_{i}\cap d\neq\emptyset\right)\\
+\wedge d\subseteq z\end{array}\right\} \Leftrightarrow\left\langle a_{1},b_{1}\right\rangle ...\left\langle a_{n},b_{n}\right\rangle \left\langle y,z\right\rangle l_{1}l_{2}$
+\end_inset 
+
+
+\layout Paragraph
+
+Proof:
+\layout Standard
+
+Since theorem 
+\begin_inset LatexCommand \ref{sub:Anywhere-proofs}
+
+\end_inset 
+
+, it suffices to show that
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+\left\langle I,b\right\rangle \left\langle y,z\right\rangle l_{1}\left\langle c,d\right\rangle l_{2}\\
+\wedge y\neq I\\
+\wedge b\cap d=\emptyset\\
+\wedge d\subseteq z\end{array}\right\} \Leftrightarrow\left\langle I,b\right\rangle \left\langle y,z\right\rangle l_{1}l_{2}$
+\end_inset 
+
+.
+ 
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+\left\langle I,b\right\rangle \left\langle y,z\right\rangle l_{1}\left\langle c,d\right\rangle l_{2}\\
+\wedge y\neq I\\
+\wedge b\cap d=\emptyset\\
+\wedge d\subseteq z\end{array}\right\} \Leftarrow\left(\textrm{since def. }\ref{2.1-def-3}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+\left\langle y,z-b\right\rangle \left\langle I,b-z\right\rangle l_{1}\left\langle c,d\right\rangle l_{2}\\
+\wedge y\neq I\\
+\wedge b\cap d=\emptyset\\
+\wedge d\subseteq z\end{array}\right\} \Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+\left\langle y,z-b\right\rangle \left\langle I,b-z\right\rangle l_{1}\left\langle c,d\right\rangle l_{2}\\
+\wedge y\neq I\\
+\wedge b-z\cap d=\emptyset\\
+\wedge d\subseteq z-b\end{array}\right\} $
+\end_inset 
+
+ .
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+\left\langle A,z-b\right\rangle \left\langle I,b-z\right\rangle l_{1}\left\langle c,d\right\rangle l_{2}\\
+\wedge b-z\cap d=\emptyset\\
+\wedge d\subseteq z-b\end{array}\right\} \Leftarrow\left(\textrm{since def. }\ref{2.1-def-1}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+\left(z-b\right)\cup\left\langle I,b-z\right\rangle l_{1}\left\langle c,d\right\rangle l_{2}\\
+\wedge b-z\cap d=\emptyset\\
+\wedge d\subseteq z-b\end{array}\right\} $
+\end_inset 
+
+.
+ 
+\newline 
+It does not matter wether 
+\begin_inset Formula $z-b$
+\end_inset 
+
+ is or is not a subset of the rest of the list, since it will be added in
+ the end anyway.
+ Thus any pair with a set being a subset of that, such as 
+\begin_inset Formula $d\subseteq z-b$
+\end_inset 
+
+, can be added or removed freely.
+ The case for Deny is analogous.
+\layout Subsection
+
+
+\begin_inset LatexCommand \label{sub:partial-ignore-execution}
+
+\end_inset 
+
+Partial ignore execution
+\layout Standard
+
+
+\begin_inset Formula $\left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a,b\right\rangle l\Leftrightarrow\left\langle a,b\cap x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a,b-\left(x\cap z\right)\right\rangle l$
+\end_inset 
+
+
+\layout Paragraph
+
+Proof:
+\layout Standard
+
+
+\begin_inset Formula $\left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a,b\right\rangle l\Leftarrow\left(\textrm{since theorem \ref{sub:Items-can-freely-be-divided}}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a,b\cap x\cap z\right\rangle \left\langle a,b-\left(x\cap z\right)\right\rangle l\Leftarrow\left(\textrm{since def. \ref{2.1-def-3}}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle y,z-x\right\rangle \left\langle I,x-z\right\rangle \left\langle a,b\cap x\cap z\right\rangle \left\langle a,b-\left(x\cap z\right)\right\rangle l\Leftarrow\left(\textrm{since theorem \ref{sub:All-aliens-can-move-freely-in-space}}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle a,b\cap x\cap z\right\rangle \left\langle y,z-x\right\rangle \left\langle I,x-z\right\rangle \left\langle a,b-\left(x\cap z\right)\right\rangle l\Leftarrow\left(\textrm{since theorem \ref{sub:All-aliens-can-move-freely-in-space}}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,x-z\right\rangle \left\langle a,b\cap x\cap z\right\rangle \left\langle y,z-x\right\rangle \left\langle a,b-\left(x\cap z\right)\right\rangle l\Leftarrow\left(\textrm{since def. \ref{2.1-def-3}}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle a,b\cap x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a,b-\left(x\cap z\right)\right\rangle l$
+\end_inset 
+
+
+\layout Subsection
+
+
+\begin_inset LatexCommand \label{sub:Partial-ignore-execution-anywhere}
+
+\end_inset 
+
+Partial ignore execution anywhere
+\layout Standard
+
+
+\begin_inset Formula $\left.\begin{array}{c}
+l_{1}\left\langle I,x\right\rangle l_{2}\left\langle y,z\right\rangle \left\langle a,b\right\rangle l_{3}\\
+\wedge\forall\left\langle I,b_{i}\right\rangle \in l_{1},\, x\cap b_{i}=\emptyset\\
+\wedge\forall\left\langle a_{i},b_{i}\right\rangle \in l_{2},\, x\cap b_{i}=\emptyset\end{array}\right\} \Leftrightarrow l_{1}l_{2}\left\langle a,b\cap x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a,b-\left(x\cap z\right)\right\rangle l_{3}$
+\end_inset 
+
+.
+\layout Paragraph
+
+Proof:
+\layout Standard
+
+
+\begin_inset Formula $\left.\begin{array}{c}
+l_{1}\left\langle I,x\right\rangle l_{2}\left\langle y,z\right\rangle \left\langle a,b\right\rangle l_{3}\\
+\wedge\forall\left\langle I,b_{i}\right\rangle \in l_{1},\, x\cap b_{i}=\emptyset\\
+\wedge\forall\left\langle a_{i},b_{i}\right\rangle \in l_{2},\, x\cap b_{i}=\emptyset\end{array}\right\} \Leftarrow\left(\textrm{since theorem \ref{sub:All-aliens-can-move-freely-in-space}}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+l_{1}l_{2}\left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a,b\right\rangle l_{3}\\
+\wedge\forall\left\langle I,b_{i}\right\rangle \in l_{1},\, x\cap b_{i}=\emptyset\\
+\wedge\forall\left\langle a_{i},b_{i}\right\rangle \in l_{2},\, x\cap b_{i}=\emptyset\end{array}\right\} \Leftarrow\left(\textrm{since theorem \ref{sub:Anywhere-proofs}}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+A\cup\left(\left\langle I,i\right\rangle \left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a,b\right\rangle l_{3}-B\right)\\
+\wedge x\cap i=\emptyset\end{array}\right\} \Leftarrow\left(\textrm{since def. }\ref{2.1-def-3}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+A\cup\left(\left\langle I,x\right\rangle \left\langle y,z-i\right\rangle \left\langle a,b-\left(i-z\right)\right\rangle \left\langle I,i-z-b\right\rangle l_{3}-B\right)\\
+\wedge x\cap i=\emptyset\end{array}\right\} \Leftarrow\left(\textrm{since theorem }\ref{sub:partial-ignore-execution}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+A\cup\left(\begin{array}{c}
+\left\langle a,\left(b-\left(i-z\right)\right)\cap x\cap\left(z-i\right)\right\rangle \left\langle I,x\right\rangle \left\langle y,z-i\right\rangle \\
+\left\langle a,b-\left(i-z\right)-\left(x\cap\left(z-i\right)\right)\right\rangle \left\langle I,i-z-b\right\rangle l_{3}\end{array}-B\right)\\
+\wedge x\cap i=\emptyset\end{array}\right\} \Leftarrow\left(\textrm{since }x\cap i=\oslash\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+A\cup\left(\begin{array}{c}
+\left\langle a,b\cap x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z-i\right\rangle \\
+\left\langle a,b-\left(i-z\right)-\left(x\cap\left(z-i\right)\right)\right\rangle \left\langle I,i-z-b\right\rangle l_{3}\end{array}-B\right)\\
+\wedge x\cap i=\emptyset\end{array}\right\} \Leftarrow\left(\textrm{since }x\cap i=\oslash\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+A\cup\left(\begin{array}{c}
+\left\langle a,b\cap x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z-i\right\rangle \\
+\left\langle a,b-\left(x\cap z\right)-\left(i-z\right)\right\rangle \left\langle I,i-z-b\right\rangle l_{3}\end{array}-B\right)\\
+\wedge x\cap i=\emptyset\end{array}\right\} \Leftarrow\left(\textrm{since }x\cap i=\oslash\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+A\cup\left(\begin{array}{c}
+\left\langle a,b\cap x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z-i\right\rangle \\
+\left\langle a,b-\left(x\cap z\right)-\left(i-z\right)\right\rangle \left\langle I,i-z-\left(b-\left(x\cap z\right)\right)\right\rangle l_{3}\end{array}-B\right)\\
+\wedge x\cap i=\emptyset\end{array}\right\} \Leftarrow\left(\textrm{since def. }\ref{2.1-def-3}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+A\cup\left(\left\langle I,i\right\rangle \left\langle a,b\cap x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a,b-\left(x\cap z\right)\right\rangle l_{3}-B\right)\\
+\wedge x\cap i=\emptyset\end{array}\right\} \Leftarrow\left(\textrm{since theorem }\ref{sub:Anywhere-proofs}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $l_{1}l_{2}\left\langle a,b\cap x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a,b-\left(x\cap z\right)\right\rangle l_{3}$
+\end_inset 
+
+
+\layout Subsection
+
+
+\begin_inset LatexCommand \label{sub:full-ignore-execution}
+
+\end_inset 
+
+Full ignore execution
+\layout Standard
+
+
+\begin_inset Formula $\left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a_{1},b_{1}\right\rangle ...\left\langle a_{n},b_{n}\right\rangle \Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle a_{1},b_{1}\cap x\cap z\right\rangle ...\left\langle a_{n},b_{n}\cap x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a_{1},b_{1}-\left(x\cap z\right)\right\rangle ...\left\langle a_{n},b_{n}-\left(x\cap z\right)\right\rangle \Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle a_{1},b_{1}\cap x\cap z\right\rangle ...\left\langle a_{n},b_{n}\cap x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a_{1},b_{1}^{'}\right\rangle ...\left\langle a_{n},b_{n}^{'}\right\rangle $
+\end_inset 
+
+, where 
+\begin_inset Formula $b_{i}^{'}=b_{i}\textrm{ if }b_{i}-\left(x\cap z\right)\neq\emptyset\textrm{ else }\emptyset$
+\end_inset 
+
+
+\layout Paragraph
+
+Proof:
+\layout Standard
+
+For the first equality:
+\newline 
+ 
+\begin_inset Formula $\left.\begin{array}{c}
+\left\langle a_{1},b_{1}\cap x\cap z\right\rangle ...\left\langle a_{l},b_{l}\cap x\cap z\right\rangle \\
+\left\langle I,x\right\rangle \left\langle y,z\right\rangle \\
+\left\langle a_{1},b_{1}-\left(x\cap z\right)\right\rangle ...\left\langle a_{l},b_{l}-\left(x\cap z\right)\right\rangle \\
+\left\langle a_{l+1},b_{l+1}\right\rangle ...\left\langle a_{n},b_{n}\right\rangle \end{array}\right\} \Leftarrow\left(\textrm{since theorem \ref{sub:Items-can-freely-be-divided}}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+\left\langle a_{1},b_{1}\cap x\cap z\right\rangle ...\left\langle a_{l},b_{l}\cap x\cap z\right\rangle \\
+\left\langle I,x\right\rangle \left\langle y,z\right\rangle \\
+\left\langle a_{1},b_{1}-\left(x\cap z\right)\right\rangle ...\left\langle a_{l+1},b_{l+1}-\left(x\cap z\right)\right\rangle \\
+\left\langle a_{l+1},b_{l+1}\cap x\cap z\right\rangle \\
+\left\langle a_{l+2},b_{l+2}\right\rangle ...\left\langle a_{n},b_{n}\right\rangle \end{array}\right\} \Leftarrow\left(\textrm{since theorem \ref{sub:All-aliens-can-move-freely-in-space}}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+\left\langle a_{1},b_{1}\cap x\cap z\right\rangle ...\left\langle a_{l},b_{l}\cap x\cap z\right\rangle \\
+\left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a_{l+1},b_{l+1}\cap x\cap z\right\rangle \\
+\left\langle a_{1},b_{1}-\left(x\cap z\right)\right\rangle ...\left\langle a_{l+1},b_{l+1}-\left(x\cap z\right)\right\rangle \\
+\left\langle a_{l+2},b_{l+2}\right\rangle ...\left\langle a_{n},b_{n}\right\rangle \end{array}\right\} \Leftarrow\left(\textrm{since theorem }\ref{sub:Partial-ignore-execution-anywhere}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+ 
+\begin_inset Formula $\left.\begin{array}{c}
+\left\langle a_{1},b_{1}\cap x\cap z\right\rangle ...\left\langle a_{l+1},b_{l+1}\cap x\cap z\right\rangle \\
+\left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a_{l+1},b_{l+1}\cap x\cap z-\left(x\cap z\right)\right\rangle \\
+\left\langle a_{1},b_{1}-\left(x\cap z\right)\right\rangle ...\left\langle a_{l+1},b_{l+1}-\left(x\cap z\right)\right\rangle \\
+\left\langle a_{l+2},b_{l+2}\right\rangle ...\left\langle a_{n},b_{n}\right\rangle \end{array}\right\} \Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+\left\langle a_{1},b_{1}\cap x\cap z\right\rangle ...\left\langle a_{l+1},b_{l+1}\cap x\cap z\right\rangle \\
+\left\langle I,x\right\rangle \left\langle y,z\right\rangle \left\langle a_{l+1},\emptyset\right\rangle \\
+\left\langle a_{1},b_{1}-\left(x\cap z\right)\right\rangle ...\left\langle a_{l+1},b_{l+1}-\left(x\cap z\right)\right\rangle \\
+\left\langle a_{l+2},b_{l+2}\right\rangle ...\left\langle a_{n},b_{n}\right\rangle \end{array}\right\} \Leftarrow\left(\textrm{since theorem }\ref{sub:The-empty-item-can-be-removed}\right)\Rightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left.\begin{array}{c}
+\left\langle a_{1},b_{1}\cap x\cap z\right\rangle ...\left\langle a_{l+1},b_{l+1}\cap x\cap z\right\rangle \\
+\left\langle I,x\right\rangle \left\langle y,z\right\rangle \\
+\left\langle a_{1},b_{1}-\left(x\cap z\right)\right\rangle ...\left\langle a_{l+1},b_{l+1}-\left(x\cap z\right)\right\rangle \\
+\left\langle a_{l+2},b_{l+2}\right\rangle ...\left\langle a_{n},b_{n}\right\rangle \end{array}\right\} $
+\end_inset 
+
+
+\newline 
+The rest follows from induction over the length of the 
+\begin_inset Formula $\left\langle a_{1},b_{1}\right\rangle ...\left\langle a_{n},b_{n}\right\rangle $
+\end_inset 
+
+-sublist.
+\newline 
+The second equality follows from 
+\begin_inset LatexCommand \ref{sub:The-empty-item-can-be-removed}
+
+\end_inset 
+
+ and 
+\begin_inset LatexCommand \ref{sub:If-it-can't-be-seen-it-can't-be-there}
+
+\end_inset 
+
+.
+\layout Subsection
+
+Sorting
+\layout Standard
+
+
+\begin_inset Formula $\left\langle I,a\right\rangle \left\langle I,x\right\rangle \left\langle y,z\right\rangle l\Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,a\right\rangle \left\langle I,x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z-x\right\rangle l$
+\end_inset 
+
+
+\layout Paragraph
+
+Proof:
+\layout Standard
+
+
+\begin_inset Formula $\left\langle I,a\right\rangle \left\langle I,x\right\rangle \left\langle y,z\right\rangle l\Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,x-a\right\rangle \left\langle y,z-\left(a-z\right)\right\rangle \left\langle I,a-x-z\right\rangle l\Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle y,z-\left(a-z\right)-\left(x-a\right)\right\rangle \left\langle I,x-a-\left(z-\left(a-z\right)\right)\right\rangle \left\langle I,a-x-z\right\rangle l\Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,x-a-\left(z-\left(a-z\right)\right)\right\rangle \left\langle y,z-\left(a-z\right)-\left(x-a\right)\right\rangle \left\langle I,a-x-z\right\rangle l\Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,x-a-z\right\rangle \left\langle y,z-\left(x-a\right)\right\rangle \left\langle I,a-x-z\right\rangle l\Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\newline 
+
+\newline 
+
+\begin_inset Formula $\left\langle I,x\cap z-a\right\rangle \left\langle I,x-\left(a-x\cap z\right)\right\rangle \left\langle y,z-x-a\right\rangle \left\langle I,a-x-z\right\rangle l$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,x\cap z-a\right\rangle \left\langle I,x-\left(a-x\cap z\right)\right\rangle \left\langle y,z-x-\left(a-x\cap z-x\right)\right\rangle \left\langle I,a-x\cap z-x-\left(z-x\right)\right\rangle l$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,a\right\rangle \left\langle I,x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z-x\right\rangle l$
+\end_inset 
+
+
+\newline 
+
+\newline 
+
+\newline 
+
+\newline 
+
+\begin_inset Formula $\left\langle I,x\right\rangle \left\langle y,z\right\rangle l\Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle y,z-x\right\rangle \left\langle I,x-z\right\rangle l\Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,x-z\right\rangle \left\langle y,z-x\right\rangle l\Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,x-z\right\rangle \left\langle I,\emptyset\right\rangle \left\langle y,z-x\right\rangle l\Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,x-x\cap z\right\rangle \left\langle I,x\cap z-x\right\rangle \left\langle y,z-x\right\rangle l\Leftrightarrow$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left\langle I,x\cap z\right\rangle \left\langle I,x\right\rangle \left\langle y,z-x\right\rangle l$
+\end_inset 
+
+
+\newline 
+
+\newline 
+
+\newline 
+
+\layout Subsection
+
+Optimized lists (normal form)
+\layout Standard
+
+If you use theorem 
+\begin_inset LatexCommand \ref{sub:Partial-ignore-execution-anywhere}
+
+\end_inset 
+
+ repeatedly until there are no 
+\begin_inset Formula $\left\langle I,x\right\rangle $
+\end_inset 
+
+-pairs left
+\layout Standard
+
+it can be applied to, and then use theorem 
+\begin_inset LatexCommand \ref{sub:If-it-can't-be-seen-it-can't-be-there}
+
+\end_inset 
+
+ repeatedly until
+\layout Standard
+
+neither it can be applied any more, the list is then topologically
+\layout Standard
+
+sorted, that is sorted according to the subset partial-order, if a
+\layout Standard
+
+partial order does exist for the sets.
+ Furthermore, all 
+\begin_inset Formula $\left\langle I,x\right\rangle $
+\end_inset 
+
+ pairs
+\layout Standard
+
+are just to the left of the first other pair whose set is a
+\layout Standard
+
+superset of the set of the I-pair, counted from the right.
+\layout Section
+
+Operations on ignoresets
+\layout Standard
+
+According to theorem <Not yet written>, an ignoreset can be divided up into
+ two (optimized) sublists, one with only 
+\begin_inset Formula $\left\langle I,x\right\rangle $
+\end_inset 
+
+- and 
+\begin_inset Formula $\left\langle A,x\right\rangle $
+\end_inset 
+
+-pairs, and one with only 
+\begin_inset Formula $\left\langle I,x\right\rangle $
+\end_inset 
+
+- and 
+\begin_inset Formula $\left\langle D,x\right\rangle $
+\end_inset 
+
+-pairs.
+ Thus, an ignoreset can also be represented by a pair of two sets, one allow-
+ and one deny-set.
+ Another view of an ignoreset, which is particulary usefull when appending
+ ignoresets (from say groups a user is a member of and the user him/herself),
+ is as a tri-state logic - an item is either allowd, neither allowd nor
+ denied, or denied.
+ An algebra with union, intersection and inverse can intuitively (with respect
+ to this view) be constructed over ignoresets.
+\layout Standard
+
+Intuitively, the union of two ignoresets should allow everything allowed
+ by either one, and deny only things denied by both.
+ Respectively, the intersection should allow only things allowed by both,
+ but deny everything denied by either one.
+ Their definitions thus must be:
+\newline 
+
+\begin_inset Formula $\left[A_{A},A_{D}\right]\cup_{I}\left[B_{A},B_{D}\right]\Leftrightarrow\left[A_{A}\cup B_{A},A_{D}\cap B_{D}\right]$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\left[A_{A},A_{D}\right]\cap_{I}\left[B_{A},B_{D}\right]\Leftrightarrow\left[A_{A}\cap B_{A},A_{D}\cup B_{D}\right]$
+\end_inset 
+
+
+\newline 
+Remains then how to define the inverse such that <law> is upheld.
+ 
+\begin_inset Formula $\overline{\left[A_{A},A_{D}\right]}^{I}=\left[A_{D},A_{A}\right]$
+\end_inset 
+
+fullfills that requirement:
+\newline 
+
+\begin_inset Formula $\overline{\overline{\left[A_{A},A_{D}\right]}^{I}}^{I}=\overline{\left[A_{D},A_{A}\right]}^{I}=\left[A_{A},A_{D}\right]$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\overline{\left[A_{A},A_{D}\right]}^{I}\cup_{I}\overline{\left[B_{A},B_{D}\right]}^{I}=\left[A_{D},A_{A}\right]\cup_{I}\left[B_{D},B_{A}\right]=\left[A_{D}\cup B_{D},A_{A}\cap B_{A}\right]=\overline{\left[A_{A}\cap B_{A},A_{D}\cup B_{D}\right]}^{I}=\overline{\left[A_{A},A_{D}\right]\cap_{I}\left[B_{A},B_{D}\right]}^{I}$
+\end_inset 
+
+
+\newline 
+
+\begin_inset Formula $\overline{\left[A_{A},A_{D}\right]}^{I}\cap_{I}\overline{\left[B_{A},B_{D}\right]}^{I}=\left[A_{D},A_{A}\right]\cap_{I}\left[B_{D},B_{A}\right]=\left[A_{D}\cap B_{D},A_{A}\cup B_{A}\right]=\overline{\left[A_{A}\cup B_{A},A_{D}\cap B_{D}\right]}^{I}=\overline{\left[A_{A},A_{D}\right]\cup_{I}\left[B_{A},B_{D}\right]}^{I}$
+\end_inset 
+
+
+\the_end

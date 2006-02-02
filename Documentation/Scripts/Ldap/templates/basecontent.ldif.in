@@ -1,0 +1,292 @@
+######## Template content for an LDAP database to be used in conjunction with Grimoire ########
+# This template is instantiated by the setup.sh script.
+
+dn: skeleton(ldap_realm)
+objectClass: top
+objectClass: dcObject
+objectClass: organization
+o: skeleton(ldap_realm_dnsname)
+dc: skeleton(ldap_realm_naming)
+
+dn: cn=sambaDomain,skeleton(ldap_realm)
+objectClass: grimoireSambaDomain
+objectClass: sambaDomain
+cn: sambaDomain
+sambaDomainName: skeleton(samba_domain)
+sambaSID: S-1-5-21-skeleton(samba_sid)
+sambaAlgorithmicRidBase: 1000
+# Note about SIDs for groups and users:
+# The sambaSID attribute for users is to be set to the concatenation
+# of the above sambaSID, a dash (-) and (uidNumber * 2) + sambaAlgorithmicRidBase
+# The sambaSID attribute for groups is to be set to the concatenation
+# of the above sambaSID, a dash (-) and (gidNumber * 2) + sambaAlgorithmicRidBase + 1
+
+# UIDs and GIDs start at 1024 to prevent clashes with machine-local
+# accounts (root, postfix, cron, etc). On top of this, some UIDs and
+# GIDs are used for some standard groups and users for Grimoire
+# defined below.
+dn: cn=maxId,skeleton(ldap_realm)
+objectClass: grimoireLowestAvailIDNumbers
+cn: maxId
+gidNumber: 1030
+uidNumber: 1026
+
+# Ldap admin account
+dn: cn=admin,skeleton(ldap_realm)
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+cn: admin
+userPassword: skeleton(skeleton(grimoire_ldap_server_varname)_password)
+description: LDAP administrator
+
+
+dn: ou=People,skeleton(ldap_realm)
+objectClass: grimoireGroup
+objectClass: posixGroup
+objectClass: sambaGroupMapping
+ou: People
+cn: people
+sambaGroupType: 2
+gidNumber: 1024
+sambaSID: S-1-5-21-skeleton(samba_sid)-3049
+owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+
+# Abilities control access to methods, and are combined from all
+# objects along a user's DN and all groups he/she is a member of.
+dn: cn=security,ou=People,skeleton(ldap_realm)
+objectClass: grimoireAbilityList
+cn: security
+# Everyone needs introspection for any Grimoire GUI to work. DO NOT
+# remove.
+grimoireAbilityAllow: .introspection
+# The directory functions does not do anything except call underlying
+# directory.implementation functions. Security is only a concern for
+# those.
+grimoireAbilityAllow: .directory.get
+grimoireAbilityAllow: .directory.set
+grimoireAbilityAllow: .directory.list
+# Access information like the users preffered language.
+grimoireAbilityAllow: .directory.implementation.get.user
+# Mainly for changing one's own password and such...
+grimoireAbilityAllow: .change.own
+# Trees allowed to mount/connect to (all "real" local ones, and all remote ones)
+grimoireAbilityAllow: .trees.remote
+grimoireAbilityIgnore: .trees.local.unprotected
+grimoireAbilityIgnore: .trees.local.load
+grimoireAbilityAllow: .trees.local
+
+# Defaults are set on group- and user- entries, and are overridden by
+# more specific (longer DN) entries, or combined with the more
+# specific ones first (e.g. grimoireInitCommand).
+dn: cn=defaults,ou=people,skeleton(ldap_realm)
+objectClass: grimoireDefaults
+cn: defaults
+# Domain name for mail-adresses using people's usernames
+grimoireMailDomain: skeleton(mail_domain)
+# Domain name for mail-adresses using people's dedicated mail usernames
+grimoireSecondaryMailDomain: skeleton(mail_second_domain)
+# Path to append to create.homedir before path to home directory.
+# Hint: Mount a local.filesystem with the treevar $fileservername set
+# to the same path at the root.
+grimoireHomedirPath: skeleton(homedir_path)
+# Path to prepend to home directory paths in user LDAP entries (that
+# is, the path to the mount point for home-directories on clients)
+grimoireClientHomedirPath: skeleton(homedir_client_path)
+# As grimoireHomedirPath but for mail directories (appended to create.maildir)
+grimoireMaildirPath: skeleton(maildir_path)
+# Path to prepend to mail directory paths in user LDAP entries (that
+# is, the path to the mount point for mail-directories on the mail-server)
+grimoireClientMaildirPath: skeleton(maildir_client_path)
+# Grimoire expressions to run on the Grimoire LDAP tree at login. You
+# probably want to mount some remote Grimoire trees (e.g. fileystem
+# trees, printer trees etc) here. One expression per attribute value.
+skeleton(grimoire_initcommands)
+
+dn: ou=Administrators,ou=People,skeleton(ldap_realm)
+objectClass: grimoireGroup
+objectClass: posixGroup
+objectClass: sambaGroupMapping
+ou: Administrators
+cn: administrators.people
+sambaGroupType: 2
+gidNumber: 1025
+sambaSID: S-1-5-21-skeleton(samba_sid)-3051
+owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+
+dn: cn=security,ou=Administrators,ou=People,skeleton(ldap_realm)
+objectClass: grimoireAbilityList
+cn: security
+# Admins are semi-gods and have all usual rights, but are not allowed
+# to directly call most internal methods. Only superadmin is allowed
+# to do that.
+grimoireAbilityAllow: .list.printers
+grimoireAbilityAllow: .create.domain
+grimoireAbilityAllow: .create.group
+grimoireAbilityAllow: .create.machine
+grimoireAbilityAllow: .create.emailalias
+grimoireAbilityAllow: .create.ability
+grimoireAbilityAllow: .create.host
+grimoireAbilityAllow: .create.homeGroup
+grimoireAbilityAllow: .create.user
+grimoireAbilityAllow: .delete.homeGroup
+grimoireAbilityAllow: .delete.group
+grimoireAbilityAllow: .delete.ability
+grimoireAbilityAllow: .delete.user
+grimoireAbilityAllow: .change
+grimoireAbilityAllow: .disable
+grimoireAbilityAllow: .enable
+grimoireAbilityAllow: .reset
+
+dn: cn=defaults,ou=Administrators,ou=People,skeleton(ldap_realm)
+objectClass: grimoireDefaults
+cn: defaults
+
+dn: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+objectClass: grimoirePerson
+objectClass: grimoireAccount
+objectClass: posixAccount
+objectClass: CourierMailAccount
+objectClass: sambaSamAccount
+uid: superadmin
+cn: superadmin
+gecos: Full super-user
+sn: Superadmin
+mail: superadmin@skeleton(ldap_realm_dnsname)
+homeDirectory: skeleton(homedir_client_path_unix)/administrators/group.users/superadmin
+mailbox: skeleton(maildir_client_path_unix)/administrators/group.users/superadmin/
+preferredLanguage: skeleton(language)
+loginShell: /bin/bash
+uidNumber: 1024
+gidNumber: 1025
+sambaAcctFlags: [U          ]
+sambaSID: S-1-5-21-skeleton(samba_sid)-3048
+sambaPrimaryGroupSID: S-1-5-21-skeleton(samba_sid)-3051
+owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+
+dn: cn=security,uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+objectClass: grimoireAbilityList
+cn: security
+# Superadmin is god and have _all_ rights.
+grimoireAbilityAllow: .
+
+dn: uid=demoadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+objectClass: grimoirePerson
+objectClass: grimoireAccount
+objectClass: posixAccount
+objectClass: CourierMailAccount
+objectClass: sambaSamAccount
+uid: demoadmin
+cn: demoadmin
+gecos: Demo Administrative User
+sn: Demoadmin
+mail: demoadmin@skeleton(ldap_realm_dnsname)
+homeDirectory: skeleton(homedir_client_path_unix)/administrators/group.users/demoadmin
+mailbox: skeleton(maildir_client_path_unix)/administrators/group.users/demoadmin/
+preferredLanguage: skeleton(language)
+loginShell: /bin/bash
+uidNumber: 1025
+gidNumber: 1025
+sambaAcctFlags: [U          ]
+sambaSID: S-1-5-21-skeleton(samba_sid)-3048
+sambaPrimaryGroupSID: S-1-5-21-skeleton(samba_sid)-3051
+owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+
+
+dn: ou=Groups,skeleton(ldap_realm)
+objectClass: grimoireGroup
+objectClass: posixGroup
+objectClass: sambaGroupMapping
+ou: Groups
+cn: groups
+sambaGroupType: 2
+gidNumber: 1026
+sambaSID: S-1-5-21-skeleton(samba_sid)-3053
+owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+
+
+# Defaults are set on group- and user- entries, and are overridden by
+# more specific (longer DN) entries, or combined with the more
+# specific ones first (e.g. grimoireInitCommand).
+dn: cn=defaults,ou=Groups,skeleton(ldap_realm)
+objectClass: grimoireDefaults
+cn: defaults
+# Path to append to create.homedir before path to group home directory.
+# Hint: Mount a local.filesystem with the treevar $fileservername set
+# to the same path at the root.
+grimoireHomedirPath: skeleton(group_homedir_path)
+# Path to prepend to group home directory paths instansiated in files
+# (that is, the path to the mount point for group home-directories on
+# clients)
+grimoireClientHomedirPath: skeleton(group_homedir_client_path)
+
+dn: ou=Administrators,ou=groups,skeleton(ldap_realm)
+objectClass: grimoireGroup
+objectClass: posixGroup
+objectClass: sambaGroupMapping
+ou: Administrators
+cn: administrators.groups
+sambaGroupType: 2
+gidNumber: 1027
+sambaSID: S-1-5-21-skeleton(samba_sid)-3055
+owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+
+
+# There are no methods to create drafts at the momemt, but for
+# changing/accepting them. A draft is a draft of a user account, and
+# can be changed by a non-logged-in user and can be accepted and made
+# into a real account or rejected by an administrator. A draft may
+# have any of the attributes of a user account. It should have the
+# objectClass grimoireDraftAccount and _must_ have a
+# grimoireSwedishIDNumber identifying the draft account (the attribute
+# is solely used for identifying the draft, and you may use any ID
+# string used for persons in your country, such as their social
+# security number, their full name and date of birth, e-mail or
+# whatever). The grimoireSwedishIDNumber value should also be used as
+# the last part of the DN. Note that an accepted draft account is
+# created in the tree under the same DN as the draft was stored but
+# with ou=Drafts removed. It will also become a member of all groups
+# listed in the member attributes of the draft.
+dn: ou=Drafts,skeleton(ldap_realm)
+objectClass: organizationalUnit
+ou: Drafts
+
+dn: ou=People,ou=Drafts,skeleton(ldap_realm)
+objectClass: organizationalUnit
+ou: People
+
+dn: ou=Administrators,ou=People,ou=Drafts,skeleton(ldap_realm)
+objectClass: organizationalUnit
+ou: Administrators
+
+
+dn: ou=Machines,skeleton(ldap_realm)
+objectClass: GrimoireGroup
+objectClass: posixGroup
+objectClass: sambaGroupMapping
+ou: Machines
+cn: machines
+sambaGroupType: 2
+gidNumber: 1028
+sambaSID: S-1-5-21-skeleton(samba_sid)-3057
+owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+
+dn: ou=Servers,ou=Machines,skeleton(ldap_realm)
+objectClass: GrimoireGroup
+objectClass: posixGroup
+objectClass: sambaGroupMapping
+ou: Servers
+cn: servers.machines
+sambaGroupType: 2
+gidNumber: 1029
+sambaSID: S-1-5-21-skeleton(samba_sid)-3059
+owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+
+
+dn: ou=Domains,skeleton(ldap_realm)
+objectClass: organizationalUnit
+ou: Domains
+
+
+dn: ou=Roaming,skeleton(ldap_realm)
+objectClass: organizationalUnit
+ou: Roaming

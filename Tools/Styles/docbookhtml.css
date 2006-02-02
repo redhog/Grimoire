@@ -1,0 +1,56 @@
+@media all {
+ * {
+  font-family: serif;
+ }
+
+ pre {
+  font-family: monospace;
+ }
+
+ tt {
+  font-family: monospace;
+ }
+
+ div.highlights {
+  font-style: italic;
+ }
+
+ hr {
+  border-style: none;
+  background-color: #000000;
+  height: 2px;
+ }
+
+ body {
+  margin-top: 2.5cm;
+  margin-bottom: 3.0cm;
+  margin-left: 4.5cm;
+  margin-right: 2.0cm;
+  padding: 0cm;
+  max-width: 15cm;
+ }
+
+ dl {
+  margin: 0px;
+ }
+}
+
+@media print {
+ div.toc {
+  page-break-before: always;
+  page-break-after: always;
+ }
+
+ body {
+  margin: 0cm;
+  max-width: 100%;
+ }
+
+ @page {
+  size: portrait;
+  margin-top: 2.5cm;
+  margin-bottom: 3.0cm;
+  margin-left: 4.5cm;
+  margin-right: 2.0cm;
+ }
+}

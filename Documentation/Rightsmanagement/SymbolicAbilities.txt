@@ -1,0 +1,81 @@
+"Alla" behöver rättigheten "skriva i sin _egen_ hemkatalog". Om varje
+Anna Andersson på skola47, användarnamn varg74 har rättigheterna
+
+filesystem.read.home.people.customers.skola47.students.varg74
+filesystem.write.home.people.customers.skola47.students.varg74
+
+så blir det rätt många rader i LDAP. Man vill i stället kunna ha EN
+rättighet på gruppen people.customers.skola47.students, om säger att
+alla medlemmar får ändra sin egen hemkatalog.
+
+En användare får dock normalt ge bort alla rättigheter de har. Om en
+användare, varg74, ger bort denna specialrättighet till en annan
+gris2, bör dock rättigheten gris2 får vara rättigheten att ändra
+varg74:as hemkatalog, inte sin egen (den rätttigheten har hen
+antagligen redan, och om hen _inte_ har den, skall hen inte få den,
+eftersom varg74 inte hade den, eller iaf intte gav bort den!).
+
+Därmed behövs:
+
+Symboliska rättigheter
+
+Två sätt att ge bort rättigheter:
+1. Oförändrat, så att symboler bevaras
+2. Värdemässigt, med alla symboler expanderade
+
+Normala användare bör bara ha 2., inte 1. Visa lärare kan ha
+rättighet att ge bort vissa rättighetter symboliskt med 1..
+
+Det behövs egentligen inte mycket specialhack för de symboliska
+rättigheterna, de går att representera precis som de vanliga. Dock
+måste de kännas igen av ge-bort-rättighet-2, och expanderas där och
+vid användning.
+
+
+Jag föreslår att grenar med namnet '$' används till detta, dvs i
+fallet överst i det här brevet:
+
+people.customers.skola47.students:
+ filesystem.read.$.home
+ filesystem.write.$.home
+
+, dvs sökvägen
+
+path1 + ['$', name] + path2
+
+expanderas till
+
+path1 + variables[name] + path2
+
+där variables är en mapping med aktuella bundna variabler (vad gör man
+om en viss variabel inte är bunden, ignorerar hela rättigheten?):
+
+variables = {
+ 'home': ['home', 'people', 'customers', 'skola47', 'students', 'varg74'],
+ 'homegroupdir': ['home', 'people', 'customers', 'skola47', 'students'],
+ 'machine': ['customers', 'skola47', 'clients', 'dhcp-4712'],
+ 'uid': ['4711'],
+ ....
+}
+
+Det här betyder också att change.own.passwod och liknande måste bort.
+Det måste de ändå egentligen. Dessutom blir det faktiskt snyggare i
+GUIt om man byter lösen lika för alla man får byta lösen för...
+
+Alternativt kan man magiskt bygga en del av trädet för de symboliska
+rättigheterna, som bara skriver om on-the-fly till det de expanderar
+till, dvs automatgenerering av
+
+change.$.userpath.password
+
+kanske manglat på något nyggt sätt: Om man ger varje symboliskt namn
+ett exta "presentationsnamn", kan man göra följande:
+
+variables = {
+ 'username': ('own', ['varg74']),
+ 'userpath: ('own', ['people', 'customers', 'skola47', 'students', 'varg74']),
+ 'homepath': ('own', ['people', 'customers', 'skola47', 'students']),
+ ....
+}
+
+change.$.userpath.password -> change.own.password

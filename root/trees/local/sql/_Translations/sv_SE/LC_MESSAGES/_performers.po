@@ -1,0 +1,731 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: Sun Oct 24 19:51:42 2004\n"
+"PO-Revision-Date: 2004-10-24 21:02+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: ENCODING\n"
+"Generated-By: pygettext.py 1.4\n"
+#
+msgid "__init__"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/directory.py, line: 13
+msgid "id"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/directory.py, line: 13
+msgid "local"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/directory.py, line: 13
+msgid "sql"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/directory.py, line: 13
+#msgid "user"
+#msgstr ""
+#
+# File: root/trees/local/sql/_performers/directory.py, line: 14
+# File: root/trees/local/sql/_performers/directory.py, line: 17
+msgid "language"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/directory.py, line: 17
+msgid "$sqlentries"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/directory.py, line: 17
+msgid "$sqlservername"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/directory.py, line: 17
+#msgid "list"
+#msgstr ""
+#
+# File: root/trees/local/sql/_performers/directory.py, line: 17
+#msgid "users"
+#msgstr ""
+#
+# File: root/trees/local/sql/_performers/directory.py, line: 18
+msgid "\"id\" = '%s'"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/directory.py, line: 33
+msgid "Read the %(attribute)s of the current user"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/directory.py, line: 34
+msgid " "
+msgstr ""
+#
+msgid "directory"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 8
+msgid "reference to"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 10
+# File: root/trees/local/sql/_performers/type.py, line: 15
+msgid "table"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 27
+msgid "ReferenceType"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 43
+msgid "columntype"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 51
+msgid "Columns can not be specified both in path and in an argument"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 54
+msgid "Path to long"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 56
+msgid "Columns must be specified within a table"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 58
+msgid "db"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 60
+msgid "select \"column\", \"type\", \"description\" from metainfo where "
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 61
+msgid "\"table\" = '"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 61
+msgid "\"table\" is null"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 61
+msgid "'"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 62
+msgid " and "
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 63
+msgid " or "
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 63
+msgid "\"column\" = '%s'"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 63
+msgid "("
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 63
+msgid ")"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 64
+msgid "\"column\" is null"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 65
+msgid "\"column\" is not null"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 67
+msgid "No such table or column"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 85
+msgid "columntypes"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 101
+msgid "Table-column pairs"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 101
+msgid "columns"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 102
+msgid "List types for columns from several tables simultaneously"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 105
+msgid "serialize"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 105
+# File: root/trees/local/sql/_performers/type.py, line: 116
+# File: root/trees/local/sql/_performers/type.py, line: 120
+# File: root/trees/local/sql/_performers/type.py, line: 129
+msgid "type"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 116
+msgid "The type to serialize"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 117
+msgid "Serializes a type to a string"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 120
+msgid "deserialize"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 129
+msgid "String representation of type to deserialize"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/type.py, line: 130
+msgid "Deserializes a type from a string"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 14
+msgid "Any"
+msgstr "Vilket som helst"
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 23
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 206
+msgid "A list of columns to sort the answers by"
+msgstr "Lista av kolumner att sortera efter"
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 23
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 206
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 220
+msgid "orderBy"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 24
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 207
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 220
+msgid "orderWay"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 25
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 208
+msgid "Ascending"
+msgstr "Stigande"
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 25
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 208
+msgid "Descending"
+msgstr "Fallande"
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 25
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 208
+msgid "The way to order the sort, if sort is called for"
+msgstr "Sorteringsordning"
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 26
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 209
+msgid "All answers"
+msgstr "Alla svar"
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 26
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 209
+msgid "Only distinct"
+msgstr "Visa inte dubletter"
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 26
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 209
+msgid "Show"
+msgstr "Visa"
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 26
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 209
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 220
+msgid "distinct"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 35
+msgid "sqltables"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 40
+msgid "\"column\""
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 40
+msgid "\"table\""
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 55
+msgid " view is not True "
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 58
+msgid "select distinct %(columns)s from metainfo where %(wheres)s"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 59
+msgid "1"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 59
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 116
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 117
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 125
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 155
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 178
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 179
+msgid ", "
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 60
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 118
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 126
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 156
+msgid "wheres"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 61
+msgid "%(column)s = '%(value)s'"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 61
+msgid "value"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 61
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 109
+msgid "column"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 64
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 96
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 169
+msgid "true"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 76
+msgid "prefix"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 79
+msgid "Only return entries under"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 80
+msgid "depth"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 83
+msgid "Only return entries this far down in the tree (-1 means infinity)"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 84
+msgid "isMethodList"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 87
+msgid ""
+"Levels that are methods (default is all). Should be a list of 1:s and 0s of "
+"length 2"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 91
+msgid "List SQL tables under %(path)s"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 95
+msgid "sqlrows"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 107
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 142
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 179
+msgid "."
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 109
+msgid "\"%(table)s\".\"%(column)s\""
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 115
+msgid "select %(references)s from %(tables)s where %(wheres)s"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 116
+msgid "m%s.\"references\""
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 116
+msgid "references"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 117
+msgid "metainfo as m%s"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 117
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 125
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 178
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 203
+msgid "tables"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 118
+msgid "m0.\"table\" = '%s' and m0.\"column\" = '%s'"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 119
+msgid "m%s.\"table\" = m%s.\"references\" and m%s.\"column\" = '%s'"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 122
+msgid ""
+"(select \"%(lasttable)s\".\"%(lastattr)s\" from %(tables)s where %(wheres)s)"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 123
+msgid "lasttable"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 124
+msgid "lastattr"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 125
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 179
+msgid "\"%s\""
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 127
+msgid "\"%s\".\"%s\" = \"%s\".\"id\""
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 131
+msgid "%(expr)s as \"%(param)s\""
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 132
+msgid "expr"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 133
+msgid "param"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 153
+msgid "select %(columns)s from \"%(table)s\" where %(wheres)s;"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 155
+msgid "\"id\""
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 164
+msgid "SQL where clause"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 164
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 205
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 225
+msgid "where"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 165
+msgid "List rows in a table formatted in a user-friendly way"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 168
+msgid "nonpath"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 177
+msgid "select %(columns)s from %(tables)s"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 179
+msgid "*"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 180
+msgid " where %s"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 182
+msgid " order by %s"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 183
+msgid ";"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 203
+msgid "List of tables to query"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 204
+msgid "List of columns to query"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 205
+msgid ""
+"A \"where\" clause to an SQL select query, to select the rows from the table"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 210
+msgid "Pretty-printed text"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 210
+msgid "Python lists"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 210
+msgid "Return"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 210
+msgid "prettyPrint"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 211
+msgid "Execute an SQL query against a Postgres SQL server"
+msgstr "Sök i databasen"
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 225
+msgid "\"%s\" = '%s'"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 232
+msgid "$"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/list/sqlentries.py, line: 244
+msgid "List entries from table %(table)s"
+msgstr "Lista %(table)s"
+#
+msgid "sqlentries"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/delete/sqlentry.py, line: 9
+msgid "$sqlentry"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/delete/sqlentry.py, line: 13
+msgid " where id = "
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/delete/sqlentry.py, line: 13
+msgid "delete from "
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/delete/sqlentry.py, line: 18
+msgid "Deleted row"
+msgstr "Raderat data"
+#
+# File: root/trees/local/sql/_performers/delete/sqlentry.py, line: 22
+#msgid "create"
+#msgstr ""
+#
+# File: root/trees/local/sql/_performers/delete/sqlentry.py, line: 31
+msgid "The row to delete"
+msgstr "Raden som ska raderas"
+#
+# File: root/trees/local/sql/_performers/delete/sqlentry.py, line: 31
+msgid "rowid"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/delete/sqlentry.py, line: 33
+msgid "Delete entry from table %(table)s"
+msgstr "Radera %(table)s"
+#
+msgid "sqlentry"
+msgstr ""
+#
+#msgid "delete"
+#msgstr ""
+#
+# File: root/trees/local/sql/_performers/create/sqlentry.py, line: 39
+msgid "Inserted row"
+msgstr "Tillagt data"
+#
+# File: root/trees/local/sql/_performers/create/sqlentry.py, line: 50
+msgid "Insert values into table %(table)s"
+msgstr "Lägg till %(table)s"
+#
+# File: root/trees/local/sql/_performers/change/sqlentry.py, line: 14
+msgid "The item to update"
+msgstr "Raden som ska ändras"
+#
+# File: root/trees/local/sql/_performers/change/sqlentry.py, line: 31
+msgid "No values to update"
+msgstr "Inga värden att ändra"
+#
+# File: root/trees/local/sql/_performers/change/sqlentry.py, line: 35
+msgid "update %s set %s where \"id\" = '%s'"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/change/sqlentry.py, line: 38
+msgid "Updated records"
+msgstr "Ändrade data "
+#
+# File: root/trees/local/sql/_performers/change/sqlentry.py, line: 42
+#msgid "change"
+#msgstr ""
+#
+# File: root/trees/local/sql/_performers/change/sqlentry.py, line: 53
+msgid "Update a row in table %(table)s"
+msgstr "Ändra %(table)s"
+#
+# File: root/trees/local/sql/_performers/change/own/info.py, line: 24
+msgid "password"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/change/own/info.py, line: 28
+msgid "Change your own info"
+msgstr "Ändra din egen information"
+#
+msgid "info"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/change/own/password.py, line: 18
+msgid "New password to set"
+msgstr "Nytt lösenord"
+#
+# File: root/trees/local/sql/_performers/change/own/password.py, line: 18
+msgid "newpwd"
+msgstr ""
+#
+# File: root/trees/local/sql/_performers/change/own/password.py, line: 19
+msgid "Change your own password"
+msgstr "Ändra ditt eget lösenord"
+#
+msgid "own"
+msgstr "eget"
+
+# Special translations
+msgid "*No value specified*"
+msgstr "     "
+
+# Translations of basic operations
+msgid "list"
+msgstr "Lista"
+msgid "create"
+msgstr "Skapa"
+msgid "change"
+msgstr "Ändra"
+msgid "delete"
+msgstr "Radera"
+msgid "logout"
+msgstr "Logga ut"
+
+# Translations of tables and columns
+msgid "producers"
+msgstr "producenter"
+msgid "producer"
+msgstr "producent"
+
+msgid "customers"
+msgstr "beställare"
+msgid "customer"
+msgstr "beställare"
+
+msgid "shows"
+msgstr "föreställningar"
+msgid "show"
+msgstr "föreställning"
+
+msgid "regions"
+msgstr "län"
+msgid "region"
+msgstr "län"
+
+msgid "municipalities"
+msgstr "kommuner"
+msgid "municipality"
+msgstr "kommun"
+
+msgid "agegroups"
+msgstr "åldersgrupper"
+msgid "agegroup"
+msgstr "åldersgrupp"
+
+msgid "cooptypes"
+msgstr "samarbetstyper"
+msgid "cooptype"
+msgstr "samarbetstyp"
+
+msgid "employmentforms"
+msgstr "anställningsformer"
+msgid "employmentform"
+msgstr "anställningsform"
+
+msgid "genres"
+msgstr "genrer"
+msgid "genre"
+msgstr "genre"
+
+msgid "hours"
+msgstr "timmar"
+msgid "hour"
+msgstr "timme"
+
+msgid "organizations"
+msgstr "organisationer"
+msgid "organization"
+msgstr "organisation"
+
+msgid "organizationtypes"
+msgstr "organisationstyper"
+msgid "organizationtype"
+msgstr "organisationstyp"
+
+msgid "ownorganizationinfo"
+msgstr "information om Länsmusiken"
+
+msgid "productions"
+msgstr "produktioner"
+msgid "production"
+msgstr "produktion"
+
+msgid "productionsinprojects"
+msgstr "produktioner i projekt"
+
+msgid "projects"
+msgstr "projekt"
+msgid "project"
+msgstr "projekt"
+
+msgid "projecttypes"
+msgstr "projekttyper"
+msgid "projekttype"
+msgstr "projekttyp"
+
+msgid "showstates"
+msgstr "faktureringslägen"
+msgid "showstate"
+msgstr "faktureringsläge"
+
+msgid "showtypes"
+msgstr "föreställningstyper"
+msgid "showtype"
+msgstr "föreställningstyp"
+
+msgid "usergroups"
+msgstr "användargrupper"
+msgid "usergroup"
+msgstr "användargrupp"
+msgid "users"
+msgstr "användare"
+msgid "user"
+msgstr "användare"

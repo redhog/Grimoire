@@ -1,0 +1,11 @@
+This directory and its subdirectories contains distribution/OS
+specific configuration options.
+
+If you are just installing a Grimoire package from your distribution-
+or OS-vendor, you can safely ignore this directory in its entiety, as
+your vendor should have taken care of it.
+
+If you, on the other hand, is packaging Grimoire for a distribution or
+OS, or are installing from tgz on your own, you will need to change
+the configuration options in this directory tree to match your
+distribution/OS.

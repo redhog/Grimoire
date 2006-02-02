@@ -1,0 +1,259 @@
+Name: Grimoire
+Vendor: VENDOR
+Epoch: 0
+Version: VERSION
+Release: 1_ti_1
+Copyright: GPL
+Group: Administration
+Provides: %{name}
+Source0: http://download.gna.org/grimoire/%{name}-%{version}.tgz
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+URL: http://grimoire.takeit.se
+BuildRequires: python >= 2.3, python-devel, tla, gettext, libxslt >= 1.1.5, docbook-style-xsl >= 1.65.1
+BuildRequires: gcc, m4, coreutils, tar, findutils, sed, grep
+%define pyversion %(python -c "import sys; print str(sys.version_info[0]) + '.' + str(sys.version_info[1])")
+%define pynextversion %(python -c "import sys; print str(sys.version_info[0]) + '.' + str(sys.version_info[1] + 1)")
+Requires: python >= %{pyversion}, python < %{pynextversion}, python-unicode, /usr/share/locale/all_languages
+Summary: An action-tree implementation for system administration
+
+%description
+ Grimoire is a Python implementation of an action-tree, a
+tree-structured database of commands or methods that can be invoked
+locally or on a server using rpc.
+
+ Grimoire allows arbitrary merging and divissions ofaction-trees and
+has a fine-grained access-control that can be coupled to an
+LDAP-database (paths down the tree are used to specify subtrees that
+are either allowd or denied, and such paths are considered in an order
+that lets abilities coupled to different entries in LDAP override each
+other in a controllable manner).
+
+ Grimoire includes a base set of methods/actions for manipulation of
+LDAP-entries for user-accounts (both posix-accounts and
+samba-accounts), groups, courier mail-aliases and BIND DNS-zone
+information, and for manipulation of the local filesystem on a
+Grimoire server (e.g. creation of homedirectories using templates). It
+also includes a Webware based web-GUI-frontend and a
+command-line-based UI to manipulate the tree.
+
+%package SSL
+Requires: Grimoire = %{version}, m2crypto >= 0.09
+Summary: SSL bindings for Grimoire
+Group: Administration
+%description SSL
+This package adds SSL encrypted DIRT (Direct Invocation of Remote
+Tasks) to the set of remote-procedure-call-protocols of Grimoire.
+
+%package LDAP
+Requires: Grimoire = %{version}, python-ldap >= 1.9, sambapasswords
+Summary: LDAP bindings for Grimoire
+Group: Administration
+%description LDAP
+This package adds an LDAP directory administration tree to Grimoire.
+
+%package LDAP-Server
+Requires: openldap-servers, openldap-clients, samba-ldapschema-openldap, courier-ldapschema-openldap, m4, sed, grep, findutils, net-tools, bash, coreutils
+Summary: Requirements for an LDAP-server for Grimoire
+Group: Administration
+%description LDAP-Server
+This package contains nessesary Schema-files for an LDAP-server to be used with Grimoire.
+
+%package PostgreSQL
+Requires: Grimoire = %{version}, postgresql-python >= 3.4
+Summary: PostgreSQL bindings for Grimoire
+Group: Administration
+%description PostgreSQL
+This package adds a PostgreSQL database interface tree to Grimoire.
+
+%package Filesystem
+Requires: Grimoire = %{version}
+Summary: Filesystem bindings for Grimoire
+Group: Administration
+%description Filesystem
+This package adds a filesystem interface tree to Grimoire.
+
+%package CUPS
+Requires: Grimoire = %{version}, cups
+Summary: CUPS bindings for Grimoire
+Group: Administration
+%description CUPS
+This package adds a CUPS (Common Unix Printing System) printer-management-tree to Grimoire.
+
+%package Client
+Requires: Grimoire = %{version}, tetex-latex, tetex-dvips, sed, cups
+Summary: Public-terminal (user registration) tree
+Group: Administration
+%description Client
+This package adds public-terminal (user-registration) tree to Grimoire.
+
+%package Webware
+Requires: Grimoire = %{version}, Webware >= 0.8, FunFormKit >= 0.4.1, httpd
+Summary: Web user-interface for Grimoire
+Group: Administration
+%description Webware
+This package adds a web-based interface to Grimoire.
+
+
+%prep
+%setup
+
+%build
+Tools/clean.sh
+Tools/compiletranslations.sh
+Tools/compiledocumentation.sh
+Tools/compilecmodules.sh
+
+%clean
+rm -rf %{buildroot}
+
+%install
+%define ldapdir %{_sysconfdir}/openldap
+%define ldapschemadir %{ldapdir}/schema
+%define grimroot %{_libdir}/python%{pyversion}/site-packages/Grimoire
+%define grimconf %{_sysconfdir}/Grimoire
+%define services /services
+%define webware %{services}/www/WebWare
+%define httpdconfdir %{_sysconfdir}/httpd/conf.d
+
+rm -rf %{buildroot}
+
+mkdir -p                                                                                         %{buildroot}%{_libdir}/python%{pyversion}/site-packages
+mkdir -p                                                                                         %{buildroot}%{_sbindir}
+mkdir -p                                                                                         %{buildroot}%{_sysconfdir}/init.d
+mkdir -p                                                                                         %{buildroot}%{grimconf}
+mkdir -p                                                                                         %{buildroot}%{_docdir}
+cp -r .                                                                                          %{buildroot}%{grimroot}
+cp -r Documentation/Scripts/Config.d                                                             %{buildroot}%{grimconf}
+cp -r Documentation/Scripts/Client                                                               %{buildroot}%{grimconf}/Client
+chmod ugo+x                                                                                      %{buildroot}%{grimroot}/root/clients/cli.py
+ln -s %{grimroot}/root/clients/cli.py                         			        	 %{buildroot}%{_sbindir}/grimoire
+chmod ugo+x                                                                                      %{buildroot}%{grimroot}/Documentation/Scripts/grimoire.init.d
+cp Documentation/Scripts/grimoire.init.d                                                         %{buildroot}%{_sysconfdir}/init.d/grimoire
+cp -r Documentation                                                                              %{buildroot}%{_docdir}/Grimoire
+mkdir -p                                                                                         %{buildroot}%{webware}/Configs/Contexts
+echo "{'GrimWeb': '%{webware}/GrimWeb', 'default': '%{webware}/GrimWeb'}" >                      %{buildroot}%{webware}/Configs/Contexts/GrimWeb.config
+mkdir -p 											 %{buildroot}%{httpdconfdir}
+echo "Alias /GrimWeb-static %{grimroot}/root/clients/html/funformkit/webware/_grimwebcontext" >  %{buildroot}%{httpdconfdir}/grimweb.conf
+ln -s %{grimroot}/root/clients/html/funformkit/webware/_grimwebcontext         	        	 %{buildroot}%{webware}/GrimWeb
+mkdir -p                    									 %{buildroot}%{ldapschemadir}
+cp Documentation/Scripts/Ldap/Grimoire.schema 							 %{buildroot}%{ldapschemadir}/Grimoire.schema
+
+files () {
+ params=0
+ while (($# >> 0)); do
+  case $1 in
+   --uniq) uniq=y;;
+   --attrs) eval shi""ft; attrs="$1 ";;
+   --*) echo "Bad option $1"; return 1;;
+   *)
+    ((params++))
+    case $params in
+     1) fileset=$1;;
+     2) filedir=$1;;
+     *) echo "Bad parameter $1"; return 1;;
+    esac
+  esac
+  eval shi""ft
+ done
+ if [ "$params" != 2 ]; then echo "Not enought parameters"; return 1; fi
+
+ {
+  find "%{buildroot}$filedir" -type d |
+   sed -e "s+^%{buildroot}++g" -e "s+^+${attrs}%dir +g"
+  find "%{buildroot}$filedir" \! -type d |
+   sed -e "s+^%{buildroot}++g" -e "s+^+${attrs}+g"
+ } >> "$fileset.files"
+
+ if [ "$uniq" ]; then
+  mv "$fileset.files" "$fileset.files.old"
+  {
+   {
+    cat *.files | sort | uniq
+    cat "$fileset.files.old"
+   } | sort | uniq -d | uniq;
+   cat "$fileset.files.old"
+  } | sort | uniq -u > "$fileset.files.new"
+  mv "$fileset.files.new" "$fileset.files"
+ fi
+}
+
+
+files SSL %{grimroot}/root/trees/rpc/connect/ssl.py
+files SSL %{grimroot}/root/trees/rpc/connect/.arch-ids/ssl.py.id
+files SSL %{grimroot}/root/trees/rpc/listen/ssl.py
+files SSL %{grimroot}/root/trees/rpc/listen/.arch-ids/ssl.py.id
+
+files LDAP %{grimroot}/root/trees/local/ldap
+files LDAP --attrs %config %{grimconf}/Config.d/parameters/_settings/local/ldap.py
+
+files LDAP-Server --attrs %doc %{_docdir}/Grimoire/Scripts/Ldap
+files LDAP-Server %{ldapschemadir}/Grimoire.schema
+
+files PostgreSQL %{grimroot}/root/trees/local/sql
+files PostgreSQL --attrs %config %{grimconf}/Config.d/parameters/_settings/local/sql.py
+
+files Filesystem %{grimroot}/root/trees/local/filesystem
+files Filesystem --attrs %config %{grimconf}/Config.d/parameters/_settings/local/filesystem.py
+
+files CUPS %{grimroot}/root/trees/local/printers
+files CUPS --attrs %config %{grimconf}/Config.d/parameters/_settings/local/printers.py
+
+files Client %{grimroot}/root/trees/local/client
+files Client --attrs %config %{grimconf}/Client
+files Client --attrs %config %{grimconf}/Config.d/parameters/_settings/local/client.py
+
+files Webware %{grimroot}/root/clients/html/funformkit
+files Webware %{httpdconfdir}
+files Webware --attrs %config %{grimconf}/Config.d/parameters/_settings/clients/html.py
+files Webware %{webware}/GrimWeb
+files Webware %{webware}/Configs/Contexts/GrimWeb.config
+
+files Grimoire --uniq %{grimroot}
+files Grimoire --uniq %{_sbindir}/grimoire
+files Grimoire --uniq %{_sysconfdir}/init.d/grimoire
+files Grimoire --uniq --attrs %config %{grimconf}
+files Grimoire --uniq --attrs %doc %{_docdir}/Grimoire
+
+
+%post Webware
+/etc/init.d/httpd condrestart
+/etc/init.d/webkit condrestart
+
+
+%files -f Grimoire.files
+%defattr(-, root, root)
+
+%files SSL -f SSL.files
+%defattr(-, root, root)
+
+%files LDAP -f LDAP.files
+%defattr(-, root, root)
+
+%files LDAP-Server -f LDAP-Server.files
+%defattr(-, root, root)
+
+%files PostgreSQL -f PostgreSQL.files
+%defattr(-, root, root)
+
+%files Filesystem -f Filesystem.files
+%defattr(-, root, root)
+
+%files CUPS -f CUPS.files
+%defattr(-, root, root)
+
+%files Client -f Client.files
+%defattr(-, root, root)
+
+%files Webware -f Webware.files
+%defattr(-, root, root)
+
+
+%changelog
+* Tue Sep 1 2004 Egil Moeller <redhog@takeit.se>
+- Added sub-packages
+
+* Wed Jan 14 2004 Egil Moeller <redhog@takeit.se>
+- Fixed dependencies
+
+* Tue Jan 13 2004 Egil Moeller <redhog@takeit.se>
+- Initial version
