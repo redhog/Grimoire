@@ -16,31 +16,73 @@ class ComposeType(object):
     def compose(cls, obj, composer):
         return obj
 
-class Composer(object):
+class ComposeObjType(ComposeType): pass
+class ComposeTypeType(ComposeType): pass
+class ComposeWrapType(ComposeType): pass
 
-    translationTable = None
-    currentMethod = None
-    
+class ComposeWrapper(ComposeType):
+    def compose(cls, composer, obj):
+        return composer(cls.parentComposer(obj))
+
+class ComposeObjWrapper(ComposeWrapper, ComposeObjType): pass
+class ComposeTypeWrapper(ComposeWrapper, ComposeTypeType): pass
+
+class Composer(object):
+    __slots__ = ['typeMap', 'objMap']
+
     class __metaclass__(types.TypeType):
         def __new__(cls, name, bases, members):
-            composeMap = Grimoire.Utils.InstanceMap()
-            for base in bases:
-                if hasattr(base, 'composeMap'):
-                    composeMap.update(base.composeMap)
+            typeMap = Grimoire.Utils.SubTypeMap()
+            objMap = Grimoire.Utils.InstanceMap()
+            for base in Grimoire.Utils.Reverse(bases):
+                if hasattr(base, 'typeMap'):
+                    typeMap.update(base.typeMap)
+                if hasattr(base, 'objMap'):
+                    objMap.update(base.objMap)
             for member in members.itervalues():
-                if Grimoire.Utils.isSubclass(member, ComposeType) and member.type is not None:
-                    composeMap[member.type] = member
-            members['composeMap'] = composeMap
+                if Grimoire.Utils.isSubclass(member, ComposeTypeType) and member.type is not None:
+                    typeMap[member.type] = member
+                elif Grimoire.Utils.isSubclass(member, ComposeObjType) and member.type is not None:
+                    objMap[member.type] = member
+            members['typeMap'] = typeMap
+            members['objMap'] = objMap
             return types.TypeType.__new__(cls, name, bases, members)
 
+        def wrap(base):
+            members = {}
+            if hasattr(base, 'typeMap'):
+                for composer in base.typeMap.itervalues():
+                    class Wrapper(ComposeTypeWrapper):
+                        type = composer.type
+                        parentComposer = base
+                    Wrapper.__name__ = "wrapped_" + composer.__name__
+                    members[Wrapper.__name__] = Wrapper
+            if hasattr(base, 'objMap'):
+                for composer in base.objMap.itervalues():
+                    class Wrapper(ComposeObjWrapper):
+                        type = composer.type
+                        parentComposer = base
+                    Wrapper.__name__ = "wrapped_" + composer.__name__
+                    members[Wrapper.__name__] = Wrapper
+            return type(base).__new__(type(base), "wrapped_" + base.__name__, (Composer,), members)
+
         def composeMapGet(composer, obj):
-            return composer.composeMap[obj]
+            try:
+                return composer.typeMap[obj]
+            except KeyError:
+                return composer.objMap[obj]
         composeMapGet = Grimoire.Utils.cachingFunction(composeMapGet)
 
         def __call__(composer, obj):
             return composer.composeMapGet(obj)(composer, obj)
 
-    class ComposeString(ComposeType):
+class GenericComposer(Composer):
+    __slots__ = ['currentMethod', 'translationTable']
+
+    currentMethod = None
+    translationTable = None
+
+    class ComposeString(ComposeObjType):
         type = types.BaseStringType
 
         def compose(cls, composer, obj):
@@ -51,7 +93,7 @@ class Composer(object):
                     pass
             return obj
 
-    class ComposeException(ComposeType):
+    class ComposeException(ComposeObjType):
         type = Exception
 
         def compose(cls, composer, obj):
@@ -59,7 +101,7 @@ class Composer(object):
                 return composer(obj.args[0])
             return composer(obj.args)
 
-    class ComposeGrimoireReference(ComposeType):
+    class ComposeGrimoireReference(ComposeObjType):
         type = Representation.GrimoireReference
 
         def compose(cls, composer, obj):
@@ -70,8 +112,8 @@ class Composer(object):
                 base = base[:-obj['levels']]
             return composer(Representation.GrimoirePath(base + obj['path']))
 
-class TextComposer(Composer):
-    class ComposePythonObject(ComposeType):
+class TextComposer(GenericComposer):
+    class ComposePythonObject(ComposeObjType):
         type = Grimoire.Utils.AnyDescendant
         def compose(cls, composer, obj):
             try:
@@ -91,12 +133,12 @@ class TextComposer(Composer):
                 pass
             return str(obj)
 
-    class ComposeObject(ComposeType):
+    class ComposeObject(ComposeObjType):
         type = Composable.Composable
         def compose(cls, composer, obj):
             return '<' + composer(type(obj)) + ' at ' + str(id(obj)) + '>'
 
-    class ComposeGenericMapping(ComposeType):
+    class ComposeGenericMapping(ComposeObjType):
         type = None
 
         format = ''
@@ -117,7 +159,7 @@ class TextComposer(Composer):
         type = Composable.Formattable
         def getFormat(self, composer, obj): return obj.format
 
-    class ComposeSequence(ComposeType):
+    class ComposeSequence(ComposeObjType):
         type = None
 
         prefix = suffix = delimiter = ''
@@ -221,7 +263,7 @@ class TextComposer(Composer):
             format += '/'
             return format
         
-    class ComposeURIParameters(ComposeType):
+    class ComposeURIParameters(ComposeObjType):
         type = Path.URIParameters
 
         def compose(cls, composer, obj):
@@ -254,7 +296,7 @@ License: %(licenseURL)s
             res['copychanges'] = Composable.Lines(res['copyright'], *res['changes'])
             return res
 
-    class ComposeParamsType(ComposeType):
+    class ComposeParamsType(ComposeObjType):
         type = Introspection.ParamsType
         def compose(cls, composer, obj):
             lines = []

@@ -1,4 +1,4 @@
-import Grimoire.Performer, Grimoire.Utils, Grimoire.Utils.Gettext, Grimoire.Types, os, os.path, imp, string, sys, traceback
+import Grimoire.Performer, Grimoire.Utils, Grimoire.Utils.Gettext, Grimoire.Types, os, os.path, imp, string, sys, types, traceback
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive

@@ -86,6 +86,13 @@ class Paragraphs(EnumerateSequence):
 class AnnotatedValue(Mapping):
     def __init__(self, value, comment):
         Mapping.__init__(self, value=value, comment=comment)
+    # FIXME: Why do we let AnnotatedValues be similar to the value
+    # within them anyway?? When is it needed?
+    def __isSubclassOf__(self, o): return False
+    def __isSubclass__(self, o): return False
+    def __instanceOf__(self): return type(self)
+    def __isInstanceOf__(self, t): isinstance(self, t)
+    def __isInstance__(self, o): isinstance(t, self)
     def __getattr__(self, name):
         return getattr(self['value'], name)
 

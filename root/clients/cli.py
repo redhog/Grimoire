@@ -52,36 +52,37 @@ else:
 
                 try:
                     for expr in self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(['clients', 'cli', 'initcommands'], [], False):
-                        try:
-                            stderr.write(unicode(sess.eval(expr)) + '\n')
-                        except ExitCli, e:
-                            raise e
-                        except Exception, e:
-                            traceback.print_exc()
+                        result = sess.eval(expr)
+                        if not result.error:
+                            stderr.write(unicode(result.result) + '\n')
+                        elif result.error == ExitCli:
+                            raise ExitCli
+                        else:
+                            stderr.write(unicode(result.error) + '\n')
                             res = 1
 
                     if exprs and exprs != ['']:
                         for expr in exprs:
-                            try:
-                                stdout.write(unicode(sess.eval(expr)) + '\n')
-                            except ExitCli, e:
-                                raise e
-                            except Exception, e:
-                                traceback.print_exc()
-                                res = 1
+                            result = sess.eval(expr)
+                            if not result.error:
+                                stderr.write(unicode(result.result) + '\n')
+                            elif result.error == ExitCli:
+                                raise ExitCli
+                            else:
+                                stderr.write(unicode(result.error) + '\n')
                     else:
                         while 1:
                             stdout.write(Grimoire.Utils.encode('> '))
                             cmd = stdin.readline()[:-1]
                             if not cmd:
-                                raise ExitCli()
-                            try:
-                                stdout.write(unicode(sess.eval(cmd)) + '\n')
-                            except ExitCli, e:
-                                raise e
-                            except Exception, e:
-                                traceback.print_exc()
-                                res = 1
+                                raise ExitCli
+                            result = sess.eval(cmd)
+                            if not result.error:
+                                stderr.write(unicode(result.result) + '\n')
+                            elif result.error == ExitCli:
+                                raise ExitCli
+                            else:
+                                stderr.write(unicode(result.error) + '\n')
                 except ExitCli:
                     stderr.write('You have been logged out. Good bye!\n')
                     pass

@@ -11,10 +11,11 @@
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
   <property name="window_position">GTK_WIN_POS_NONE</property>
   <property name="modal">False</property>
-  <property name="default_width">400</property>
-  <property name="default_height">300</property>
+  <property name="default_width">600</property>
+  <property name="default_height">501</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="icon">Orm.small.png</property>
   <property name="decorated">True</property>
   <property name="skip_taskbar_hint">False</property>
   <property name="skip_pager_hint">False</property>
@@ -93,7 +94,7 @@
 			  <signal name="activate" handler="on_goToMethod_activate" last_modification_time="Mon, 30 Jan 2006 14:16:43 GMT"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image19">
+			    <widget class="GtkImage" id="image23">
 			      <property name="visible">True</property>
 			      <property name="stock">gtk-execute</property>
 			      <property name="icon_size">1</property>
@@ -114,7 +115,7 @@
 			  <signal name="activate" handler="on_forward_activate" last_modification_time="Mon, 30 Jan 2006 07:30:36 GMT"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image20">
+			    <widget class="GtkImage" id="image24">
 			      <property name="visible">True</property>
 			      <property name="stock">gtk-media-forward</property>
 			      <property name="icon_size">1</property>
@@ -135,7 +136,7 @@
 			  <signal name="activate" handler="on_back_activate" last_modification_time="Mon, 30 Jan 2006 07:30:36 GMT"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image21">
+			    <widget class="GtkImage" id="image25">
 			      <property name="visible">True</property>
 			      <property name="stock">gtk-go-back</property>
 			      <property name="icon_size">1</property>
@@ -165,7 +166,7 @@
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">_Methods</property>
 			  <property name="use_underline">True</property>
-			  <property name="active">False</property>
+			  <property name="active">True</property>
 			  <signal name="activate" handler="on_viewAs_activate" last_modification_time="Mon, 30 Jan 2006 14:30:34 GMT"/>
 			</widget>
 		      </child>
@@ -175,7 +176,7 @@
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">_Objects</property>
 			  <property name="use_underline">True</property>
-			  <property name="active">True</property>
+			  <property name="active">False</property>
 			  <property name="group">viewAsMethods</property>
 			  <signal name="activate" handler="on_viewAs_activate" last_modification_time="Mon, 30 Jan 2006 14:30:34 GMT"/>
 			</widget>
@@ -273,7 +274,7 @@
 		<widget class="GtkToolButton" id="forwardButton">
 		  <property name="visible">True</property>
 		  <property name="tooltip" translatable="yes">New File</property>
-		  <property name="stock_id">gtk-media-forward</property>
+		  <property name="stock_id">gtk-go-forward</property>
 		  <property name="visible_horizontal">True</property>
 		  <property name="visible_vertical">True</property>
 		  <property name="is_important">False</property>
@@ -505,13 +506,13 @@
 	      <child>
 		<widget class="GtkViewport" id="viewport2">
 		  <property name="visible">True</property>
-		  <property name="shadow_type">GTK_SHADOW_NONE</property>
+		  <property name="shadow_type">GTK_SHADOW_IN</property>
 
 		  <child>
-		    <widget class="GtkAlignment" id="alignment3">
+		    <widget class="GtkAlignment" id="methodInteraction">
 		      <property name="visible">True</property>
-		      <property name="xalign">0.5</property>
-		      <property name="yalign">0.5</property>
+		      <property name="xalign">0</property>
+		      <property name="yalign">0</property>
 		      <property name="xscale">1</property>
 		      <property name="yscale">1</property>
 		      <property name="top_padding">10</property>
@@ -520,178 +521,22 @@
 		      <property name="right_padding">10</property>
 
 		      <child>
-			<widget class="GtkVBox" id="methodInteraction">
+			<widget class="GtkLabel" id="label14">
 			  <property name="visible">True</property>
-			  <property name="homogeneous">False</property>
-			  <property name="spacing">10</property>
-
-			  <child>
-			    <widget class="GtkLabel" id="methodTitle">
-			      <property name="label" translatable="yes">Method title</property>
-			      <property name="use_underline">False</property>
-			      <property name="use_markup">True</property>
-			      <property name="justify">GTK_JUSTIFY_LEFT</property>
-			      <property name="wrap">True</property>
-			      <property name="selectable">False</property>
-			      <property name="xalign">0</property>
-			      <property name="yalign">0.5</property>
-			      <property name="xpad">0</property>
-			      <property name="ypad">0</property>
-			      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
-			      <property name="width_chars">-1</property>
-			      <property name="single_line_mode">False</property>
-			      <property name="angle">0</property>
-			    </widget>
-			    <packing>
-			      <property name="padding">0</property>
-			      <property name="expand">False</property>
-			      <property name="fill">False</property>
-			    </packing>
-			  </child>
-
-			  <child>
-			    <widget class="GtkLabel" id="methodErrors">
-			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">&lt;span foreground=&quot;#ff0000&quot;&gt;Method errors&lt;/span&gt;</property>
-			      <property name="use_underline">False</property>
-			      <property name="use_markup">True</property>
-			      <property name="justify">GTK_JUSTIFY_LEFT</property>
-			      <property name="wrap">True</property>
-			      <property name="selectable">True</property>
-			      <property name="xalign">0</property>
-			      <property name="yalign">0</property>
-			      <property name="xpad">0</property>
-			      <property name="ypad">0</property>
-			      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
-			      <property name="width_chars">-1</property>
-			      <property name="single_line_mode">False</property>
-			      <property name="angle">0</property>
-			    </widget>
-			    <packing>
-			      <property name="padding">0</property>
-			      <property name="expand">False</property>
-			      <property name="fill">False</property>
-			    </packing>
-			  </child>
-
-			  <child>
-			    <widget class="GtkLabel" id="methodOutput">
-			      <property name="can_focus">True</property>
-			      <property name="label" translatable="yes">Method output</property>
-			      <property name="use_underline">False</property>
-			      <property name="use_markup">True</property>
-			      <property name="justify">GTK_JUSTIFY_LEFT</property>
-			      <property name="wrap">True</property>
-			      <property name="selectable">True</property>
-			      <property name="xalign">0</property>
-			      <property name="yalign">0</property>
-			      <property name="xpad">0</property>
-			      <property name="ypad">0</property>
-			      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
-			      <property name="width_chars">-1</property>
-			      <property name="single_line_mode">False</property>
-			      <property name="angle">0</property>
-			    </widget>
-			    <packing>
-			      <property name="padding">0</property>
-			      <property name="expand">False</property>
-			      <property name="fill">False</property>
-			    </packing>
-			  </child>
-
-			  <child>
-			    <widget class="GtkTable" id="methodParameters">
-			      <property name="n_rows">1</property>
-			      <property name="n_columns">2</property>
-			      <property name="homogeneous">False</property>
-			      <property name="row_spacing">10</property>
-			      <property name="column_spacing">10</property>
-
-			      <child>
-				<widget class="GtkLabel" id="label14">
-				  <property name="visible">True</property>
-				  <property name="label" translatable="yes">Label:</property>
-				  <property name="use_underline">False</property>
-				  <property name="use_markup">False</property>
-				  <property name="justify">GTK_JUSTIFY_LEFT</property>
-				  <property name="wrap">False</property>
-				  <property name="selectable">False</property>
-				  <property name="xalign">0</property>
-				  <property name="yalign">0</property>
-				  <property name="xpad">0</property>
-				  <property name="ypad">0</property>
-				  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
-				  <property name="width_chars">-1</property>
-				  <property name="single_line_mode">False</property>
-				  <property name="angle">0</property>
-				</widget>
-				<packing>
-				  <property name="left_attach">0</property>
-				  <property name="right_attach">1</property>
-				  <property name="top_attach">0</property>
-				  <property name="bottom_attach">1</property>
-				  <property name="x_options">fill</property>
-				  <property name="y_options">fill</property>
-				</packing>
-			      </child>
-
-			      <child>
-				<widget class="GtkEntry" id="entry1">
-				  <property name="visible">True</property>
-				  <property name="can_focus">True</property>
-				  <property name="editable">True</property>
-				  <property name="visibility">True</property>
-				  <property name="max_length">0</property>
-				  <property name="text" translatable="yes"></property>
-				  <property name="has_frame">True</property>
-				  <property name="invisible_char">*</property>
-				  <property name="activates_default">False</property>
-				</widget>
-				<packing>
-				  <property name="left_attach">1</property>
-				  <property name="right_attach">2</property>
-				  <property name="top_attach">0</property>
-				  <property name="bottom_attach">1</property>
-				  <property name="y_options"></property>
-				</packing>
-			      </child>
-			    </widget>
-			    <packing>
-			      <property name="padding">0</property>
-			      <property name="expand">True</property>
-			      <property name="fill">True</property>
-			    </packing>
-			  </child>
-
-			  <child>
-			    <widget class="GtkAlignment" id="methodApplication">
-			      <property name="xalign">1</property>
-			      <property name="yalign">1</property>
-			      <property name="xscale">0</property>
-			      <property name="yscale">0</property>
-			      <property name="top_padding">0</property>
-			      <property name="bottom_padding">0</property>
-			      <property name="left_padding">0</property>
-			      <property name="right_padding">0</property>
-
-			      <child>
-				<widget class="GtkButton" id="applyButton">
-				  <property name="visible">True</property>
-				  <property name="can_focus">True</property>
-				  <property name="label">gtk-apply</property>
-				  <property name="use_stock">True</property>
-				  <property name="relief">GTK_RELIEF_NORMAL</property>
-				  <property name="focus_on_click">True</property>
-				  <signal name="clicked" handler="on_applyButton_clicked" last_modification_time="Mon, 30 Jan 2006 14:10:08 GMT"/>
-				</widget>
-			      </child>
-			    </widget>
-			    <packing>
-			      <property name="padding">0</property>
-			      <property name="expand">True</property>
-			      <property name="fill">True</property>
-			    </packing>
-			  </child>
+			  <property name="label" translatable="yes">label14</property>
+			  <property name="use_underline">False</property>
+			  <property name="use_markup">False</property>
+			  <property name="justify">GTK_JUSTIFY_LEFT</property>
+			  <property name="wrap">False</property>
+			  <property name="selectable">False</property>
+			  <property name="xalign">0.5</property>
+			  <property name="yalign">0.5</property>
+			  <property name="xpad">0</property>
+			  <property name="ypad">0</property>
+			  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+			  <property name="width_chars">-1</property>
+			  <property name="single_line_mode">False</property>
+			  <property name="angle">0</property>
 			</widget>
 		      </child>
 		    </widget>
@@ -730,12 +575,32 @@
 
 <widget class="GtkAboutDialog" id="aboutDialog">
   <property name="destroy_with_parent">False</property>
-  <property name="name" translatable="yes">Grimoire</property>
+  <property name="name" translatable="yes">Gnomoire</property>
   <property name="copyright" translatable="yes">Ab TakeIIT
 Egil Möller
 Martin Björnsson</property>
   <property name="comments" translatable="yes">Grimoire is a Python action tree implementation</property>
-  <property name="license" translatable="yes">GPL</property>
+  <property name="license" translatable="yes">This program is free software; you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place, Suite 330, Boston, MA 02111-1307 USA
+
+In addition, as a special exception, AB TakeIT gives permission
+to link the code of this program with the OpenSSL and the SSLeay libraries (or
+with modified versions of them that uses the same license), and distribute linked
+combinations including the these. You must obey the GNU General Public
+License in all respects for all of the code used other than OpenSSL/SSLeay. If
+you modify Grimoire, you may extend this exception to your version, but you are
+not obligated to do so. If you do not wish to do so, delete this exception
+statement from your version.</property>
   <property name="website">http://home.gna.org/grimoire</property>
   <property name="website_label" translatable="yes">Homepage</property>
   <property name="authors">Egil Möller
@@ -745,6 +610,7 @@ Martin Björnsson</property>
   <property name="artists">Egil Möller</property>
   <property name="translator_credits" translatable="yes" comments="TRANSLATORS: Replace this string with your names, one name per line.">Egil Möller
 Martin Björnsson</property>
+  <property name="logo">Orm.small.png</property>
 </widget>
 
 <widget class="GtkDialog" id="goToMethodDialog">

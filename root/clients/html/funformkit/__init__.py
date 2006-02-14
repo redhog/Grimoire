@@ -232,6 +232,7 @@ class Performer(Grimoire.Performer.Base):
                     raise NotImplemented
 
                 def handleCall(self, method, data):
+                    # FIXME: Implemented in the base-client, remove from here
                     fn = self.getFn(method)
                     args = Grimoire.Types.getValue(
                         self._params[method]).compileArgs([], [], data, 0, 1, 1)

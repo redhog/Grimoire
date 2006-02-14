@@ -1,4 +1,4 @@
-import Grimoire, Grimoire.Performer, Grimoire.Types, Grimoire.Types.Ability, Grimoire.Utils, Grimoire.About, types, string
+import Grimoire, Grimoire.Performer, Grimoire.Types, Grimoire.Types.Ability, Grimoire.Utils, Grimoire.About, types, string, sys, traceback
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -7,6 +7,7 @@ Ps = Grimoire.Types.ParamsType.derive
 debugDirCache = 0
 debugTree = 0
 debugTranslations = 0
+debugMethods = 1
 
 class Performer(Grimoire.Performer.Base):
     class base(Grimoire.Performer.Method):
@@ -30,6 +31,14 @@ class Performer(Grimoire.Performer.Base):
                     def validate(self):
                         self.oldSubNodes = Grimoire.Utils.OrderedMapping()
                         self.updated = 1
+
+                class Result(object):
+                    __slots__ = ['method', 'result', 'error']
+                    def __init__(self, method = None, result = None, error = None):
+                        self.method = method
+                        self.result = result
+                        self.error = error
+
                 def __new__(cls, tree = None, extraTrees = [], *arg, **kw):
                     """The session might be initialized with a Gimoire tree, or
                     with a Grimoire expression. In the case of an expression, the
@@ -232,8 +241,6 @@ class Performer(Grimoire.Performer.Base):
                     return path
 
                 def getMethodPath(self, path = None):
-                    if path is None and self.selection:
-                        path = self.selection.method
                     return path or ()
 
                 def getTranslationTable(self, path = None, language = None):
@@ -266,16 +273,112 @@ class Performer(Grimoire.Performer.Base):
                                 "login returned a set of methods"))
                     return result
 
+                def handleExecution(self, method, execJob):
+                    result = self.Result()
+                    try:
+                        result.result = execJob()
+                    except:
+                        result.error = sys.exc_info()[1]
+                        if debugMethods:
+                            traceback.print_exc()
+                    if result.error is None:
+                        result.result = self.handleResult(method, result.result)
+                    return result
+
+                def handleCall(self, method, args):
+                    fn = self.__._getpath(path=list(method))
+                    return self.handleExecution(method,
+                                                lambda: fn(*(args.args + args.extraArgs),
+                                                           **args.kws))
+                
                 def eval(self, expression):
-                    return self.handleResult(
+                    # FIXME: Call this handleEval...
+                    return self.handleExecution(
                         self._.introspection.methodOfExpression(expression),
-                        self._.introspection.eval(expression))
+                        lambda: self._.introspection.eval(expression))
                 
             return Session
         _call = Grimoire.Utils.cachingFunction(_call)
         def _params(self):
             return A(Ps(),
-                     'This method returns a class nearly implementing a Grimoire client application. Except the last bit - the UI. It provides such services as caching of the directory tree listing, translation of tree entries, expansion/callaping of subtrees for clients that themselves implement the tree rendering and handling of default trees. To implement a real client, you might need both to subclass and to wrap this class. In subclassing it, you may subclass the class used to create directory cache tree nodes by assigning the class variable DirCacheNode with the new subclass to use')
+                     'The Session class nearly implements a Grimoire client application. Except the last bit - the UI. It provides such services as caching of the directory tree listing, translation of tree entries, expansion/callaping of subtrees for clients that themselves implement the tree rendering and handling of default trees. To implement a real client, you might need both to subclass and to wrap this class. In subclassing it, you may subclass the class used to create directory cache tree nodes by assigning the class variable DirCacheNode with the new subclass to use')
+
+    class form(Grimoire.Performer.Method):
+        def _call(performer):
+            Session = performer._getpath(Grimoire.Types.MethodBase).base()
+            class FormSession(Session):
+                class Selection(object):
+                    __slots__ = ['method', 'params', 'result']
+                    def __init__(self):
+                        self.method = None
+                        self.params = None
+                        self.result = None
+ 
+                def __init__(self, *arg, **kw):
+                    self.selection = self.Selection()
+                    super(FormSession, self).__init__(*arg, **kw)
+
+                def getMethodPath(self, path = None):
+                    if path is None and self.selection:
+                        path = self.selection.method
+                    return path or ()
+
+                def select(self, method):
+                    self.selection.__init__()
+                    self.selection.method = method
+                    self.selection.params = self.__._getpath(
+                        path=['introspection', 'params'] + list(method))()                    
+                    if (    not self.selection.params.arglist
+                        and not self.selection.params.resargstype
+                        and not self.selection.params.reskwtype):
+                        self.handleCall(self.selection.method,
+                                        Grimoire.Types.getValue(self.selection.params)())
+
+                def handleExecution(self, *arg, **kw):
+                    self.selection.result = super(FormSession, self).handleExecution(*arg, **kw)
+                    return self.selection.result
+
+                def handleCall(self, method = None, args = []):
+                    if method is None:
+                        method = self.selection.method
+                    return super(FormSession, self).handleCall(method, args)
+                    
+                def drawSelection(self, selection):
+                    pass
+                                  
+                def renderSelection(self):
+                    result = Grimoire.Types.Paragraphs()
+                    if self.selection.result and not self.selection.result.error:
+                        result.append(self.selection.result.result)
+                    else:
+                        if self.selection.result and self.selection.result.error:
+                            result.append(self.selection.result.error)
+                        if self.selection.params:
+                            result.append(self.selection.params)
+                    self.drawSelection(
+                        self.composer(result))
+                
+                def gotoLocation(self, location):
+                    try:
+                        method = self._.introspection.methodOfExpression(location, True)
+                    except Exception: # We've got a complex expression...
+                        method = None
+
+                    if method:
+                        self.select(method)
+                    else:
+                        self.eval(location)
+                    return self.renderSelection()
+                
+                def applyForm(self, args):
+                    self.handleCall(self.selection.method, args)
+                    self.renderSelection()
+
+            return FormSession
+        _call = Grimoire.Utils.cachingFunction(_call)
+        def _params(self):
+            return A(Ps(),
+                     'Session sub-class that adds form-based client helper methods.')
 
     class renderable(Grimoire.Performer.Method):
         def _call(performer):
@@ -355,5 +458,5 @@ class Performer(Grimoire.Performer.Base):
         _call = Grimoire.Utils.cachingFunction(_call)
         def _params(self):
             return A(Ps(),
-                     'The client class returned by this method is a subclass of the one returned by client.base, with an added notion of expanded and unexpanded branches, suitable for rendering a user-expandable/collapsable tree')
+                     'Session sub-class that adds the notion of expanded and unexpanded branches, suitable for rendering a user-expandable/collapsable tree')
 

@@ -18,6 +18,7 @@ def modnamejoin(name1, name2):
 
 def loadModule(name, raiseexception=True):
     components = string.split(name, '.')
+    mod = None
     for prefix in Iter.Prefixes(components):
         name = string.join(prefix, '.')
         try:
@@ -25,6 +26,8 @@ def loadModule(name, raiseexception=True):
             break
         except [Exception, None][raiseexception]:
             pass
+    if mod is None:
+        raise NameError("Module does not exist:", name)
     for comp in components[1:]:
         if not hasattr(mod, comp):
             setattr(mod, comp, types.ModuleType(mod.__name__ + '.' + comp))

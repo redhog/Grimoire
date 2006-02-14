@@ -11,8 +11,11 @@ debugTree = 0
 class Performer(Grimoire.Performer.Base):
     class html(Grimoire.Performer.Method):
         def _call(performer):
-            RenderableSession = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase).renderable())
-            class Session(RenderableSession):
+            RenderableSession = performer._callWithUnlockedTree(
+                lambda: performer._getpath(Grimoire.Types.MethodBase).renderable())
+            FormSession = performer._callWithUnlockedTree(
+                lambda: performer._getpath(Grimoire.Types.MethodBase).form())
+            class Session(RenderableSession, FormSession):
                 def __init__(self, *arg, **kw):
                     RenderableSession.__init__(self, *arg, **kw)
                     params = Grimoire._.directory.get.parameters
