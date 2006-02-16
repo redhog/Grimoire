@@ -1,11 +1,12 @@
 divert(-1)
 
-For each role, we define four functions, ROLE_functions which expands
-to any shell function definitions used by the other parts,
-ROLE_shutdown which expands to shell commands to shut down any
-services prior to configuring them, ROLE_configure that actually sets
-up the system, and ROLE_restart that restarts any services with the
-new configuration.
+For each role, we define five functions, ROLE_functions which expands
+to any shell function definitions used by the other parts, ROLE_test
+which expands to shell commands that tests that installation for the
+role can actually be done on the machine, ROLE_shutdown which expands
+to shell commands to shut down any services prior to configuring them,
+ROLE_configure that actually sets up the system, and ROLE_restart that
+restarts any services with the new configuration.
 
 
 ####### The OpenLDAP Server #######
@@ -20,6 +21,19 @@ wait_for_ldap_server_to_come_up () {
  echo "connectable."
 }
 
+</m4quote>)
+
+
+define(<m4quote>ldap_test</m4quote>, <m4quote>dnl
+if [ -e  "skeleton(ldap_dbdir)/skeleton(ldap_realm_dnsname)" ]; then
+ cat <<EOF
+
+A database with the LDAP realm skeleton(ldap_realm) already exists.
+Please remove it
+(rm -rf skeleton(ldap_dbdir)/skeleton(ldap_realm_dnsname)).
+EOF
+ exit 1
+fi
 </m4quote>)
 
 define(<m4quote>ldap_shutdown</m4quote>, <m4quote>dnl
@@ -65,6 +79,7 @@ wait_for_ldap_server_to_come_up
 ####### The Grimoire LDAP tree server #######
 
 define(<m4quote>grimoire_ldap_functions</m4quote>, <m4quote></m4quote>)
+define(<m4quote>grimoire_ldap_test</m4quote>, <m4quote></m4quote>)
 define(<m4quote>grimoire_ldap_shutdown</m4quote>, <m4quote></m4quote>)
 define(<m4quote>grimoire_ldap_configure</m4quote>, <m4quote></m4quote>)
 define(<m4quote>grimoire_ldap_restart</m4quote>, <m4quote></m4quote>)
@@ -73,6 +88,7 @@ define(<m4quote>grimoire_ldap_restart</m4quote>, <m4quote></m4quote>)
 ####### Generic functions for any filesystem tree role (home directory, mail etc) #######
 
 define(<m4quote>grimoire_filesystem_functions</m4quote>, <m4quote></m4quote>)
+define(<m4quote>grimoire_filesystem_test</m4quote>, <m4quote></m4quote>)
 define(<m4quote>grimoire_filesystem_shutdown</m4quote>, <m4quote>define(<m4quote>grimoire_filesystem_shutdown</m4quote>, <m4quote></m4quote>)dnl
 # Stop the Grimoire server
 skeleton(grimoire_stop)
@@ -111,6 +127,7 @@ create_homedir_user () {
 
 </m4quote>)
 
+define(<m4quote>grimoire_home_test</m4quote>, <m4quote>grimoire_filesystem_test</m4quote>)
 define(<m4quote>grimoire_home_shutdown</m4quote>, <m4quote>grimoire_filesystem_shutdown</m4quote>)
 define(<m4quote>grimoire_home_configure</m4quote>, <m4quote>grimoire_filesystem_configure
 mkdir -p /etc/skel
@@ -140,6 +157,7 @@ create_homedir_group () {
 }
 
 </m4quote>)
+define(<m4quote>grimoire_group_home_test</m4quote>, <m4quote>grimoire_filesystem_test</m4quote>)
 define(<m4quote>grimoire_group_home_shutdown</m4quote>, <m4quote>grimoire_filesystem_shutdown</m4quote>)
 define(<m4quote>grimoire_group_home_configure</m4quote>, <m4quote>grimoire_filesystem_configure
 mkdir -p /etc/skel
@@ -171,6 +189,7 @@ create_maildir_user () {
 
 </m4quote>)
 
+define(<m4quote>grimoire_mail_test</m4quote>, <m4quote>grimoire_filesystem_test</m4quote>)
 define(<m4quote>grimoire_mail_shutdown</m4quote>, <m4quote>grimoire_filesystem_shutdown</m4quote>)
 define(<m4quote>grimoire_mail_configure</m4quote>, <m4quote>grimoire_filesystem_configure
 mkdir -p /etc/skel
@@ -188,6 +207,7 @@ define(<m4quote>grimoire_mail_restart</m4quote>, <m4quote>grimoire_filesystem_re
 ####### Webware front-end server #######
 
 define(<m4quote>grimoire_grimweb_functions</m4quote>, <m4quote></m4quote>)
+define(<m4quote>grimoire_grimweb_test</m4quote>, <m4quote></m4quote>)
 define(<m4quote>grimoire_grimweb_shutdown</m4quote>, <m4quote></m4quote>)
 define(<m4quote>grimoire_grimweb_configure</m4quote>, <m4quote></m4quote>)
 define(<m4quote>grimoire_grimweb_restart</m4quote>, <m4quote>
@@ -202,6 +222,7 @@ skeleton(webkit_restart)
 ####### CUPS printer server #######
 
 define(<m4quote>grimoire_printers_functions</m4quote>, <m4quote></m4quote>)
+define(<m4quote>grimoire_printers_test</m4quote>, <m4quote></m4quote>)
 define(<m4quote>grimoire_printers_shutdown</m4quote>, <m4quote></m4quote>)
 define(<m4quote>grimoire_printers_configure</m4quote>, <m4quote></m4quote>)
 define(<m4quote>grimoire_printers_restart</m4quote>, <m4quote></m4quote>)
@@ -223,6 +244,9 @@ umask u=rwx,g=rx,o=rx
 
 #### Functions used in the commands below ####
 patsubst(skeleton(skeleton(server_varname)_roles), <m4quote>\([^ ]+\) *</m4quote>, <m4quote>\1_functions<m4quote></m4quote></m4quote>)dnl
+
+#### Test that we can actually perform any installation on this machine ####
+patsubst(skeleton(skeleton(server_varname)_roles), <m4quote>\([^ ]+\) *</m4quote>, <m4quote>\1_test<m4quote></m4quote></m4quote>)dnl
 
 #### Shut down any servers ####
 patsubst(skeleton(skeleton(server_varname)_roles), <m4quote>\([^ ]+\) *</m4quote>, <m4quote>\1_shutdown<m4quote></m4quote></m4quote>)dnl

@@ -7,7 +7,8 @@ Ps = Grimoire.Types.ParamsType.derive
 debugDirCache = 0
 debugTree = 0
 debugTranslations = 0
-debugMethods = 1
+debugMethods = 0
+debugUpdates = 0
 
 class Performer(Grimoire.Performer.Base):
     class base(Grimoire.Performer.Method):
@@ -15,6 +16,7 @@ class Performer(Grimoire.Performer.Base):
             class Session(object):
 
                 composer = Grimoire.Types.TextComposer
+                sessionPath = ['parameters', 'clients']
 
                 class DirCacheNode:
                     def __init__(self, subNodes=None, leaf = 0, translation = None):
@@ -39,7 +41,7 @@ class Performer(Grimoire.Performer.Base):
                         self.result = result
                         self.error = error
 
-                def __new__(cls, tree = None, extraTrees = [], *arg, **kw):
+                def __new__(cls, tree = None, extraTrees = [], initCommands = None, *arg, **kw):
                     """The session might be initialized with a Gimoire tree, or
                     with a Grimoire expression. In the case of an expression, the
                     method Grimoire._.introspection.eval is used to evaluate
@@ -70,7 +72,10 @@ class Performer(Grimoire.Performer.Base):
                     self.defaultLanguage = 'en'
 
                     comment = None
-                    tree = tree or self._.directory.get.parameters(['clients', 'base', 'tree'], '_', False)
+                    tree = tree or self.__._getpath(
+                        Grimoire.Types.TreeRoot,
+                        path = ['directory', 'get'] + self.sessionPath
+                        )(['tree'], '_', False)
                     if not Grimoire.Utils.isInstance(tree, Grimoire.Performer.Performer):
                         result = self._.introspection.eval(tree)
                         tree = Grimoire.Types.getValue(result)
@@ -81,13 +86,24 @@ class Performer(Grimoire.Performer.Base):
                     if tree is not self.__: # Allow _ as tree expression without causing an endless loop.
                         self.insert([], tree, root = 1)
 
-                    exprs = Grimoire._.directory.get.parameters(['clients', 'base', 'initcommands'], [], False)
-                    for expr in exprs:
-                        try:
-                            self.eval(expr)
-                        except Exception, e:
-                            pass
+                    initCommands = self.__._getpath(
+                        Grimoire.Types.TreeRoot,
+                        path = ['directory', 'get'] + self.sessionPath
+                        )(['initcommands'], all=True) + [initCommands]
 
+                    initCommandsResults = []
+                    for initCommand in Grimoire.Utils.Flatten(initCommands):
+                        try:
+                            initCommandsResults.append(self.eval(initCommand))
+                        except Exception, e:
+                            initCommandsResults.append(e)
+
+                    if initCommandsResults:
+                        initCommandsResults = Grimoire.Types.Paragraphs(*initCommandsResults)
+                        if comment is not None:
+                            initCommandsResults.insert(0, comment)
+                        comment = initCommandsResults
+                        
                     self.__init__(*arg, **kw)
 
                     if comment is not None:
@@ -136,6 +152,7 @@ class Performer(Grimoire.Performer.Base):
                     is not true, nodes with updated == 1 will not be updated
                     again.
                     """
+                    if debugUpdates: print "Update:", prefixPath, depth
                     subDepth = depth
                     if subDepth == -1:
                         subDepth = Grimoire.Performer.UnlimitedDepth
@@ -311,9 +328,13 @@ class Performer(Grimoire.Performer.Base):
                         self.params = None
                         self.result = None
  
-                def __init__(self, *arg, **kw):
-                    self.selection = self.Selection()
-                    super(FormSession, self).__init__(*arg, **kw)
+                def __new__(cls, *arg, **kw):
+                    sess = super(FormSession, cls).__new__(cls, *arg, **kw)
+                    self = Grimoire.Types.getValue(sess)
+                    self.selection = cls.Selection()
+                    self.selection.result = cls.Result()
+                    self.selection.result.result = Grimoire.Types.getComment(sess)
+                    return self
 
                 def getMethodPath(self, path = None):
                     if path is None and self.selection:

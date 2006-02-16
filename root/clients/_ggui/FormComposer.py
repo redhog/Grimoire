@@ -159,7 +159,7 @@ class BooleanTypeWidget(gtk.CheckButton):
         return self.get_active()
 
 class LoseNewPasswordTypeWidget(gtk.Table):
-    def __init__(self, composer):
+    def __init__(self, composer, obj):
         super(LoseNewPasswordTypeWidget, self).__init__(2, 2, True)
         self.attach(composer('Once'), 0, 1, 0, 1)
         self.attach(composer('Again'), 0, 1, 1, 2)

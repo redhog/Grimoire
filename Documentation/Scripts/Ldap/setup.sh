@@ -303,18 +303,9 @@ echo "done."
 
 
 #### Set up the system
-cd "$ldapgenfiles"
+if [ -d "$genfiles/$(hostname)" ]; then
+ cd "$genfiles/$(hostname)"
 
-## Quit question and warnings
-if [ -e  "$skeleton_ldap_dbdir/$skeleton_ldap_realm_dnsname" ]; then
- cat <<EOF
-
-A database with the LDAP realm $skeleton_ldap_realm already exists.
-Please remove it
-(rm -rf $skeleton_ldap_dbdir/$skeleton_ldap_realm_dnsname).
-EOF
- proceed=n
-else
  cat <<EOF
 
 You can now either let this script set up the system using the
@@ -336,6 +327,8 @@ EOF
   done
 
  readWithDefault proceed "Do you want to proceed with configuring the system (y/n)?" y
+else
+ proceed=n
 fi
 
 if [ "$proceed" == "n" ]; then
@@ -351,9 +344,9 @@ else
  ./setup.sh
  cat <<EOF
 
-Your LDAP database server and any Grimoire server roles local to this
-machine are now configured. To finnish installing your system, for
-each non-localhost machine, go to the directory "$genfiles/\$HOSTNAME"
-and follow the instructions in the setup.sh-files found therein.
+All roles local to this machine are now configured. To finnish
+installing your system, for each non-localhost machine, go to the
+directory "$genfiles/\$HOSTNAME" and follow the instructions in the
+setup.sh-files found therein.
 EOF
 fi

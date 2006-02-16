@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-import _ggui.Composer, Grimoire, gobject, gnome, gtk, gtk.glade, types
+import _ggui.Composer, Grimoire, gobject, gnome, gtk, gtk.glade, types, sys
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -73,7 +73,7 @@ class Performer(Grimoire.Performer.Base):
                         if node == None: # top of tree
                             return self.GrimoireTreeNode(self.session, (0,))
                         try:
-                            return self.GrimoireTreeNode(self.session, node.numpath +(0,))
+                            return self.GrimoireTreeNode(self.session, node.numpath + (0,))
                         except IndexError:
                             return None
                     def on_iter_has_child(self, node):
@@ -156,14 +156,18 @@ if __name__ == '__main__':
     objectTreeView =    windows.get_widget("objectTreeView")
     viewAsObjects =     windows.get_widget("viewAsObjects")
     location =          windows.get_widget("location")
-    methodInteraction =       windows.get_widget("methodInteraction")
+    methodInteraction = windows.get_widget("methodInteraction")
 
     session = None
     methodTreeView.append_column(gtk.TreeViewColumn("tree", gtk.CellRendererText(), markup=0))
 
-    def on_newSession_activate(*arg, **kw):
+    def newSession(*arg, **kw):
         global session
-        session = Grimoire._.clients.gnome()(methodTreeView, location, methodInteraction)
+        session = Grimoire._.clients.gnome(
+            )(methodTreeView, location, methodInteraction, *arg, **kw)
+
+    def on_newSession_activate(*arg, **kw):
+        newSession()
 
     def on_applyButton_clicked(button):
         print "apply"
@@ -190,6 +194,7 @@ if __name__ == '__main__':
     def on_quit(*arg, **kw):
         gtk.main_quit()
 
-    on_newSession_activate()
+    newSession((len(sys.argv) > 1 and sys.argv[1]),
+               initCommands=sys.argv[2:])
     windows.signal_autoconnect(__main__)
     gtk.main()
