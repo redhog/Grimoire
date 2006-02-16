@@ -214,9 +214,6 @@ class Performer(Grimoire.Performer.Base):
                     self.insert(upath, obj, **kw)
                     return upath
 
-                def insertUniquePublic(self, path, obj, **kw):
-                    return self.insertUnique(path, obj, **kw)
-
                 def remove(self, path, obj):
                     self.__._remove(obj)
                     self.invalidateDirCache(path, True)
@@ -265,7 +262,7 @@ class Performer(Grimoire.Performer.Base):
                 def handleResult(self, method, result):
                     res = Grimoire.Types.getValue(result)
                     if Grimoire.Utils.isInstance(res, Grimoire.Performer.Performer):
-                        path = self.insertUniquePublic(list(method), res)
+                        path = self.insertUnique(list(method), res)
                         return Grimoire.Types.AnnotatedValue(
                             None,
                             Grimoire.Types.getComment(
@@ -409,10 +406,11 @@ class Performer(Grimoire.Performer.Base):
                     if debugTree: print "Collapse:", path
                     self.updatedDirCachePath(path).expanded = 0
 
-                def insertUniquePublic(self, path, obj, **kw):
-                    upath = self.insertUnique(path, obj, **kw)
+                def insertUnique(self, path, obj, **kw):
+                    upath = super(RenderableSession, self).insertUnique(path, obj, **kw)
                     self.expand(list(path), 1)
                     self.expand(upath, 1)
+                    return upath
 
                 def renderTree(self, renderEntry, *args, **kw):
                     def renderTreeEntries(node, path, subNodes, subNode, res, *args, **kw):

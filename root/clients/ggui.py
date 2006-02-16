@@ -13,17 +13,28 @@ class Performer(Grimoire.Performer.Base):
                 
                 class GrimoireTreeModel(gtk.GenericTreeModel):
                     class GrimoireTreeNode(object):
-                        def __init__(self, session, numpath):
-                            if numpath[0] != 0:
-                                raise IndexError
+                        def __init__(self, session, numpath = None, path = None):
+                            if numpath is None and path is None:
+                                raise ValueError
                             self.numpath = numpath
                             self.node = session.dirCache
-                            self.path = []
-                            session.updatedDirCachePath(self.path, 1)
-                            for index in numpath[1:]:
-                                self.path.append(self.node.subNodes.__keys__[index])
-                                self.node = self.node.subNodes[self.path[-1]]
+                            self.path = path
+                            if self.path is None:
+                                self.path = []
+                                if numpath[0] != 0:
+                                    raise IndexError                            
                                 session.updatedDirCachePath(self.path, 1)
+                                for index in numpath[1:]:
+                                    self.path.append(self.node.subNodes.__keys__[index])
+                                    self.node = self.node.subNodes[self.path[-1]]
+                                    session.updatedDirCachePath(self.path, 1)
+                            else:
+                                self.numpath = [0]
+                                session.updatedDirCachePath(self.path, 1)
+                                for item in self.path:
+                                    self.numpath.append(self.node.subNodes.__keys__.index(item))
+                                    self.node = self.node.subNodes[item]
+                                self.numpath = tuple(self.numpath)
                         def __unicode__(self):
                             if self.node.translation is not None:
                                 text = self.node.translation
@@ -93,6 +104,16 @@ class Performer(Grimoire.Performer.Base):
                         session = self
                     self.composer = Composer
                     return self
+
+                def insertUnique(self, path, obj, **kw):
+                    upath = super(Session, self).insertUnique(path, obj, **kw)
+                    node = self.GrimoireTreeModel.GrimoireTreeNode(self, path=upath)
+                    model = self.methodTreeView.get_model()
+                    model.row_inserted(node.numpath, model.get_iter(node.numpath))
+                    #FIXME: What happens if obj has no children??
+                    model.row_inserted(node.numpath + (0,), model.get_iter(node.numpath + (0,)))
+                    self.methodTreeView.expand_to_path(node.numpath)
+                    return upath
 
                 def selectionChanged(self, methodTreeView):
                     numpath = methodTreeView.get_cursor()[0]

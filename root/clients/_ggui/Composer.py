@@ -22,17 +22,35 @@ class ParagraphsWidget(gtk.VBox):
         for paragraph in paragraphs:
             self.pack_start(composer(paragraph), False, True)
 
-class AnnotatedValueWidget(gtk.Frame):
+class AnnotatedValueWidget(gtk.Widget):
+    def __new__(cls, composer, obj):
+        returnCls = cls
+        if cls is AnnotatedValueWidget:
+            if Grimoire.Types.getValue(obj) is None:
+                returnCls = AnnotatedNoneWidget
+            else:
+                returnCls = AnnotatedSomethingWidget
+        return super(AnnotatedValueWidget, cls).__new__(returnCls, composer, obj)
+    
+class AnnotatedNoneWidget(AnnotatedValueWidget, StringWidget):
     def __init__(self, composer, obj):
-        super(AnnotatedValueWidget, self).__init__(
-            TextComposer(Grimoire.Types.getComment(obj)))
+        super(AnnotatedNoneWidget, self).__init__(
+            composer,
+            Grimoire.Types.Formattable("%(comment)s.", comment = Grimoire.Types.getComment(obj)))
+            
+class AnnotatedSomethingWidget(AnnotatedValueWidget, gtk.Frame):
+    def __init__(self, composer, obj):
+        super(AnnotatedValueWidget, self).__init__()
+        self.set_label_widget(composer(
+            Grimoire.Types.Formattable("%(comment)s:",
+                                       comment = Grimoire.Types.getComment(obj))))
         self.get_label_widget().set_line_wrap(True)
         self.set_label_align(0, 1)
         alignment = gtk.Alignment()
         alignment.set(0, 0, 1, 1)
         alignment.set_padding(10, 10, 10, 10)
         alignment.add(composer(Grimoire.Types.getValue(obj)))
-        self.add(alignment)
+        self.add(alignment)        
 
 class GtkComposer(FormComposer.GtkFormComposer, Grimoire.Types.TextComposer.wrap()):
     labelFontAttributes = {}
