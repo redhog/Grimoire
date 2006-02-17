@@ -31,7 +31,7 @@ class ParamsFieldWidget(gtk.Table):
         class RequiredSubCompose(composer):
             labelFontAttributes = {'foreground': '#ff0000'}
         renderArglist(RequiredSubCompose, obj.arglist[:obj.required])
-        if len(obj.arglist) != obj.required:
+        if len(obj.arglist) > obj.required > 0:
             fields.append([gtk.HSeparator()])
         renderArglist(composer, obj.arglist[obj.required:])
         applyBox = gtk.HButtonBox()
@@ -165,6 +165,8 @@ class LoseNewPasswordTypeWidget(gtk.Table):
         self.attach(composer('Again'), 0, 1, 1, 2)
         self.entry1 = gtk.Entry()
         self.entry2 = gtk.Entry()
+        self.entry1.set_visibility(False)
+        self.entry2.set_visibility(False)
         self.attach(self.entry1, 1, 2, 0, 1)
         self.attach(self.entry2, 1, 2, 1, 2)
         if composer.defaultValues:

@@ -12,7 +12,8 @@ def writeList(f, obj, sep = ', ', writelast = False):
     if writelast:
         f.write(sep)
 
-__identifierre = re.compile('([.,:=<{\[\(\)\]}>' + string.whitespace + '])')
+__identifierre      = re.compile('([.,:=<{\[\(\)\]}>\\\\' + string.whitespace + '])')
+__identifierstartre = re.compile('([.,:=<{\[\(\)\]}>\\\\' + string.whitespace + '0-9])')
 def write(f, obj):
     t = type(obj)
     if t == types.ListType:
@@ -42,7 +43,8 @@ def write(f, obj):
     elif t == types.InstanceType and isinstance(obj, Types.Extension):
         value = obj.value
         if value[0] is Types.Identifier:
-            f.write('\\' + value[0] + re.sub(__identifierre, '\\\\\\1', value[1][1:].replace('\\', '\\\\')))
+            f.write(re.sub(__identifierstartre, '\\\\\\1', value[1][0]) +
+                    re.sub(__identifierre, '\\\\\\1', value[1][1:]))
         elif value[0] is Types.Member:
             writeList(f, value[1], '.', False)
         elif value[0] is Types.Application:

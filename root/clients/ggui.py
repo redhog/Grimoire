@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
 import _ggui.Composer, Grimoire, gobject, gnome, gtk, gtk.glade, types, sys
+import Grimoire.Utils.Serialize.Writer, Grimoire.Utils.Serialize.Types, StringIO
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -97,7 +98,20 @@ class Performer(Grimoire.Performer.Base):
                     numpath = methodTreeView.get_cursor()[0]
                     node = self.updateDirCacheNumPath(numpath[1:])
                     if node.leaf:
-                        self.gotoLocation(".".join(['_'] + node.path))
+                        expr = reduce(lambda expr, member:
+                         Grimoire.Utils.Serialize.Types.Extension(
+                          Grimoire.Utils.Serialize.Types.Member,
+                          [expr,
+                           Grimoire.Utils.Serialize.Types.Extension(
+                            Grimoire.Utils.Serialize.Types.Identifier,
+                            member)]),
+                         node.path,
+                         Grimoire.Utils.Serialize.Types.Extension(
+                          Grimoire.Utils.Serialize.Types.Identifier,
+                          "_"))
+                        s = StringIO.StringIO()
+                        Grimoire.Utils.Serialize.Writer.write(s, expr)
+                        self.gotoLocation(s.getvalue())
 
                 def gotoLocation(self, location = None):
                     if location:
