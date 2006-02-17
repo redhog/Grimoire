@@ -8,44 +8,12 @@ Ps = Grimoire.Types.ParamsType.derive
 class Performer(Grimoire.Performer.Base):
     class gnome(Grimoire.Performer.Method):
         def _call(performer):
-            class Session(Grimoire._.clients.form()):
+            NumpathSession = Grimoire._.clients.numpath()
+            FormSession = Grimoire._.clients.form()
+            class Session(FormSession, NumpathSession):
                 composer = _ggui.Composer.GtkComposer
-                
+                            
                 class GrimoireTreeModel(gtk.GenericTreeModel):
-                    class GrimoireTreeNode(object):
-                        def __init__(self, session, numpath = None, path = None):
-                            if numpath is None and path is None:
-                                raise ValueError
-                            self.numpath = numpath
-                            self.node = session.dirCache
-                            self.path = path
-                            if self.path is None:
-                                self.path = []
-                                if numpath[0] != 0:
-                                    raise IndexError                            
-                                session.updatedDirCachePath(self.path, 1)
-                                for index in numpath[1:]:
-                                    self.path.append(self.node.subNodes.__keys__[index])
-                                    self.node = self.node.subNodes[self.path[-1]]
-                                    session.updatedDirCachePath(self.path, 1)
-                            else:
-                                self.numpath = [0]
-                                session.updatedDirCachePath(self.path, 1)
-                                for item in self.path:
-                                    self.numpath.append(self.node.subNodes.__keys__.index(item))
-                                    self.node = self.node.subNodes[item]
-                                self.numpath = tuple(self.numpath)
-                        def __unicode__(self):
-                            if self.node.translation is not None:
-                                text = self.node.translation
-                            elif self.path:
-                                text = self.path[-1]
-                            else:
-                                text = 'Grimoire' 
-                            if not self.node.leaf:
-                                text = "<span foreground='#999999'>" + text + "</span>"
-                            return text
-
                     def __init__(self, session):
                         gtk.GenericTreeModel.__init__(self)
                         self.session = session
@@ -58,40 +26,48 @@ class Performer(Grimoire.Performer.Base):
                         return gobject.TYPE_STRING
 
                     def on_get_path(self, node):
+                        if node == None: ()
                         return node.numpath
                     def on_get_iter(self, path):
-                        return self.GrimoireTreeNode(self.session, path)
+                        if path[0] != 0: raise IndexError
+                        return self.session.updateDirCacheNumPath(path[1:], 1)
                     def on_get_value(self, node, column):
                         assert column == 0
                         return unicode(node)
                     def on_iter_next(self, node):
+                        if node is None or node.parent is None:
+                            return None
                         try:
-                            return self.GrimoireTreeNode(self.session, node.numpath[:-1] +(node.numpath[-1]+1,))
+                            node = node.parent.subNodes[
+                                node.parent.subNodes.__keys__[node.numpath[-1] + 1]]
                         except IndexError:
                             return None
+                        return self.session.updateDirCache([], 1, 0, node)
                     def on_iter_children(self, node):
-                        if node == None: # top of tree
-                            return self.GrimoireTreeNode(self.session, (0,))
+                        if node == None: return self.session.updateDirCache([], 1, 0)
                         try:
-                            return self.GrimoireTreeNode(self.session, node.numpath + (0,))
+                            node = node.subNodes[node.subNodes.__keys__[0]]
                         except IndexError:
                             return None
+                        return self.session.updateDirCache([], 1, 0, node)
                     def on_iter_has_child(self, node):
-                        return len(node.node.subNodes)
+                        if node == None: True
+                        return len(node.subNodes)
                     def on_iter_n_children(self, node):
-                        return len(node.node.subNodes)
+                        if node == None: return 1
+                        return len(node.subNodes)
                     def on_iter_nth_child(self, node, n):
                         if node == None:
-                            return self.GrimoireTreeNode(self.session, (n,))
+                            assert n == 0
+                            return self.session.updateDirCache([], 1, 0)
                         try:
-                            return self.GrimoireTreeNode(self.session, node.numpath +(n,))
+                            node = node.subNodes[node.subNodes.__keys__[n]]
                         except IndexError:
                             return None
+                        return self.session.updateDirCache([], 1, 0, node)
                     def on_iter_parent(self, node):
-                        if len(node.numpath) == 0:
-                            return None
-                        else:
-                            return self.GrimoireTreeNode(self.session, node.numpath[:-1])
+                        if node is None: return None
+                        return node.parent
 
                 def __new__(cls, methodTreeView, location, methodInteraction, *arg, **kw):
                     self = super(Session, cls).__new__(cls, *arg, **kw)
@@ -105,20 +81,22 @@ class Performer(Grimoire.Performer.Base):
                     self.composer = Composer
                     return self
 
-                def insertUnique(self, path, obj, **kw):
-                    upath = super(Session, self).insertUnique(path, obj, **kw)
-                    node = self.GrimoireTreeModel.GrimoireTreeNode(self, path=upath)
+                def insertUnique(self, path, obj, treeNode = None, **kw):
+                    upath = super(Session, self).insertUnique(path, obj, treeNode, **kw)
+                    node = self.updateDirCachePath(upath, treeNode = treeNode)
                     model = self.methodTreeView.get_model()
-                    model.row_inserted(node.numpath, model.get_iter(node.numpath))
-                    #FIXME: What happens if obj has no children??
-                    model.row_inserted(node.numpath + (0,), model.get_iter(node.numpath + (0,)))
-                    self.methodTreeView.expand_to_path(node.numpath)
+                    model.row_inserted((0,) + node.numpath,
+                                       model.get_iter((0,) + node.numpath))
+                    if node.subNodes:
+                        model.row_inserted((0,) + node.numpath + (0,),
+                                           model.get_iter((0,) + node.numpath + (0,)))
+                    self.methodTreeView.expand_to_path((0,) + node.numpath)
                     return upath
 
                 def selectionChanged(self, methodTreeView):
                     numpath = methodTreeView.get_cursor()[0]
-                    node = self.GrimoireTreeModel.GrimoireTreeNode(self, numpath)
-                    if node.node.leaf:
+                    node = self.updateDirCacheNumPath(numpath[1:])
+                    if node.leaf:
                         self.gotoLocation(".".join(['_'] + node.path))
 
                 def gotoLocation(self, location = None):

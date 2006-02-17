@@ -199,7 +199,7 @@ class Performer(Grimoire.Performer.Base):
                         return node
                     return None
 
-                def updatedDirCachePath(self, path, depth = 1, reupdate=0, treeNode = None):
+                def updateDirCachePath(self, path, depth = 1, reupdate=0, treeNode = None):
                     """Updates all nodes along a path down the tree,
                     and then depth nodes from there (that is, if depth
                     == 1, only nodes along the path will get
@@ -245,7 +245,7 @@ class Performer(Grimoire.Performer.Base):
                     return obj
 
                 def insertUnique(self, path, obj, treeNode = None, **kw):
-                    parentNode = self.updatedDirCachePath(path, treeNode = treeNode)
+                    parentNode = self.updateDirCachePath(path, treeNode = treeNode)
                     uniqueName = unicode(len(parentNode.subNodes))
                     self.insert([uniqueName], obj, treeNode = parentNode, **kw)
                     return path + [uniqueName]
@@ -256,18 +256,18 @@ class Performer(Grimoire.Performer.Base):
 
                 def defaultMethod(self):
                     path = []
-                    self.updatedDirCachePath(path)
+                    self.updateDirCachePath(path)
                     node = self.dirCache
                     if len(node.subNodes) == 2:
                         for key in node.subNodes:
                             if key != 'about':
                                 path += [key]
-                                self.updatedDirCachePath(path)
+                                self.updateDirCachePath(path)
                                 node = node.subNodes[key]
                     while len(node.subNodes) == 1:
                         key = node.subNodes.keys()[0]
                         path += [key]
-                        self.updatedDirCachePath(path)
+                        self.updateDirCachePath(path)
                         node = node.subNodes[key]
                     if len(node.subNodes) != 0 or not node.leaf:
                         return None
@@ -335,6 +335,51 @@ class Performer(Grimoire.Performer.Base):
         def _params(self):
             return A(Ps(),
                      'The Session class nearly implements a Grimoire client application. Except the last bit - the UI. It provides such services as caching of the directory tree listing, translation of tree entries, expansion/callaping of subtrees for clients that themselves implement the tree rendering and handling of default trees. To implement a real client, you might need both to subclass and to wrap this class. In subclassing it, you may subclass the class used to create directory cache tree nodes by assigning the class variable DirCacheNode with the new subclass to use')
+
+    class numpath(Grimoire.Performer.Method):
+        def _call(performer):
+            Session = performer._getpath(Grimoire.Types.MethodBase).base()
+            class NumpathSession(Session):
+                class DirCacheNode(Session.DirCacheNode):
+                    __slots__ = ['numpath']
+                    def setParent(self, parent, name):
+                        super(NumpathSession.DirCacheNode, self).setParent(parent, name)
+                        if parent:
+                            self.numpath = parent.numpath + (parent.subNodes.__keys__.index(name),)
+                        else:
+                            self.numpath = ()
+                    def __unicode__(self):
+                        if self.translation is not None:
+                            text = self.translation
+                        elif self.path:
+                            text = self.path[-1]
+                        else:
+                            text = 'Grimoire' 
+                        if not self.leaf:
+                            text = "<span foreground='#999999'>" + text + "</span>"
+                        return text
+
+                def updateDirCacheNumPath(self, numpath, depth = 1, reupdate=0, treeNode = None):
+                    """Updates all nodes along a numeric path down the tree,
+                    and then depth nodes from there (that is, if depth
+                    == 1, only nodes along the path will get
+                    updated). If reupdate is not true, nodes with
+                    updated == 1 will not be updated again.
+                    """
+                    if not numpath:
+                        return self.updateDirCache([], depth, reupdate, treeNode)
+                    node = self.updateDirCache([], 1, reupdate, treeNode)
+                    for item, index in enumerate(numpath):
+                        name = node.subNodes.__keys__[index]
+                        if item == len(numpath) - 1:
+                            return self.updateDirCache([name], depth, reupdate, node)
+                        node = self.updateDirCache([name], 1, reupdate, node)
+
+            return NumpathSession
+        _call = Grimoire.Utils.cachingFunction(_call)
+        def _params(self):
+            return A(Ps(),
+                     'Session sub-class that adds support for numeric (index-based) paths.')
 
     class form(Grimoire.Performer.Method):
         def _call(performer):
@@ -429,13 +474,13 @@ class Performer(Grimoire.Performer.Base):
 
                 def expand(self, path, depth = Grimoire.Performer.UnlimitedDepth):
                     if debugTree: print "Expand:", path, depth
-                    node = self.updatedDirCachePath(path, depth)
+                    node = self.updateDirCachePath(path, depth)
                     def expand(node, depth):
                         node.expanded = 1
                         if depth > 1:
                             for name in node.subNodes.iterkeys():
                                 expand(node.subNodes[name], depth - 1)
-                    expand(self.updatedDirCachePath(path, depth), depth)
+                    expand(self.updateDirCachePath(path, depth), depth)
 
                 def expandPath(self, path, depth = Grimoire.Performer.UnlimitedDepth):
                     if debugTree: print "ExpandPath:", path, depth
@@ -445,7 +490,7 @@ class Performer(Grimoire.Performer.Base):
 
                 def collapse(self, path):
                     if debugTree: print "Collapse:", path
-                    self.updatedDirCachePath(path).expanded = 0
+                    self.updateDirCachePath(path).expanded = 0
 
                 def insertUnique(self, path, obj, **kw):
                     upath = super(RenderableSession, self).insertUnique(path, obj, **kw)
