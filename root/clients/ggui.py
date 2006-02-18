@@ -13,7 +13,8 @@ class Performer(Grimoire.Performer.Base):
             FormSession = Grimoire._.clients.form()
             class Session(FormSession, NumpathSession):
                 composer = _ggui.Composer.GtkComposer
-                            
+                sessionPath = FormSession.sessionPath + ['gnome']
+
                 class GrimoireTreeModel(gtk.GenericTreeModel):
                     def __init__(self, session):
                         gtk.GenericTreeModel.__init__(self)
@@ -76,6 +77,8 @@ class Performer(Grimoire.Performer.Base):
                     self.methodTreeView.set_model(self.GrimoireTreeModel(self))
                     self.methodTreeView.connect("cursor_changed", self.selectionChanged)
                     self.location = location
+                    self.location.child.connect("activate", self.locationChanged)
+                    #self.location.connect("changed", self.locationChanged)
                     self.methodInteraction = methodInteraction
                     class Composer(cls.composer):
                         session = self
@@ -93,6 +96,9 @@ class Performer(Grimoire.Performer.Base):
                                            model.get_iter((0,) + node.numpath + (0,)))
                     self.methodTreeView.expand_to_path((0,) + node.numpath)
                     return upath
+
+                def locationChanged(self, *arg, **kw):
+                    self.gotoLocation()
 
                 def selectionChanged(self, methodTreeView):
                     numpath = methodTreeView.get_cursor()[0]

@@ -48,14 +48,6 @@
 		    <widget class="GtkMenu" id="file1_menu">
 
 		      <child>
-			<widget class="GtkImageMenuItem" id="preferences">
-			  <property name="visible">True</property>
-			  <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
-			  <signal name="activate" handler="on_preferences_activate" last_modification_time="Mon, 30 Jan 2006 07:30:36 GMT"/>
-			</widget>
-		      </child>
-
-		      <child>
 			<widget class="GtkImageMenuItem" id="newSession">
 			  <property name="visible">True</property>
 			  <property name="stock_item">GNOMEUIINFO_MENU_NEW_ITEM</property>
@@ -70,82 +62,6 @@
 			  <property name="visible">True</property>
 			  <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
 			  <signal name="activate" handler="on_quit" last_modification_time="Mon, 30 Jan 2006 14:35:24 GMT"/>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
-		</widget>
-	      </child>
-
-	      <child>
-		<widget class="GtkMenuItem" id="go1">
-		  <property name="visible">True</property>
-		  <property name="label" translatable="yes">Go</property>
-		  <property name="use_underline">True</property>
-
-		  <child>
-		    <widget class="GtkMenu" id="go1_menu">
-
-		      <child>
-			<widget class="GtkImageMenuItem" id="goToMethod">
-			  <property name="visible">True</property>
-			  <property name="label" translatable="yes">_Go to method</property>
-			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_goToMethod_activate" last_modification_time="Mon, 30 Jan 2006 14:16:43 GMT"/>
-
-			  <child internal-child="image">
-			    <widget class="GtkImage" id="image23">
-			      <property name="visible">True</property>
-			      <property name="stock">gtk-execute</property>
-			      <property name="icon_size">1</property>
-			      <property name="xalign">0.5</property>
-			      <property name="yalign">0.5</property>
-			      <property name="xpad">0</property>
-			      <property name="ypad">0</property>
-			    </widget>
-			  </child>
-			</widget>
-		      </child>
-
-		      <child>
-			<widget class="GtkImageMenuItem" id="forward">
-			  <property name="visible">True</property>
-			  <property name="label" translatable="yes">_Forward</property>
-			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_forward_activate" last_modification_time="Mon, 30 Jan 2006 07:30:36 GMT"/>
-
-			  <child internal-child="image">
-			    <widget class="GtkImage" id="image24">
-			      <property name="visible">True</property>
-			      <property name="stock">gtk-media-forward</property>
-			      <property name="icon_size">1</property>
-			      <property name="xalign">0.5</property>
-			      <property name="yalign">0.5</property>
-			      <property name="xpad">0</property>
-			      <property name="ypad">0</property>
-			    </widget>
-			  </child>
-			</widget>
-		      </child>
-
-		      <child>
-			<widget class="GtkImageMenuItem" id="back">
-			  <property name="visible">True</property>
-			  <property name="label" translatable="yes">Back</property>
-			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_back_activate" last_modification_time="Mon, 30 Jan 2006 07:30:36 GMT"/>
-
-			  <child internal-child="image">
-			    <widget class="GtkImage" id="image25">
-			      <property name="visible">True</property>
-			      <property name="stock">gtk-go-back</property>
-			      <property name="icon_size">1</property>
-			      <property name="xalign">0.5</property>
-			      <property name="yalign">0.5</property>
-			      <property name="xpad">0</property>
-			      <property name="ypad">0</property>
-			    </widget>
-			  </child>
 			</widget>
 		      </child>
 		    </widget>
@@ -179,6 +95,143 @@
 			  <property name="active">False</property>
 			  <property name="group">viewAsMethods</property>
 			  <signal name="activate" handler="on_viewAs_activate" last_modification_time="Mon, 30 Jan 2006 14:30:34 GMT"/>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+
+	      <child>
+		<widget class="GtkMenuItem" id="go1">
+		  <property name="visible">True</property>
+		  <property name="label" translatable="yes">Go</property>
+		  <property name="use_underline">True</property>
+
+		  <child>
+		    <widget class="GtkMenu" id="go1_menu">
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="goToMethod">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">_Go to method</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_goToMethod_activate" last_modification_time="Mon, 30 Jan 2006 14:16:43 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image29">
+			      <property name="visible">True</property>
+			      <property name="stock">gtk-execute</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="forward">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">_Forward</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_forward_activate" last_modification_time="Mon, 30 Jan 2006 07:30:36 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image30">
+			      <property name="visible">True</property>
+			      <property name="stock">gtk-media-forward</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="back">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">_Back</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_back_activate" last_modification_time="Mon, 30 Jan 2006 07:30:36 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image31">
+			      <property name="visible">True</property>
+			      <property name="stock">gtk-go-back</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+
+	      <child>
+		<widget class="GtkMenuItem" id="bookmarks1">
+		  <property name="visible">True</property>
+		  <property name="label" translatable="yes">Bookmarks</property>
+		  <property name="use_underline">True</property>
+
+		  <child>
+		    <widget class="GtkMenu" id="bookmarks1_menu">
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="add_bookmark1">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">_Add bookmark</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_add_bookmark1_activate" last_modification_time="Fri, 17 Feb 2006 17:47:10 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image32">
+			      <property name="visible">True</property>
+			      <property name="stock">gtk-add</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="manage_bookmarks1">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">_Manage bookmarks</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_manage_bookmarks1_activate" last_modification_time="Fri, 17 Feb 2006 17:47:10 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image33">
+			      <property name="visible">True</property>
+			      <property name="stock">gtk-properties</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkSeparatorMenuItem" id="separator1">
+			  <property name="visible">True</property>
 			</widget>
 		      </child>
 		    </widget>
