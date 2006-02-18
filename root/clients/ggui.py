@@ -193,6 +193,6 @@ if __name__ == '__main__':
         gtk.main_quit()
 
     newSession((len(sys.argv) > 1 and sys.argv[1]),
-               initCommands=sys.argv[2:])
+               initCommands = sys.argv[2:])
     windows.signal_autoconnect(__main__)
     gtk.main()

@@ -1,4 +1,4 @@
-## General client configuration ##
+## GNOME client configuration ##
 
 # Default tree to connect to
 # set(['tree'], '_')
@@ -14,8 +14,8 @@
 # set(['initcommands'], ['_.trees.introspection.mount(['otherserver'], _.trees.remote.dirt.otherserver())'])
 
 # import Grimoire.Types.Ability
-# set.parameters(['hide'],
-#                Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['directory']),
-#                                             (Grimoire.Types.Ability.Ignore, ['trees']),
-#                                             (Grimoire.Types.Ability.Ignore, ['introspection']),
-#                                             (Grimoire.Types.Ability.Allow, [])]))
+# set(['hide'],
+#     Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['directory']),
+#                                  (Grimoire.Types.Ability.Ignore, ['trees']),
+#                                  (Grimoire.Types.Ability.Ignore, ['introspection']),
+#                                  (Grimoire.Types.Ability.Allow, [])]))

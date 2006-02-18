@@ -13,19 +13,25 @@ else:
                 if map(string.lower, expressions) == ['--help']:
                     stderr.write(unicode(self._params()) + '\n')
                     return 0
+                
+                Session = self._getpath(Grimoire.Types.MethodBase).base()
+                class CliSession(Session):
+                    sessionPath = Session.sessionPath + ['cli']
 
-                treeExpr = (expressions and expressions[0]) or None
-                exprs = expressions[1:] or self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(['clients', 'cli', 'defaultcommands'], [], False)
-
+                exprs = expressions[1:] or self._getpath(
+                    Grimoire.Types.TreeRoot,
+                    path = ['directory', 'get'] + CliSession.sessionPath
+                    )(['defaultcommands'], [], False)
+                
                 try:
-                    result = self._getpath(Grimoire.Types.MethodBase).base()(treeExpr)
+                    result = CliSession((expressions and expressions[0]) or None)
                 except Exception:
                     traceback.print_exc()
                     return 1
 
                 res = Grimoire.Types.getValue(result)
 
-                if not Grimoire.Utils.isInstance(res, self._getpath(Grimoire.Types.MethodBase).base()):
+                if not Grimoire.Utils.isInstance(res, CliSession):
                     stdout.write(unicode(res) + '\n')
                     if exprs is not None:
                         stderr.write("Error: Tree expression did not return a tree.\n")
@@ -51,16 +57,6 @@ else:
                 sess.insert([], Logout(), root = True, first = True)
 
                 try:
-                    for expr in self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(['clients', 'cli', 'initcommands'], [], False):
-                        result = sess.eval(expr)
-                        if not result.error:
-                            stderr.write(unicode(result.result) + '\n')
-                        elif result.error == ExitCli:
-                            raise ExitCli
-                        else:
-                            stderr.write(unicode(result.error) + '\n')
-                            res = 1
-
                     if exprs and exprs != ['']:
                         for expr in exprs:
                             result = sess.eval(expr)

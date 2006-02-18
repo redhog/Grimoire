@@ -74,14 +74,16 @@ class Performer(Grimoire.Performer.Base):
                                 Grimoire._.trees.introspection()),
                             Grimoire._.trees.local.load(__name__ + '._about'),
                             *extraTrees + [Grimoire.Performer.Isolator(Grimoire._)]),
-                        Grimoire._.directory.get.parameters(
-                            ['clients', 'base', 'hide'],
-                            Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['directory']),
-                                                         (Grimoire.Types.Ability.Ignore, ['clients']),
-                                                         (Grimoire.Types.Ability.Ignore, ['trees']),
-                                                         (Grimoire.Types.Ability.Ignore, ['introspection']),
-                                                         (Grimoire.Types.Ability.Allow, [])]),
-                            False))
+                        Grimoire.__._getpath(
+                            Grimoire.Types.TreeRoot,
+                            path = ['directory', 'get'] + self.sessionPath
+                            )(['hide'],
+                              Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['directory']),
+                                                           (Grimoire.Types.Ability.Ignore, ['clients']),
+                                                           (Grimoire.Types.Ability.Ignore, ['trees']),
+                                                           (Grimoire.Types.Ability.Ignore, ['introspection']),
+                                                           (Grimoire.Types.Ability.Allow, [])]),
+                              False))
                     self._ = Grimoire.Performer.Logical(self.__)
                     self.defaultLanguage = 'en'
 
