@@ -22,7 +22,8 @@ class ComposeWrapType(ComposeType): pass
 
 class ComposeWrapper(ComposeType):
     def compose(cls, composer, obj):
-        return composer(cls.parentComposer(obj))
+        class ParentComposer(composer.parameters(), cls.parentComposer): pass
+        return composer(ParentComposer(obj))
 
 class ComposeObjWrapper(ComposeWrapper, ComposeObjType): pass
 class ComposeTypeWrapper(ComposeWrapper, ComposeTypeType): pass
@@ -47,6 +48,11 @@ class Composer(object):
             members['typeMap'] = typeMap
             members['objMap'] = objMap
             return types.TypeType.__new__(cls, name, bases, members)
+
+        def parameters(base):
+            return types.TypeType.__new__(type(base), base.__name__ + "_parameters", (base,),
+                                          {'typeMap': Grimoire.Utils.SubTypeMap(),
+                                           'objMap': Grimoire.Utils.InstanceMap()})
 
         def wrap(base):
             members = {}

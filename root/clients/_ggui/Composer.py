@@ -10,10 +10,11 @@ class StringWidget(gtk.Label):
         super(StringWidget, self).__init__()
         self.set_line_wrap(True)
         self.set_alignment(0, 0)
+        class ParentComposer(composer.parameters(), TextComposer): pass
         self.set_markup(
             '<span %s>%s</span>' % (
                 ' '.join('%s="%s"' % item for item in composer.labelFontAttributes.iteritems()),
-                xml.sax.saxutils.escape(TextComposer(obj))))
+                xml.sax.saxutils.escape(ParentComposer(obj))))
 
 class ParagraphsWidget(gtk.VBox):
     def __init__(self, composer, paragraphs):
