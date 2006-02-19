@@ -440,7 +440,7 @@ class Performer(Grimoire.Performer.Base):
                         if self.selection.params:
                             result.append(self.selection.params)
                     self.drawSelection(
-                        self.composer(result))
+                        self.getComposer()(result))
                 
                 def gotoLocation(self, location):
                     try:
