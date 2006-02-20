@@ -140,6 +140,11 @@ class Logical(Performer):
         # debug-printout-filter in Physical._treeOp
         return Physical(self)._treeOp([], "call", callarg=arg, callkw=kw)
 
+    def __add__(self, path):
+        if not Grimoire.Utils.isInstance(path, Grimoire.Types.GrimoireReference):
+            path = Grimoire.Types.GrimoireReference(path)
+        return Physical(self)._getpath(Grimoire.Types.CurrentNode, path['levels'], path['path'])
+
 class Physical(Performer):
     """Physical is the base-class for all objects that makes up a
     Grimoire tree. It provides automatic cutting, as defined by the
@@ -251,8 +256,8 @@ class Physical(Performer):
         otherPath = other._pathForSelf(dynamic=True)
         commonLen = len(Grimoire.Utils.commonPrefix(selfPath, otherPath))
         return Grimoire.Types.GrimoireReference(
-            len(selfPath) - commonLen,
-            otherPath[commonLen:])
+            otherPath[commonLen:],
+            len(selfPath) - commonLen)
 
     # Physical -> Logical API
     # (methods that returns Logicals)

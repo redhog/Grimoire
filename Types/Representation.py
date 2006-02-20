@@ -27,12 +27,32 @@ class GrimoirePath(RepresentationSequence):
     delimiter = '.'
 
 class GrimoireReference(types.DictType, Representation):
-    def __init__(self, levels, path):
-        types.DictType.__init__(self, levels=levels, path=path)
+    def __init__(self, path = [], levels = 0):
+        if Grimoire.Utils.isInstance(path, GrimoireReference):
+            levels = path['levels']
+            path = path['path']
+        types.DictType.__init__(self, path=list(path), levels=levels)
     def __parse__(cls, str):
         levels, str = str.split(':')
         path, str = GrimoirePath.__parse__(str)
-        return cls(int(levels), path), str
+        return cls(path, int(levels)), str
+    def __add__(self, child):
+        if not Grimoire.Utils.isInstance(child, GrimoireReference):
+            child = type(self)(child)
+        if child['levels'] > len(self['path']):
+            levels = self['levels'] + child['levels'] - len(self['path'])
+            path = child['path']
+        else:
+            levels = self['levels']
+            path = self['path']
+            if child['levels']:
+                path = path[:-child['levels']]
+            path = path + child['path']
+        return type(self)(path, levels)
+    def __radd__(self, child):
+        return type(self)(child) + self
+    def __getattr__(self, name):
+        return type(self)(self['path'] + [name], self['levels'])
 
 class DN(RepresentationReverseSequence):
     delimiter = ','

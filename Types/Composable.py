@@ -41,12 +41,17 @@ class Formattable(Mapping):
 class Sequence(types.ListType, Composable):
     def __getslice__(self, *arg, **kw):
         return type(self)(super(Sequence, self).__getslice__(*arg, **kw))
-    def __add__(self, *arg, **kw):
-        return type(self)(super(Sequence, self).__add__(*arg, **kw))
+    def __add__(self, *arg):
+        try:
+            return type(self)(super(Sequence, self).__add__(*arg))
+        except TypeError, e:
+            if len(arg) == 1 and hasattr(arg[0], "__radd__"):
+                return arg[0].__radd__(self)
+            raise e
     def __radd__(self, other): # ListType does not implement radd.
         return type(self)(other.__add__(self))
-    def __mul__(self, *arg, **kw):
-        return type(self)(super(Sequence, self).__mul__(*arg, **kw))
+    def __mul__(self, *arg):
+        return type(self)(super(Sequence, self).__mul__(*arg))
 
 class Reducible(Sequence):
     """Defines a string made up of a list of several parts, joined

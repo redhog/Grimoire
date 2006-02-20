@@ -11,7 +11,7 @@ class Performer(Grimoire.Performer.Base):
                     address=Grimoire.Types.EMailAddress(
                         'username',
                         Grimoire.Types.DNSDomain(['se', 'takeit', 'lab', 'testmachine'])),
-                    link=Grimoire.Types.TitledURILink(Grimoire.Types.GrimoireReference(2, ['create', 'user', 'administrators']),
+                    link=Grimoire.Types.TitledURILink(Grimoire.Types.GrimoireReference(['create', 'user', 'administrators'], 2),
                                                       'create user')))
 
         def _params(self):

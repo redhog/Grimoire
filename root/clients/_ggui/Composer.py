@@ -1,4 +1,4 @@
-import Grimoire.Types, FormComposer, gtk, xml.sax.saxutils
+import Grimoire.Types, FormComposer, gtk, gobject, xml.sax.saxutils
 
 Composer = Grimoire.Types.Composer.Composer
 ComposeObjType = Grimoire.Types.ComposeObjType
@@ -15,6 +15,20 @@ class StringWidget(gtk.Label):
             '<span %s>%s</span>' % (
                 ' '.join('%s="%s"' % item for item in composer.labelFontAttributes.iteritems()),
                 xml.sax.saxutils.escape(ParentComposer(obj))))
+
+class BlockWidget(gtk.HBox):
+    def __init__(self, composer, blocks):
+        super(BlockWidget, self).__init__()
+        self.set_spacing(0)
+        for block in blocks:
+            self.pack_start(composer(block), False, True)
+
+class LinesWidget(gtk.VBox):
+    def __init__(self, composer, lines):
+        super(LinesWidget, self).__init__()
+        self.set_spacing(0)
+        for line in lines:
+            self.pack_start(composer(line), False, True)
 
 class ParagraphsWidget(gtk.VBox):
     def __init__(self, composer, paragraphs):
@@ -53,11 +67,36 @@ class AnnotatedSomethingWidget(AnnotatedValueWidget, gtk.Frame):
         alignment.add(composer(Grimoire.Types.getValue(obj)))
         self.add(alignment)        
 
+class TitledURILinkWidget(gtk.Button):
+    def __init__(self, composer, obj):
+        super(TitledURILinkWidget, self).__init__()
+        self.add(composer(Grimoire.Types.getComment(obj)))
+        class ParentComposer(composer.parameters(), TextComposer): pass
+        self.target = Grimoire.Types.getValue(obj)
+        self.connect('clicked', self.__clicked__)
+        if Grimoire.Utils.isInstance(self.target, Grimoire.Types.GrimoireReference):
+            if composer.session and composer.session.gotoLocation:
+                self.connect('selected',
+                             lambda link, target: composer.session.gotoLocation(target.target))
+    def __clicked__(self, button):
+        target = gobject.GObject()
+        target.target = self.target
+        self.emit("selected", target)
+
+gobject.type_register(TitledURILinkWidget)
+gobject.signal_new("selected", TitledURILinkWidget, gobject.SIGNAL_RUN_LAST | gobject.SIGNAL_ACTION, gobject.TYPE_BOOLEAN, (gobject.GObject,))
+
 class GtkComposer(FormComposer.GtkFormComposer, Grimoire.Types.TextComposer.wrap()):
     labelFontAttributes = {}
 
     class ComposeString(TextComposer.ComposeString):
         compose = StringWidget
+
+    class ComposeBlock(TextComposer.ComposeBlock):
+        compose = BlockWidget
+
+    class ComposeLines(TextComposer.ComposeLines):
+        compose = LinesWidget
 
     class ComposeParagraphs(TextComposer.ComposeParagraphs):
         compose = ParagraphsWidget
@@ -65,9 +104,9 @@ class GtkComposer(FormComposer.GtkFormComposer, Grimoire.Types.TextComposer.wrap
     class ComposeAnnotatedValue(TextComposer.ComposeAnnotatedValue):
         compose = AnnotatedValueWidget
 
-#     class ComposeTitledURILink(TextComposer.ComposeGenericMapping):
-#         type = Composable.TitledURILink
-#         def compose(cls, composer, obj):
+    class ComposeTitledURILink(TextComposer.ComposeGenericMapping):
+        type = Grimoire.Types.TitledURILink
+        compose = TitledURILinkWidget
         
 #     class ComposeGrimoireReference(TextComposer.ComposeGrimoireReference):
 #         def compose(cls, composer, obj):
