@@ -105,7 +105,7 @@ class Performer(Grimoire.Performer.Base):
 
     class homeGroup(Grimoire.Performer.SubMethod):
         __path__ = ['home group', '$ldapservername']
-        __related_group__ = ['group']
+        __related_group__ = ['home group']
         def _call(self, path, name):
             name = unicode(name)
             def unlocked():

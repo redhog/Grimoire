@@ -104,23 +104,31 @@ class Performer(Grimoire.Performer.Base):
                     numpath = methodTreeView.get_cursor()[0]
                     node = self.updateDirCacheNumPath(numpath[1:])
                     if node.leaf:
-                        expr = reduce(lambda expr, member:
-                         Grimoire.Utils.Serialize.Types.Extension(
-                          Grimoire.Utils.Serialize.Types.Member,
-                          [expr,
-                           Grimoire.Utils.Serialize.Types.Extension(
-                            Grimoire.Utils.Serialize.Types.Identifier,
-                            member)]),
-                         node.path,
-                         Grimoire.Utils.Serialize.Types.Extension(
-                          Grimoire.Utils.Serialize.Types.Identifier,
-                          "_"))
-                        s = StringIO.StringIO()
-                        Grimoire.Utils.Serialize.Writer.write(s, expr)
-                        self.gotoLocation(s.getvalue())
+                        self.gotoLocation(node.path)
 
                 def gotoLocation(self, location = None):
                     if location:
+                        if not Grimoire.Utils.isInstance(location, types.BaseStringType):
+                            if Grimoire.Utils.isInstance(location, Grimoire.Types.GrimoireReference):
+                                location = self.getMethodPath() + location
+                                if location['levels']:
+                                    raise ValueError("Bad reference")
+                                location = location['path']
+                            location = list(location)
+                            expr = reduce(lambda expr, member:
+                             Grimoire.Utils.Serialize.Types.Extension(
+                              Grimoire.Utils.Serialize.Types.Member,
+                              [expr,
+                               Grimoire.Utils.Serialize.Types.Extension(
+                                Grimoire.Utils.Serialize.Types.Identifier,
+                                member)]),
+                             location,
+                             Grimoire.Utils.Serialize.Types.Extension(
+                              Grimoire.Utils.Serialize.Types.Identifier,
+                              "_"))
+                            s = StringIO.StringIO()
+                            Grimoire.Utils.Serialize.Writer.write(s, expr)
+                            location = s.getvalue()
                         self.location.get_child().set_text(location)
                     else:
                         location = self.location.get_child().get_text()
