@@ -6,12 +6,12 @@ class Performer(Grimoire.Performer.Base):
     class logout(Grimoire.Performer.Method):
         def _call(self):
             def unlocked():
-                sess = self._callWithUnlockedTree(
-                    lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.treeinfo(['local', 'client', 'logout', 'session']))
-                path = self._callWithUnlockedTree(
-                    lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.treeinfo(['local', 'client', 'logout', 'path']))
-                tree = self._callWithUnlockedTree(
-                    lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.treeinfo(['local', 'client', 'logout', 'tree']))
+                sess =  self._getpath(Grimoire.Types.TreeRoot).directory.get.treeinfo(
+                    ['local', 'client', 'logout', 'session'])
+                path = self._getpath(Grimoire.Types.TreeRoot).directory.get.treeinfo(
+                    ['local', 'client', 'logout', 'path'])
+                tree = self._getpath(Grimoire.Types.TreeRoot).directory.get.treeinfo(
+                    ['local', 'client', 'logout', 'tree'])
                 sess.remove(path, tree)
                 return Grimoire.Types.AnnotatedValue(
                     None,
@@ -19,7 +19,8 @@ class Performer(Grimoire.Performer.Base):
             return self._callWithUnlockedTree(unlocked)
         def _params(self):
             path = self._callWithUnlockedTree(
-                lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.treeinfo(['local', 'client', 'logout', 'path']))
+                lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.treeinfo(
+                ['local', 'client', 'logout', 'path']))
             return Grimoire.Types.AnnotatedValue(
                 Grimoire.Types.ParamsType.derive(),
                 Grimoire.Types.Formattable(

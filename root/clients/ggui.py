@@ -14,11 +14,53 @@ class Performer(Grimoire.Performer.Base):
             class Session(FormSession, NumpathSession):
                 composer = _ggui.Composer.GtkComposer
                 sessionPath = FormSession.sessionPath + ['gnome']
+                # Fake - we'll override this with an instance
+                # variable, but this makes it easy/fast to check if it
+                # has been overridden...
+                model = None 
+
+                class DirCacheNode(NumpathSession.DirCacheNode):
+                    def invalidate(self):
+                        if self.session.model and not self.session.model.active:
+                            for subNode in self.subNodes.itervalues():
+                                self.session.model.row_deleted((0,) + subNode.numpath)
+                            self.session.model.row_changed((0,) + self.numpath)
+                        super(Session.DirCacheNode, self).invalidate()
+                        
+                    def validate(self):
+                        super(Session.DirCacheNode, self).validate()
+                        if self.session.model and not self.session.model.active:
+                            for subNode in self.subNodes.itervalues():
+                                self.session.model.row_inserted((0,) + subNode.numpath)
+                            if self.session.model.on_iter_n_children(self.parent) <= self.numpath[-1]:
+                                self.session.model.row_inserted((0,) + self.numpath)
+                            else:
+                                self.session.model.row_changed((0,) + self.numpath)
 
                 class GrimoireTreeModel(gtk.GenericTreeModel):
                     def __init__(self, session):
                         gtk.GenericTreeModel.__init__(self)
                         self.session = session
+                        self.active = False
+
+                    def update(self, modfn):
+                        if self.active:
+                            return modfn()
+                        self.active = True
+                        try:
+                            return modfn()
+                        finally:
+                            self.active = False
+                        
+                    def row_changed(self, path):
+                        return super(Session.GrimoireTreeModel, self).row_changed(
+                            path,
+                            self.get_iter(path))
+
+                    def row_inserted(self, path):
+                        return super(Session.GrimoireTreeModel, self).row_inserted(
+                            path,
+                            self.get_iter(path))
 
                     def on_get_flags(self):
                         return 0
@@ -32,7 +74,7 @@ class Performer(Grimoire.Performer.Base):
                         return node.numpath
                     def on_get_iter(self, path):
                         if path[0] != 0: raise IndexError
-                        return self.session.updateDirCacheNumPath(path[1:], 1)
+                        return self.update(lambda:self.session.updateDirCacheNumPath(path[1:], 1))
                     def on_get_value(self, node, column):
                         assert column == 0
                         return unicode(node)
@@ -44,14 +86,14 @@ class Performer(Grimoire.Performer.Base):
                                 node.parent.subNodes.__keys__[node.numpath[-1] + 1]]
                         except IndexError:
                             return None
-                        return self.session.updateDirCache([], 1, 0, node)
+                        return self.update(lambda:self.session.updateDirCache([], 1, 0, node))
                     def on_iter_children(self, node):
-                        if node == None: return self.session.updateDirCache([], 1, 0)
+                        if node == None: return self.update(lambda:self.session.updateDirCache([], 1, 0))
                         try:
                             node = node.subNodes[node.subNodes.__keys__[0]]
                         except IndexError:
                             return None
-                        return self.session.updateDirCache([], 1, 0, node)
+                        return self.update(lambda:self.session.updateDirCache([], 1, 0, node))
                     def on_iter_has_child(self, node):
                         if node == None: True
                         return len(node.subNodes)
@@ -61,20 +103,21 @@ class Performer(Grimoire.Performer.Base):
                     def on_iter_nth_child(self, node, n):
                         if node == None:
                             assert n == 0
-                            return self.session.updateDirCache([], 1, 0)
+                            return self.update(lambda:self.session.updateDirCache([], 1, 0))
                         try:
                             node = node.subNodes[node.subNodes.__keys__[n]]
                         except IndexError:
                             return None
-                        return self.session.updateDirCache([], 1, 0, node)
+                        return self.update(lambda:self.session.updateDirCache([], 1, 0, node))
                     def on_iter_parent(self, node):
                         if node is None: return None
                         return node.parent
 
                 def __new__(cls, methodTreeView, location, methodInteraction, *arg, **kw):
                     self = super(Session, cls).__new__(cls, *arg, **kw)
+                    self.model = self.GrimoireTreeModel(self)
                     self.methodTreeView = methodTreeView
-                    self.methodTreeView.set_model(self.GrimoireTreeModel(self))
+                    self.methodTreeView.set_model(self.model)
                     self.methodTreeView.connect("cursor_changed", self.selectionChanged)
                     self.location = location
                     self.location.child.connect("activate", self.locationChanged)
@@ -84,16 +127,15 @@ class Performer(Grimoire.Performer.Base):
                         session = self
                     self.composer = Composer
                     return self
-
+                
                 def insertUnique(self, path, obj, treeNode = None, **kw):
                     upath = super(Session, self).insertUnique(path, obj, treeNode, **kw)
                     node = self.updateDirCachePath(upath, treeNode = treeNode)
-                    model = self.methodTreeView.get_model()
-                    model.row_inserted((0,) + node.numpath,
-                                       model.get_iter((0,) + node.numpath))
-                    if node.subNodes:
-                        model.row_inserted((0,) + node.numpath + (0,),
-                                           model.get_iter((0,) + node.numpath + (0,)))
+                    #self.model.row_inserted((0,) + node.numpath,
+                    #                        self.model.get_iter((0,) + node.numpath))
+                    #if node.subNodes:
+                    #    self.model.row_inserted((0,) + node.numpath + (0,),
+                    #                            self.model.get_iter((0,) + node.numpath + (0,)))
                     self.methodTreeView.expand_to_path((0,) + node.numpath)
                     return upath
 

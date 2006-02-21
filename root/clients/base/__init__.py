@@ -19,11 +19,12 @@ class Performer(Grimoire.Performer.Base):
                 sessionPath = ['parameters', 'clients']
 
                 class DirCacheNode(object):
-                    __slots__ = ['parent', 'path', 'subNodes', 'oldSubNodes', 'leaf', 'updated', 'translation']
-                    def __init__(self, parent = None, name = None, subNodes = None, leaf = None, translation = None):
+                    __slots__ = ['session', 'parent', 'path', 'subNodes', 'oldSubNodes', 'leaf', 'updated', 'translation']
+                    def __init__(self, session, parent = None, name = None, subNodes = None, leaf = None, translation = None):
                         """Note: The theory is that either both of
                         parent and name are None, or neither of
                         them"""
+                        self.session = session
                         self.subNodes = subNodes or Grimoire.Utils.OrderedMapping()
                         self.oldSubNodes = Grimoire.Utils.OrderedMapping()
                         self.leaf = leaf or 0
@@ -66,15 +67,8 @@ class Performer(Grimoire.Performer.Base):
                     """
                     
                     self = object.__new__(cls)
-                    self.dirCache = self.DirCacheNode()
-                    self.__ = Grimoire.Performer.Hide(
-                        Grimoire.Performer.Composer(
-                            Grimoire.Performer.Prefixer(
-                                ['introspection'],
-                                Grimoire._.trees.introspection()),
-                            Grimoire._.trees.local.load(__name__ + '._about'),
-                            *extraTrees + [Grimoire.Performer.Isolator(Grimoire._)]),
-                        Grimoire.__._getpath(
+                    self.dirCache = self.DirCacheNode(session = self)
+                    self.hide = Grimoire.__._getpath(
                             Grimoire.Types.TreeRoot,
                             path = ['directory', 'get'] + self.sessionPath
                             )(['hide'],
@@ -83,7 +77,15 @@ class Performer(Grimoire.Performer.Base):
                                                            (Grimoire.Types.Ability.Ignore, ['trees']),
                                                            (Grimoire.Types.Ability.Ignore, ['introspection']),
                                                            (Grimoire.Types.Ability.Allow, [])]),
-                              False))
+                              False)
+                    self.__ = Grimoire.Performer.Hide(
+                        Grimoire.Performer.Composer(
+                            Grimoire.Performer.Prefixer(
+                                ['introspection'],
+                                Grimoire._.trees.introspection()),
+                            Grimoire._.trees.local.load(__name__ + '._about'),
+                            *extraTrees + [Grimoire.Performer.Isolator(Grimoire._)]),
+                        self.hide)
                     self._ = Grimoire.Performer.Logical(self.__)
                     self.defaultLanguage = 'en'
 
@@ -126,14 +128,14 @@ class Performer(Grimoire.Performer.Base):
                         return Grimoire.Types.AnnotatedValue(self, comment)
                     return self
 
-                def invalidateDirCache(self):
+                def invalidateDirCache(self, path = [], treeNode = None):
                     def invalidate(node):
                         node.invalidate()
                         for subNode in node.subNodes.itervalues():
                             invalidate(subNode)
-                    invalidate(self.dirCache)
+                    invalidate(self.getDirCacheNode(path, treeNode = treeNode))
 
-                def invalidateDirCachePath(self, path):
+                def invalidateDirCachePath(self, path = [], treeNode = None):
                     """Invalidates all nodes along a path down the tree (if
                     existing).
                     """
@@ -141,7 +143,7 @@ class Performer(Grimoire.Performer.Base):
                         if restpath and restpath[0] in treeNode.subNodes:
                             invalidate(treeNode.subNodes[restpath[0]], restpath[1:])
                         treeNode.invalidate()
-                    invalidate(self.dirCache, path)
+                    invalidate(treeNode or self.dirCache, path)
 
                 def getDirCacheNode(self, path, create = 0, treeNode = None):
                     treeNode = treeNode or self.dirCache
@@ -157,7 +159,9 @@ class Performer(Grimoire.Performer.Base):
                                     node.reparent(treeNode, restpath[0])
                                 else:
                                     if debugDirCache: print "New node before", restpath
-                                    node = self.DirCacheNode(parent = treeNode, name = restpath[0])
+                                    node = self.DirCacheNode(session = self,
+                                                             parent = treeNode,
+                                                             name = restpath[0])
                             else:
                                 raise KeyError(path)
                         treeNode = node
@@ -175,6 +179,7 @@ class Performer(Grimoire.Performer.Base):
                         subDepth = Grimoire.Performer.UnlimitedDepth
                     if subDepth > 0:
                         node = self.getDirCacheNode(prefixPath, 1, treeNode = treeNode)
+                        if node.parent: assert(node.parent.updated)
                         if reupdate or not node.updated:
                             if debugDirCache: print "Reupdate", treeNode, prefixPath, subDepth
                             translatedPaths = []
@@ -225,23 +230,25 @@ class Performer(Grimoire.Performer.Base):
                     if isolate:
                         obj = Grimoire.Performer.Isolator(obj)
                     if not root:
+                        directory = Grimoire._.directory.new()
                         obj = Grimoire.Performer.Composer(
                             obj,
-                            Grimoire._.trees.local.load(__name__ + '._logout'))
+                            Grimoire.Performer.Isolator(
+                                Grimoire.Performer.Composer(
+                                    Grimoire.Performer.Restrictor(
+                                        directory, Grimoire.Types.Ability.List([])),
+                                    Grimoire._.trees.local.load(__name__ + '._logout'))))
+                    if self.hide:
+                        obj = Grimoire.Performer.Hide(obj, self.hide)
 
                     fullPath = (treeNode and treeNode.path or []) + path
                     obj = Grimoire.Performer.Prefixer(fullPath, obj)
                     if not root:
-                        directory = Grimoire._.directory.new()
-                        obj = Grimoire.Performer.Composer(
-                            obj,
-                            Grimoire.Performer.Restrictor(
-                                directory, Grimoire.Types.Ability.List([])))
                         def unlocked():
                             directory.directory.set.treeinfo(['local', 'client', 'logout', 'session'], self)
                             directory.directory.set.treeinfo(['local', 'client', 'logout', 'tree'], obj)
                             directory.directory.set.treeinfo(['local', 'client', 'logout', 'path'], fullPath)
-                        obj._callWithUnlockedTree(unlocked)
+                        Grimoire.Performer.Physical(directory)._callWithUnlockedTree(unlocked)
                     self.__._insert(obj, **kw)
                     self.getDirCacheNode(path, 1, treeNode).invalidate()
                     return obj
@@ -254,7 +261,7 @@ class Performer(Grimoire.Performer.Base):
 
                 def remove(self, path, obj):
                     self.__._remove(obj)
-                    self.invalidateDirCache(path, True)
+                    self.invalidateDirCache(path[:-1])
 
                 def defaultMethod(self):
                     path = []
@@ -411,8 +418,9 @@ class Performer(Grimoire.Performer.Base):
                     self.selection.__init__()
                     self.selection.method = method
                     self.selection.params = self.__._getpath(
-                        path=['introspection', 'params'] + list(method))()                    
-                    if (    not self.selection.params.arglist
+                        path=['introspection', 'params'] + list(method))()
+                    if (    not Grimoire.Types.getComment(self.selection.params)
+                        and not self.selection.params.arglist
                         and not self.selection.params.resargstype
                         and not self.selection.params.reskwtype):
                         self.handleCall(self.selection.method,
