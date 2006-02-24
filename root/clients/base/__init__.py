@@ -221,7 +221,7 @@ class Performer(Grimoire.Performer.Base):
                             return self.updateDirCache([name], depth, reupdate, node)
                         node = self.updateDirCache([name], 1, reupdate, node)
 
-                def insert(self, path, obj, root = False, isolate = True, treeNode = None, **kw):
+                def insert(self, path, obj, root = False, isolate = True, **kw):
                     try:
                         self.defaultLanguage = Grimoire.Types.getValue(
                             Grimoire.Performer.Logical(obj).directory.get.user(['language']))
@@ -241,22 +241,26 @@ class Performer(Grimoire.Performer.Base):
                     if self.hide:
                         obj = Grimoire.Performer.Hide(obj, self.hide)
 
-                    fullPath = (treeNode and treeNode.path or []) + path
-                    obj = Grimoire.Performer.Prefixer(fullPath, obj)
+                    obj = Grimoire.Performer.Prefixer(path, obj)
                     if not root:
                         def unlocked():
                             directory.directory.set.treeinfo(['local', 'client', 'logout', 'session'], self)
                             directory.directory.set.treeinfo(['local', 'client', 'logout', 'tree'], obj)
-                            directory.directory.set.treeinfo(['local', 'client', 'logout', 'path'], fullPath)
+                            directory.directory.set.treeinfo(['local', 'client', 'logout', 'path'], path)
                         Grimoire.Performer.Physical(directory)._callWithUnlockedTree(unlocked)
                     self.__._insert(obj, **kw)
-                    self.getDirCacheNode(path, 1, treeNode).invalidate()
+                    self.getDirCacheNode(path, 1).invalidate()
                     return obj
 
-                def insertUnique(self, path, obj, treeNode = None, **kw):
-                    parentNode = self.updateDirCachePath(path, treeNode = treeNode)
-                    uniqueName = unicode(len(parentNode.subNodes))
-                    self.insert([uniqueName], obj, treeNode = parentNode, **kw)
+                def insertUnique(self, path, obj, **kw):
+                    uniqueName = unicode(len(set([
+                        tuple(subPath)
+                        for (leaf, subPath)
+                        in Grimoire.Utils.SortedList(
+                            self.__._getpath(path=['introspection', 'dir'] + path)(1))
+                        if subPath
+                        ])))
+                    self.insert(path + [uniqueName], obj, **kw)
                     return path + [uniqueName]
 
                 def remove(self, path, obj):

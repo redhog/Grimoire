@@ -128,9 +128,9 @@ class Performer(Grimoire.Performer.Base):
                     self.composer = Composer
                     return self
                 
-                def insertUnique(self, path, obj, treeNode = None, **kw):
-                    upath = super(Session, self).insertUnique(path, obj, treeNode, **kw)
-                    node = self.updateDirCachePath(upath, treeNode = treeNode)
+                def insertUnique(self, path, obj, **kw):
+                    upath = super(Session, self).insertUnique(path, obj, **kw)
+                    node = self.updateDirCachePath(upath)
                     #self.model.row_inserted((0,) + node.numpath,
                     #                        self.model.get_iter((0,) + node.numpath))
                     #if node.subNodes:
