@@ -7,7 +7,7 @@ Ps = Grimoire.Types.ParamsType.derive
 debugDirCache = 0
 debugTree = 0
 debugTranslations = 0
-debugMethods = 0
+debugMethods = 1
 debugUpdates = 0
 
 class Performer(Grimoire.Performer.Base):
@@ -18,37 +18,6 @@ class Performer(Grimoire.Performer.Base):
                 composer = Grimoire.Types.TextComposer
                 sessionPath = ['parameters', 'clients']
 
-                class DirCacheNode(object):
-                    __slots__ = ['session', 'parent', 'path', 'subNodes', 'oldSubNodes', 'leaf', 'updated', 'translation']
-                    def __init__(self, session, parent = None, name = None, subNodes = None, leaf = None, translation = None):
-                        """Note: The theory is that either both of
-                        parent and name are None, or neither of
-                        them"""
-                        self.session = session
-                        self.subNodes = subNodes or Grimoire.Utils.OrderedMapping()
-                        self.oldSubNodes = Grimoire.Utils.OrderedMapping()
-                        self.leaf = leaf or 0
-                        self.updated = subNodes is not None and leaf is notNone
-                        self.translation = translation
-                        self.setParent(parent, name)
-                    def setParent(self, parent, name):
-                        self.parent = parent
-                        self.path = []
-                        if parent:
-                            parent.subNodes[name] = self
-                            self.path = parent.path + [name]
-                    def reparent(self, parent, name):
-                        self.setParent(parent, name)
-                        self.invalidate()
-                    def invalidate(self):
-                        self.oldSubNodes.update(self.subNodes)
-                        self.subNodes = Grimoire.Utils.OrderedMapping()
-                        self.leaf = 0
-                        self.updated = 0
-                    def validate(self):
-                        self.oldSubNodes = Grimoire.Utils.OrderedMapping()
-                        self.updated = 1
-
                 class Result(object):
                     __slots__ = ['method', 'result', 'error']
                     def __init__(self, method = None, result = None, error = None):
@@ -56,7 +25,205 @@ class Performer(Grimoire.Performer.Base):
                         self.result = result
                         self.error = error
 
-                def __new__(cls, tree = None, extraTrees = [], initCommands = None, *arg, **kw):
+                class View(object):
+                    class DirCacheNode(object):
+                        __slots__ = ['view', 'parent', 'path', 'subNodes', 'oldSubNodes',
+                                     'leaf', 'updated', 'translation']
+                        def __init__(self, view, parent = None, name = None, subNodes = None,
+                                     leaf = None, translation = None):
+                            """Note: The theory is that either both of
+                            parent and name are None, or neither of
+                            them"""
+                            self.view = view
+                            self.subNodes = subNodes or Grimoire.Utils.OrderedMapping()
+                            self.oldSubNodes = Grimoire.Utils.OrderedMapping()
+                            self.leaf = leaf or 0
+                            self.updated = subNodes is not None and leaf is notNone
+                            self.translation = translation
+                            self.setParent(parent, name)
+                        def setParent(self, parent, name):
+                            self.parent = parent
+                            self.path = []
+                            if parent:
+                                parent.subNodes[name] = self
+                                self.path = parent.path + [name]
+                        def reparent(self, parent, name):
+                            self.setParent(parent, name)
+                            self.invalidate()
+                        def invalidate(self):
+                            if self.updated:
+                                self.oldSubNodes.update(self.subNodes)
+                                self.subNodes = Grimoire.Utils.OrderedMapping()
+                                self.leaf = 0
+                                self.updated = 0
+                        def validate(self):
+                            if not self.updated:
+                                self.oldSubNodes = Grimoire.Utils.OrderedMapping()
+                                self.updated = 1
+
+#                         def __getattribute__(self, name):
+#                             if name == 'subNodes' or name == "oldSubNodes":
+#                                 if object.__getattribute__(self, "path") == ['login']:
+#                                     print 
+#                                     print "============================="
+#                                     print "Requesting", name, "len", len(object.__getattribute__(self, name))
+#                                     print "Updated", object.__getattribute__(self, 'updated')
+#                                     print ''.join(traceback.format_stack())
+#                             return object.__getattribute__(self, name)
+
+                    def __init__(self, session, path, hide = None):
+                        self.session = session
+                        self.path = path
+                        self.dirCache = self.DirCacheNode(view = self)
+                        self.__ = session.__
+                        self.hide = Grimoire.__._getpath(
+                            Grimoire.Types.TreeRoot,
+                            path = ['directory', 'get'] + self.session.sessionPath + list(self.path)
+                            )(['view', 'hide'],
+                              Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['directory']),
+                                                           (Grimoire.Types.Ability.Ignore, ['clients']),
+                                                           (Grimoire.Types.Ability.Ignore, ['trees']),
+                                                           (Grimoire.Types.Ability.Ignore, ['introspection']),
+                                                           (Grimoire.Types.Ability.Allow, [])]),
+                              False)
+                        self.__ = Grimoire.Performer.Hide(Grimoire.Performer.Isolator(self.__), hide)
+                        self._ = Grimoire.Performer.Logical(self.__)
+
+                    def getDirCacheNode(self, path, create = False, treeNode = None):
+                        treeNode = treeNode or self.dirCache
+                        restpath = path
+                        while restpath:
+                            if restpath[0] in treeNode.subNodes:
+                                node = treeNode.subNodes[restpath[0]]
+                            else:
+                                if create:
+                                    if restpath[0] in treeNode.oldSubNodes:
+                                        if debugDirCache: print "Rebirth of node before", restpath[0]
+                                        node = treeNode.oldSubNodes[restpath[0]]
+                                        node.reparent(treeNode, restpath[0])
+                                    else:
+                                        if debugDirCache: print "New node before", restpath
+                                        node = self.DirCacheNode(view = self,
+                                                                 parent = treeNode,
+                                                                 name = restpath[0])
+                                else:
+                                    raise KeyError(path)
+                            treeNode = node
+                            restpath = restpath[1:]
+                        return treeNode
+
+                    def invalidateDirCache(self, path = [], treeNode = None, create = False):
+                        node = self.getDirCacheNode(path, create, treeNode = treeNode)
+                        node.invalidate()
+                        return node
+                    
+                    def updateDirCache(self, prefixPath, depth = Grimoire.Performer.UnlimitedDepth, reupdate=1, treeNode = None):
+                        """Updates depth levels down a branch of the tree. If reupdate
+                        is not true, nodes with updated == 1 will not be updated
+                        again.
+                        """
+                        if debugUpdates: print "Update:", prefixPath, depth
+                        subDepth = depth
+                        if subDepth == -1:
+                            subDepth = Grimoire.Performer.UnlimitedDepth
+                        if subDepth > 0:
+                            node = self.getDirCacheNode(prefixPath, 1, treeNode = treeNode)
+                            if node.parent: assert(node.parent.updated)
+                            if reupdate:
+                                node.invalidate()
+                            if not node.updated:
+                                if debugDirCache: print "Reupdate", treeNode, prefixPath, subDepth
+                                translatedPaths = []
+                                for (leaf, path) in Grimoire.Utils.SortedList(
+                                        self.__._getpath(path=['introspection', 'dir'] + node.path
+                                                         )(subDepth),
+                                        lambda x, y: cmp(len(y[1]), len(x[1]))):
+                                    subNode = self.getDirCacheNode(path, 1, treeNode = node)
+                                    path = node.path + path
+                                    if leaf:
+                                        subNode.leaf = 1
+                                    if len(path) < subDepth - 1:
+                                        subNode.validate()
+                                    if path not in translatedPaths and subNode.translation is None:
+                                        translatedPaths += [path]
+                                        if path: # The root-path can not be translated
+                                            try:
+                                                subNode.translation = self.session.getTranslationTable(
+                                                    path[:-1]
+                                                    )(path[-1])
+                                            except Grimoire.Utils.UntranslatableError:
+                                                pass
+                                node.validate()
+                            else:
+                                for subNode in node.subNodes.itervalues():
+                                    self.updateDirCache([], subDepth - 1, reupdate, treeNode = subNode)
+                            return node
+                        return None
+
+                    def updateDirCachePath(self, path, depth = 1, reupdate=0, treeNode = None):
+                        """Updates all nodes along a path down the tree,
+                        and then depth nodes from there (that is, if depth
+                        == 1, only nodes along the path will get
+                        updated). If reupdate is not true, nodes with
+                        updated == 1 will not be updated again.
+                        """
+                        if not path:
+                            return self.updateDirCache([], depth, reupdate, treeNode)
+                        node = self.updateDirCache([], 1, reupdate, treeNode)
+                        for item, name in enumerate(path):
+                            if item == len(path) - 1:
+                                return self.updateDirCache([name], depth, reupdate, node)
+                            node = self.updateDirCache([name], 1, reupdate, node)
+                            
+                    def insert(self, path, treeNode = None, root = False, **kw):
+                        return self.invalidateDirCache(path, create = True, treeNode = treeNode)
+
+                    def remove(self, path, treeNode = None, **kw):
+                        if path:
+                            path = path[:-1]
+                        else:
+                            treeNode = treeNode.parent
+                        return self.invalidateDirCache(path, treeNode = treeNode)
+
+                    def traverseTree(self, traverseEntry, traverseSubEntries, res, *args, **kw):
+                        def traverseTreeEntries(node, subNodeNr, res, *args, **kw):
+                            (nres, nargs, nkw) = traverseEntry(node, subNodeNr, res, *args, **kw)
+                            if traverseSubEntries(node, res, *args, **kw):
+                                if node.updated:
+                                    subNodes = node.subNodes
+                                else:
+                                    subNodes = node.oldSubNodes
+                                for subNodeNr, (name, subNode) in enumerate(subNodes.iteritems()):
+                                    nres = traverseTreeEntries(subNode, subNodeNr, nres, *nargs, **nkw)
+                            return nres
+                        return traverseTreeEntries(self.dirCache, 0, res, *args, **kw)
+
+                    def debugRenderTreeToText(self):
+                        pictExpander = ((('|?-', '`?-'),
+                                         ('|?o', '`?o')),
+                                        (('|--', '`--'),
+                                         ('|-o', '`-o')))
+                        def renderEntry(node, sibling, res, indent=''):
+                            path = node.path
+                            siblings = node.parent and len(node.parent.subNodes) or 1
+                            subNodes = (node.updated and len(node.subNodes)) or len(node.oldSubNodes)
+                            res += indent
+                            res += pictExpander[node.updated][node.leaf][sibling == siblings - 1]
+                            if node.translation is not None:
+                                res += node.translation
+                            elif node.path:
+                                res += node.path[-1]
+                            else:
+                                res += 'Grimoire'
+                            res += "\n"
+                            return (res,
+                                    (indent + ['|  ', '   '][sibling == siblings - 1],),
+                                    {})
+                        def renderSubEntries(*arg, **kw):
+                            return True
+                        return self.traverseTree(renderEntry, renderSubEntries, '')
+
+                def __new__(cls, tree = None, extraTrees = [], initCommands = None, **kw):
                     """The session might be initialized with a Gimoire tree, or
                     with a Grimoire expression. In the case of an expression, the
                     method Grimoire._.introspection.eval is used to evaluate
@@ -67,27 +234,28 @@ class Performer(Grimoire.Performer.Base):
                     """
                     
                     self = object.__new__(cls)
-                    self.dirCache = self.DirCacheNode(session = self)
+
+                    self.views = {}
+                    
+                    self.__ = Grimoire.Performer.Composer(
+                        Grimoire.Performer.Prefixer(
+                            ['introspection'],
+                            Grimoire._.trees.introspection()),
+                        Grimoire._.trees.local.load(__name__ + '._about'),
+                        *extraTrees + [Grimoire.Performer.Isolator(Grimoire._)])
+                    self._ = Grimoire.Performer.Logical(self.__)
+                    self.defaultLanguage = 'en'
+
                     self.hide = Grimoire.__._getpath(
                             Grimoire.Types.TreeRoot,
                             path = ['directory', 'get'] + self.sessionPath
-                            )(['hide'],
+                            )(['child', 'hide'],
                               Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['directory']),
                                                            (Grimoire.Types.Ability.Ignore, ['clients']),
                                                            (Grimoire.Types.Ability.Ignore, ['trees']),
                                                            (Grimoire.Types.Ability.Ignore, ['introspection']),
                                                            (Grimoire.Types.Ability.Allow, [])]),
                               False)
-                    self.__ = Grimoire.Performer.Hide(
-                        Grimoire.Performer.Composer(
-                            Grimoire.Performer.Prefixer(
-                                ['introspection'],
-                                Grimoire._.trees.introspection()),
-                            Grimoire._.trees.local.load(__name__ + '._about'),
-                            *extraTrees + [Grimoire.Performer.Isolator(Grimoire._)]),
-                        self.hide)
-                    self._ = Grimoire.Performer.Logical(self.__)
-                    self.defaultLanguage = 'en'
 
                     comment = None
                     tree = tree or self.__._getpath(
@@ -122,104 +290,47 @@ class Performer(Grimoire.Performer.Base):
                             initCommandsResults.insert(0, comment)
                         comment = initCommandsResults
                         
-                    self.__init__(*arg, **kw)
+                    self.__init__(**kw)
 
                     if comment is not None:
                         return Grimoire.Types.AnnotatedValue(self, comment)
                     return self
 
-                def invalidateDirCache(self, path = [], treeNode = None):
-                    def invalidate(node):
-                        node.invalidate()
-                        for subNode in node.subNodes.itervalues():
-                            invalidate(subNode)
-                    invalidate(self.getDirCacheNode(path, treeNode = treeNode))
+                def __init__(self, *arg, **kw):
+                    self.addView(()) # Add a default view
 
-                def invalidateDirCachePath(self, path = [], treeNode = None):
-                    """Invalidates all nodes along a path down the tree (if
-                    existing).
-                    """
-                    def invalidate(treeNode, restpath):
-                        if restpath and restpath[0] in treeNode.subNodes:
-                            invalidate(treeNode.subNodes[restpath[0]], restpath[1:])
-                        treeNode.invalidate()
-                    invalidate(treeNode or self.dirCache, path)
+                # View operations
 
-                def getDirCacheNode(self, path, create = 0, treeNode = None):
-                    treeNode = treeNode or self.dirCache
-                    restpath = path
-                    while restpath:
-                        if restpath[0] in treeNode.subNodes:
-                            node = treeNode.subNodes[restpath[0]]
-                        else:
-                            if create:
-                                if restpath[0] in treeNode.oldSubNodes:
-                                    if debugDirCache: print "Rebirth of node before", restpath[0]
-                                    node = treeNode.oldSubNodes[restpath[0]]
-                                    node.reparent(treeNode, restpath[0])
-                                else:
-                                    if debugDirCache: print "New node before", restpath
-                                    node = self.DirCacheNode(session = self,
-                                                             parent = treeNode,
-                                                             name = restpath[0])
-                            else:
-                                raise KeyError(path)
-                        treeNode = node
-                        restpath = restpath[1:]
-                    return treeNode
+                def addView(self, path, hide = None):
+                    path = tuple(path)
+                    self.views[path] = self.View(self, path, hide)
 
-                def updateDirCache(self, prefixPath, depth = Grimoire.Performer.UnlimitedDepth, reupdate=1, treeNode = None):
+                def deleteView(self, path):
+                    del self.views[path]
+
+                def invalidateDirCache(self, *arg, **kw):
+                    for view in self.views.itervalues():
+                        view.invalidateDirCache(*arg, **kw)
+
+                def updateDirCache(self, *arg, **kw):
                     """Updates depth levels down a branch of the tree. If reupdate
                     is not true, nodes with updated == 1 will not be updated
                     again.
                     """
-                    if debugUpdates: print "Update:", prefixPath, depth
-                    subDepth = depth
-                    if subDepth == -1:
-                        subDepth = Grimoire.Performer.UnlimitedDepth
-                    if subDepth > 0:
-                        node = self.getDirCacheNode(prefixPath, 1, treeNode = treeNode)
-                        if node.parent: assert(node.parent.updated)
-                        if reupdate or not node.updated:
-                            if debugDirCache: print "Reupdate", treeNode, prefixPath, subDepth
-                            translatedPaths = []
-                            for (leaf, path) in Grimoire.Utils.SortedList(self.__._getpath(path=['introspection', 'dir'] + node.path
-                                                                                           )(subDepth),
-                                                                          lambda x, y: cmp(len(y[1]), len(x[1]))):
-                                subNode = self.getDirCacheNode(path, 1, treeNode = node)
-                                path = node.path + path
-                                if leaf:
-                                    subNode.leaf = 1
-                                if len(path) < subDepth - 1:
-                                    subNode.validate()
-                                if path not in translatedPaths and subNode.translation is None:
-                                    translatedPaths += [path]
-                                    if path: # The root-path can not be translated
-                                        try:
-                                            subNode.translation = self.getTranslationTable(path[:-1])(path[-1])
-                                        except Grimoire.Utils.UntranslatableError:
-                                            pass
-                            node.validate()
-                        else:
-                            for subNode in node.subNodes.itervalues():
-                                self.updateDirCache([], subDepth - 1, reupdate, treeNode = subNode)
-                        return node
-                    return None
+                    return dict([(viewname, view.updateDirCache(*arg, **kw))
+                                 for viewname, view in self.views.iteritems()])
 
-                def updateDirCachePath(self, path, depth = 1, reupdate=0, treeNode = None):
+                def updateDirCachePath(self, *arg, **kw):
                     """Updates all nodes along a path down the tree,
                     and then depth nodes from there (that is, if depth
                     == 1, only nodes along the path will get
                     updated). If reupdate is not true, nodes with
                     updated == 1 will not be updated again.
                     """
-                    if not path:
-                        return self.updateDirCache([], depth, reupdate, treeNode)
-                    node = self.updateDirCache([], 1, reupdate, treeNode)
-                    for item, name in enumerate(path):
-                        if item == len(path) - 1:
-                            return self.updateDirCache([name], depth, reupdate, node)
-                        node = self.updateDirCache([name], 1, reupdate, node)
+                    return dict([(viewname, view.updateDirCachePath(*arg, **kw))
+                                 for viewname, view in self.views.iteritems()])
+                                
+                # Tree operations
 
                 def insert(self, path, obj, root = False, isolate = True, **kw):
                     try:
@@ -249,7 +360,8 @@ class Performer(Grimoire.Performer.Base):
                             directory.directory.set.treeinfo(['local', 'client', 'logout', 'path'], path)
                         Grimoire.Performer.Physical(directory)._callWithUnlockedTree(unlocked)
                     self.__._insert(obj, **kw)
-                    self.getDirCacheNode(path, 1).invalidate()
+                    for view in self.views.itervalues():
+                        view.insert(path, root = root, **kw)
                     return obj
 
                 def insertUnique(self, path, obj, **kw):
@@ -258,14 +370,17 @@ class Performer(Grimoire.Performer.Base):
                         for (leaf, subPath)
                         in Grimoire.Utils.SortedList(
                             self.__._getpath(path=['introspection', 'dir'] + path)(1))
-                        if subPath
                         ])))
-                    self.insert(path + [uniqueName], obj, **kw)
-                    return path + [uniqueName]
+                    path = path + [uniqueName]
+                    self.insert(path, obj, **kw)
+                    return path
 
-                def remove(self, path, obj):
+                def remove(self, path, obj, **kw):
                     self.__._remove(obj)
-                    self.invalidateDirCache(path[:-1])
+                    for view in self.views.itervalues():
+                        view.remove(path, **kw)
+
+                # Method operations
 
                 def defaultMethod(self):
                     path = []
@@ -353,40 +468,50 @@ class Performer(Grimoire.Performer.Base):
         def _call(performer):
             Session = performer._getpath(Grimoire.Types.MethodBase).base()
             class NumpathSession(Session):
-                class DirCacheNode(Session.DirCacheNode):
-                    __slots__ = ['numpath']
-                    def setParent(self, parent, name):
-                        super(NumpathSession.DirCacheNode, self).setParent(parent, name)
-                        if parent:
-                            self.numpath = parent.numpath + (parent.subNodes.__keys__.index(name),)
-                        else:
-                            self.numpath = ()
-                    def __unicode__(self):
-                        if self.translation is not None:
-                            text = self.translation
-                        elif self.path:
-                            text = self.path[-1]
-                        else:
-                            text = 'Grimoire' 
-                        if not self.leaf:
-                            text = "<span foreground='#999999'>" + text + "</span>"
-                        return text
+                class View(Session.View):
+                    class DirCacheNode(Session.View.DirCacheNode):
+                        __slots__ = ['numpath']
+                        def setParent(self, parent, name):
+                            super(NumpathSession.View.DirCacheNode, self).setParent(parent, name)
+                            if parent:
+                                self.numpath = parent.numpath + (parent.subNodes.__keys__.index(name),)
+                            else:
+                                self.numpath = ()
+                        def __unicode__(self):
+                            if self.translation is not None:
+                                text = self.translation
+                            elif self.path:
+                                text = self.path[-1]
+                            else:
+                                text = 'Grimoire' 
+                            if not self.leaf:
+                                text = "<span foreground='#999999'>" + text + "</span>"
+                            return text
 
-                def updateDirCacheNumPath(self, numpath, depth = 1, reupdate=0, treeNode = None):
-                    """Updates all nodes along a numeric path down the tree,
-                    and then depth nodes from there (that is, if depth
-                    == 1, only nodes along the path will get
-                    updated). If reupdate is not true, nodes with
-                    updated == 1 will not be updated again.
-                    """
-                    if not numpath:
-                        return self.updateDirCache([], depth, reupdate, treeNode)
-                    node = self.updateDirCache([], 1, reupdate, treeNode)
-                    for item, index in enumerate(numpath):
-                        name = node.subNodes.__keys__[index]
-                        if item == len(numpath) - 1:
-                            return self.updateDirCache([name], depth, reupdate, node)
-                        node = self.updateDirCache([name], 1, reupdate, node)
+                    def updateDirCacheNumPath(self, numpath, depth = 1, reupdate=1, treeNode = None):
+                        """Updates all nodes along a numeric path down the tree,
+                        and then depth nodes from there (that is, if depth
+                        == 1, only nodes along the path will get
+                        updated). If reupdate is not true, nodes with
+                        updated == 1 will not be updated again.
+                        """
+                        try:
+                            node = treeNode
+                            if not numpath:
+                                return self.updateDirCache([], depth, reupdate, treeNode)
+                            node = self.updateDirCache([], 1, reupdate, treeNode)
+                            for item, index in enumerate(numpath):
+                                name = node.subNodes.__keys__[index]
+                                if item == len(numpath) - 1:
+                                    return self.updateDirCache([name], depth, reupdate, node)
+                                node = self.updateDirCache([name], 1, reupdate, node)
+                        except Exception, e:
+                            print self.debugRenderTreeToText()
+                            if node:
+                                print node.path, index, node.subNodes.__keys__
+                            print numpath, depth, reupdate, treeNode
+                            traceback.print_exc()
+                            raise e
 
             return NumpathSession
         _call = Grimoire.Utils.cachingFunction(_call)
@@ -398,6 +523,9 @@ class Performer(Grimoire.Performer.Base):
         def _call(performer):
             Session = performer._getpath(Grimoire.Types.MethodBase).base()
             class FormSession(Session):
+                class View(Session.View):
+                    class DirCacheNode(Session.View.DirCacheNode): pass
+                
                 class Selection(object):
                     __slots__ = ['method', 'params', 'result']
                     def __init__(self):
@@ -405,13 +533,13 @@ class Performer(Grimoire.Performer.Base):
                         self.params = None
                         self.result = None
  
-                def __new__(cls, *arg, **kw):
-                    sess = super(FormSession, cls).__new__(cls, *arg, **kw)
+                def __new__(cls, **kw):
+                    sess = super(FormSession, cls).__new__(cls, **kw)
                     self = Grimoire.Types.getValue(sess)
                     self.selection = cls.Selection()
                     self.selection.result = cls.Result()
                     self.selection.result.result = Grimoire.Types.getComment(sess)
-                    return self
+                    return sess
 
                 def getMethodPath(self, path = None):
                     if path is None and self.selection:
@@ -480,77 +608,86 @@ class Performer(Grimoire.Performer.Base):
         def _call(performer):
             Session = performer._getpath(Grimoire.Types.MethodBase).base()
             class RenderableSession(Session):
-                class DirCacheNode(Session.DirCacheNode):
-                    __slots__ = ['expanded']
-                    def __init__(self, expanded = 0, *arg, **kw):
-                        Session.DirCacheNode.__init__(self, *arg, **kw)
-                        self.expanded = expanded
+                class View(Session.View):
+                    class DirCacheNode(Session.View.DirCacheNode):
+                        __slots__ = ['expanded']
+                        def __init__(self, expanded = 0, *arg, **kw):
+                            super(RenderableSession.View.DirCacheNode, self).__init__(*arg, **kw)
+                            self.expanded = expanded
 
-                def expand(self, path, depth = Grimoire.Performer.UnlimitedDepth):
-                    if debugTree: print "Expand:", path, depth
-                    node = self.updateDirCachePath(path, depth)
-                    def expand(node, depth):
-                        node.expanded = 1
-                        if depth > 1:
-                            for name in node.subNodes.iterkeys():
-                                expand(node.subNodes[name], depth - 1)
-                    expand(self.updateDirCachePath(path, depth), depth)
+                    def expand(self, path, depth = Grimoire.Performer.UnlimitedDepth):
+                        if debugTree: print "Expand:", path, depth
+                        node = self.updateDirCachePath(path, depth)
+                        def expand(node, depth):
+                            node.expanded = 1
+                            if depth > 1:
+                                for name in node.subNodes.iterkeys():
+                                    expand(node.subNodes[name], depth - 1)
+                        expand(self.updateDirCachePath(path, depth), depth)
 
-                def expandPath(self, path, depth = Grimoire.Performer.UnlimitedDepth):
-                    if debugTree: print "ExpandPath:", path, depth
-                    for index in xrange(0, len(path)):
-                        self.expand(path[:index], 1)
-                    return self.expand(path, depth)
+                    def expandPath(self, path, depth = Grimoire.Performer.UnlimitedDepth):
+                        if debugTree: print "ExpandPath:", path, depth
+                        for index in xrange(0, len(path)):
+                            self.expand(path[:index], 1)
+                        return self.expand(path, depth)
 
-                def collapse(self, path):
-                    if debugTree: print "Collapse:", path
-                    self.updateDirCachePath(path).expanded = 0
+                    def collapse(self, path):
+                        if debugTree: print "Collapse:", path
+                        self.updateDirCachePath(path).expanded = 0
 
+                    def renderTree(self, renderEntry, *args, **kw):
+                        def traverseEntry(node, *arg, **kw):
+                            if node.expanded and not node.updated:
+                                self.updateDirCache(node.path, 1, 0)
+                            return renderEntry(node, *arg, **kw)
+                        def renderSubEntries(node, *arg, **kw):
+                            return node.expanded
+                        return self.traverseTree(traverseEntry, renderSubEntries, '', *args, **kw)
+
+                    def renderTreeToText(self):
+                        pictIcon = (('[=]', '[=]'),
+                                    ('\\_\\', '\\_/'))            
+                        pictExpander = ((('|--', '`--'),
+                                         ('|--', '`--')),
+                                        (('|-+', '`-+'),
+                                         ('|-.', '`-.')))
+                        def renderEntry(node, sibling, res, indent=''):
+                            path = node.path
+                            siblings = node.parent and len(node.parent.subNodes) or 1
+                            subNodes = len(node.subNodes)
+                            res += indent
+                            res += pictExpander[subNodes > 0 or not node.updated
+                                                ][node.expanded][sibling == siblings - 1]
+                            res += pictIcon[subNodes > 0][node.expanded]
+                            if node.translation is not None:
+                                res += node.translation
+                            elif node.path:
+                                res += node.path[-1]
+                            else:
+                                res += 'Grimoire'
+                            res += "\n"
+                            return (res,
+                                    (indent + ['|  ', '   '][sibling == siblings - 1],),
+                                    {})
+
+                        return self.renderTree(renderEntry)
+
+                def expand(self, *arg, **kw):
+                    for view in self.views.itervalues():
+                        view.expand(*arg, **kw)
+
+                def expandPath(self, *arg, **kw):
+                    for view in self.views.itervalues():
+                        view.expandPath(*arg, **kw)
+
+                def collapse(self, *arg, **kw):
+                    for view in self.views.itervalues():
+                        view.collapse(*arg, **kw)
+                        
                 def insertUnique(self, path, obj, **kw):
                     upath = super(RenderableSession, self).insertUnique(path, obj, **kw)
-                    self.expand(list(path), 1)
-                    self.expand(upath, 1)
+                    self.expandPath(upath, 1)
                     return upath
-
-                def renderTree(self, renderEntry, *args, **kw):
-                    def renderTreeEntries(node, path, subNodes, subNode, res, *args, **kw):
-                        if node.expanded and not node.updated:
-                            self.updateDirCache(path, 1, 0)
-                        (nres, nargs, nkw) = renderEntry(node, path, subNodes, subNode, res, *args, **kw)
-                        if node.expanded:
-                            subNodes = len(node.subNodes)
-                            subNodeNr = 0
-                            for name, subNode in node.subNodes.iteritems():
-                                nres = renderTreeEntries(subNode, path + [name], subNodes, subNodeNr, nres, *nargs, **nkw)
-                                subNodeNr += 1
-                        return nres
-                    return renderTreeEntries(self.dirCache, [], 1, 0, None, *args, **kw)
-
-                def renderTreeToText(self):
-                    pictIcon = (('[=]', '[=]'),
-                                ('\\_\\', '\\_/'))            
-                    pictExpander = ((('|--', '`--'),
-                                     ('|--', '`--')),
-                                    (('|-+', '`-+'),
-                                     ('|-.', '`-.')))
-                    def renderEntry(node, path, sibblings, sibbling, res, indent='', ):
-                        subNodes = len(node.subNodes)
-                        res = res or ''
-                        res += indent
-                        res += pictExpander[subNodes > 0 or not node.updated][node.expanded][sibbling == sibblings - 1]
-                        res += pictIcon[subNodes > 0][node.expanded]
-                        if node.translation is not None:
-                            res += node.translation
-                        elif path:
-                            res += path[-1]
-                        else:
-                            res += 'Grimoire'
-                        res += "\n"
-                        return (res,
-                                (indent + ['|  ', '   '][sibbling == sibblings - 1],),
-                                {})
-
-                    return self.renderTree(renderEntry)
             
             return RenderableSession
         _call = Grimoire.Utils.cachingFunction(_call)
