@@ -17,6 +17,11 @@ class Performer(Grimoire.Performer.Base):
 
                 composer = Grimoire.Types.TextComposer
                 sessionPath = ['parameters', 'clients']
+                hide = Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['directory']),
+                                                    (Grimoire.Types.Ability.Ignore, ['clients']),
+                                                    (Grimoire.Types.Ability.Ignore, ['trees']),
+                                                    (Grimoire.Types.Ability.Ignore, ['introspection']),
+                                                    (Grimoire.Types.Ability.Allow, [])])
 
                 class Result(object):
                     __slots__ = ['method', 'result', 'error']
@@ -26,6 +31,14 @@ class Performer(Grimoire.Performer.Base):
                         self.error = error
 
                 class View(object):
+
+                    viewPath = []
+                    hide = Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['directory']),
+                                                        (Grimoire.Types.Ability.Ignore, ['clients']),
+                                                        (Grimoire.Types.Ability.Ignore, ['trees']),
+                                                        (Grimoire.Types.Ability.Ignore, ['introspection']),
+                                                        (Grimoire.Types.Ability.Allow, [])])
+                    
                     class DirCacheNode(object):
                         __slots__ = ['view', 'parent', 'path', 'subNodes', 'oldSubNodes',
                                      'leaf', 'updated', 'translation']
@@ -61,32 +74,21 @@ class Performer(Grimoire.Performer.Base):
                                 self.oldSubNodes = Grimoire.Utils.OrderedMapping()
                                 self.updated = 1
 
-#                         def __getattribute__(self, name):
-#                             if name == 'subNodes' or name == "oldSubNodes":
-#                                 if object.__getattribute__(self, "path") == ['login']:
-#                                     print 
-#                                     print "============================="
-#                                     print "Requesting", name, "len", len(object.__getattribute__(self, name))
-#                                     print "Updated", object.__getattribute__(self, 'updated')
-#                                     print ''.join(traceback.format_stack())
-#                             return object.__getattribute__(self, name)
-
                     def __init__(self, session, path, hide = None):
                         self.session = session
                         self.path = path
                         self.dirCache = self.DirCacheNode(view = self)
                         self.__ = session.__
-                        self.hide = Grimoire.__._getpath(
+                        self.hide = hide or Grimoire.__._getpath(
                             Grimoire.Types.TreeRoot,
-                            path = ['directory', 'get'] + self.session.sessionPath + list(self.path)
-                            )(['view', 'hide'],
-                              Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['directory']),
-                                                           (Grimoire.Types.Ability.Ignore, ['clients']),
-                                                           (Grimoire.Types.Ability.Ignore, ['trees']),
-                                                           (Grimoire.Types.Ability.Ignore, ['introspection']),
-                                                           (Grimoire.Types.Ability.Allow, [])]),
-                              False)
-                        self.__ = Grimoire.Performer.Hide(Grimoire.Performer.Isolator(self.__), hide)
+                            path = ['directory', 'get'] + self.session.sessionPath + self.viewPath + list(self.path)
+                            )(['view', 'hide'], self.hide, False)
+                        self.__ = Grimoire.Performer.Hide(
+                            Grimoire.Performer.Composer(
+                                Grimoire.Performer.Prefixer(['introspection'],
+                                                            Grimoire._.trees.introspection()),
+                                Grimoire.Performer.Isolator(self.__)),
+                            self.hide)
                         self._ = Grimoire.Performer.Logical(self.__)
 
                     def getDirCacheNode(self, path, create = False, treeNode = None):
@@ -249,13 +251,7 @@ class Performer(Grimoire.Performer.Base):
                     self.hide = Grimoire.__._getpath(
                             Grimoire.Types.TreeRoot,
                             path = ['directory', 'get'] + self.sessionPath
-                            )(['child', 'hide'],
-                              Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['directory']),
-                                                           (Grimoire.Types.Ability.Ignore, ['clients']),
-                                                           (Grimoire.Types.Ability.Ignore, ['trees']),
-                                                           (Grimoire.Types.Ability.Ignore, ['introspection']),
-                                                           (Grimoire.Types.Ability.Allow, [])]),
-                              False)
+                            )(['child', 'hide'], self.hide, False)
 
                     comment = None
                     tree = tree or self.__._getpath(
@@ -296,14 +292,13 @@ class Performer(Grimoire.Performer.Base):
                         return Grimoire.Types.AnnotatedValue(self, comment)
                     return self
 
-                def __init__(self, *arg, **kw):
-                    self.addView(()) # Add a default view
-
                 # View operations
 
-                def addView(self, path, hide = None):
+                def addView(self, path, viewClass = None, **kw):
                     path = tuple(path)
-                    self.views[path] = self.View(self, path, hide)
+                    if viewClass is None:
+                        viewClass = self.View
+                    self.views[path] = viewClass(session = self, path = path, **kw)
 
                 def deleteView(self, path):
                     del self.views[path]
