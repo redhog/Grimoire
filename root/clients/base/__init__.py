@@ -9,6 +9,7 @@ debugTree = 0
 debugTranslations = 0
 debugMethods = 1
 debugUpdates = 0
+debugCalls = 0
 
 class Performer(Grimoire.Performer.Base):
     class base(Grimoire.Performer.Method):
@@ -442,6 +443,7 @@ class Performer(Grimoire.Performer.Base):
                     return result
 
                 def handleCall(self, method, args):
+                    if debugCalls: print "Call to method:", method
                     fn = self.__._getpath(path=list(method))
                     return self.handleExecution(method,
                                                 lambda: fn(*(args.args + args.extraArgs),

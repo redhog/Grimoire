@@ -84,6 +84,9 @@ class Performer(Grimoire.Performer.Base):
                         gtk.GenericTreeModel.__init__(self)
                         self.view = view
 
+                    def getRootNode(self):
+                        return self.view.updateDirCachePath(self.prefix, 1, 0)
+
                     def on_get_flags(self):
                         return 0
                     def on_get_n_columns(self):
@@ -93,10 +96,10 @@ class Performer(Grimoire.Performer.Base):
 
                     def on_get_path(self, node):
                         if node == None: ()
-                        return node.numpath
+                        return node.numpath[len(self.getRootNode().numpath):]
                     def on_get_iter(self, path):
                         if path[0] != 0: raise IndexError
-                        return self.view.updateDirCacheNumPath(path[1:], 1)
+                        return self.view.updateDirCacheNumPath(path[1:], 1, treeNode = self.getRootNode())
                     def on_get_value(self, node, column):
                         assert column == 0
                         return unicode(node)
@@ -110,7 +113,7 @@ class Performer(Grimoire.Performer.Base):
                             return None
                         return self.view.updateDirCache([], 1, 0, node)
                     def on_iter_children(self, node):
-                        if node == None: return self.view.updateDirCache(self.prefix, 1, 0)
+                        if node == None: return self.getRootNode()
                         try:
                             node = node.subNodes[node.subNodes.__keys__[0]]
                         except IndexError:
@@ -125,7 +128,7 @@ class Performer(Grimoire.Performer.Base):
                     def on_iter_nth_child(self, node, n):
                         if node == None:
                             assert n == 0
-                            return self.view.updateDirCache(self.prefix, 1, 0)
+                            return self.getRootNode()
                         try:
                             node = node.subNodes[node.subNodes.__keys__[n]]
                         except IndexError:
@@ -148,20 +151,18 @@ class Performer(Grimoire.Performer.Base):
 
                 def insert(self, path, treeNode = None, root = False, **kw):
                     node = super(MethodView, self).insert(path, treeNode, root, **kw)
-                    if self.model:
-                        self.model.row_inserted((0,) + node.numpath,
-                                                self.model.get_iter((0,) + node.numpath))
+                    self.model.row_inserted((0,) + node.numpath,
+                                            self.model.get_iter((0,) + node.numpath))
                     return node
 
                 def remove(self, path, treeNode = None, **kw):
                     node = self.getDirCacheNode(path, treeNode = treeNode)
-                    if self.model:
-                        self.model.row_deleted((0,) + node.numpath)
+                    self.model.row_deleted((0,) + node.numpath)
                     return super(MethodView, self).remove([], node, **kw)
 
                 def selectionChanged(self, treeView):
                     numpath = treeView.get_cursor()[0]
-                    node = self.updateDirCacheNumPath(numpath[1:])
+                    node = self.updateDirCacheNumPath(numpath[1:], treeNode = self.model.getRootNode())
                     if node.leaf:
                         self.session.gotoLocation(node.path)
 
@@ -176,6 +177,19 @@ class Performer(Grimoire.Performer.Base):
                                                     (Grimoire.Types.Ability.Deny, [])])
                 class TreeModel(MethodView.TreeModel):
                     prefix = ['introspection', 'object']
+
+                def insert(self, path, treeNode = None, root = False, **kw):
+                    node = super(MethodView, self).insert(path, treeNode, root, **kw) # Super to MethodView is intentional, to skip over what MethodView.insert does
+                    self.model.row_deleted((0,))
+                    self.model.row_inserted((0,), self.model.get_iter((0,)))
+                    return node
+
+                def remove(self, path, treeNode = None, **kw):
+                    node = super(MethodView, self).remove([], node, **kw) # See above for insert...
+                    self.model.row_deleted((0,))
+                    self.model.row_inserted((0,), self.model.get_iter((0,)))
+                    return node
+
             Session.ObjectView = ObjectView
             
             return Session
@@ -210,7 +224,7 @@ if __name__ == '__main__':
               methodInteraction = methodInteraction,
               **kw)
         session.addView(('methods'), session.MethodView, treeView = methodTreeView)
-#        session.addView(('objects'), session.ObjectView, treeView = objectTreeView)
+        session.addView(('objects'), session.ObjectView, treeView = objectTreeView)
         
     def on_newSession_activate(*arg, **kw):
         newSession()
