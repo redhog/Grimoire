@@ -149,10 +149,9 @@ class Performer(Grimoire.Performer.Base):
                     self.model = self.TreeModel(self)
                     self.treeView = treeView
                     self.treeView.set_model(self.model)
-                    self.treeView.connect("cursor_changed", self.selectionChanged)
+                    self.treeView.connect("row-activated", self.selectionChanged)
                     self.location = self.session.location
                     self.location.child.connect("activate", self.locationChanged)
-                    #self.location.connect("changed", self.locationChanged)
                     self.methodInteraction = self.session.methodInteraction
 
                 def insert(self, path, treeNode = None, root = False, **kw):
@@ -167,9 +166,8 @@ class Performer(Grimoire.Performer.Base):
                     self.model.setRootNode()
                     return super(MethodView, self).remove([], node, **kw)
 
-                def selectionChanged(self, treeView):
-                    numpath = treeView.get_cursor()[0]
-                    node = self.updateDirCacheNumPath(numpath[1:], treeNode = self.model.rootNode)
+                def selectionChanged(self, treeView, path, viewColumn):
+                    node = self.updateDirCacheNumPath(path[1:], treeNode = self.model.rootNode)
                     if node.leaf:
                         self.session.gotoLocation(node.path)
 
@@ -186,17 +184,22 @@ class Performer(Grimoire.Performer.Base):
                     prefix = ['introspection', 'object']
 
                 def insert(self, path, treeNode = None, root = False, **kw):
-                    node = super(MethodView, self).insert(path, treeNode, root, **kw) # Super to MethodView is intentional, to skip over what MethodView.insert does
+                    self.updateDirCachePath([], reupdate=1, treeNode = self.model.rootNode)
+                    self.model.setRootNode()
                     self.model.row_deleted((0,))
                     self.model.row_inserted((0,), self.model.get_iter((0,)))
-                    return node
+                    if self.model.rootNode.subNodes:
+                        self.model.row_has_child_toggled((0,), self.model.get_iter((0,)))
+                    return None
 
                 def remove(self, path, treeNode = None, **kw):
-                    node = super(MethodView, self).remove([], node, **kw) # See above for insert...
+                    self.updateDirCachePath([], reupdate=1, treeNode = self.model.rootNode)
+                    self.model.setRootNode()
                     self.model.row_deleted((0,))
                     self.model.row_inserted((0,), self.model.get_iter((0,)))
-                    self.model.setRootNode()
-                    return node
+                    if self.model.rootNode.subNodes:
+                        self.model.row_has_child_toggled((0,), self.model.get_iter((0,)))
+                    return None
 
             Session.ObjectView = ObjectView
             
