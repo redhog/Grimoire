@@ -27,13 +27,6 @@ class Performer(Grimoire.Performer.Base):
                         session = self
                     self.composer = Composer
                     super(Session, self).__init__(**kw)
-                
-                def insertUnique(self, path, obj, **kw):
-                    upath = super(Session, self).insertUnique(path, obj, **kw)
-                    for view in self.views.itervalues():
-                        node = view.updateDirCachePath(upath)
-                        view.treeView.expand_to_path((0,) + node.numpath)
-                    return upath
 
                 def gotoLocation(self, location = None):
                     if location:
@@ -158,6 +151,7 @@ class Performer(Grimoire.Performer.Base):
                     node = super(MethodView, self).insert(path, treeNode, root, **kw)
                     self.model.row_inserted((0,) + node.numpath,
                                             self.model.get_iter((0,) + node.numpath))
+                    self.treeView.expand_to_path((0,) + node.numpath)
                     return node
 
                 def remove(self, path, treeNode = None, **kw):
@@ -178,7 +172,9 @@ class Performer(Grimoire.Performer.Base):
             
             class ObjectView(MethodView):
                 viewPath = ['objects']
-                hide = Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Allow, ['introspection', 'object']),
+                hide = Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['introspection', 'object', 'object']),
+                                                    (Grimoire.Types.Ability.Ignore, ['introspection', 'object', 'method']),
+                                                    (Grimoire.Types.Ability.Allow, ['introspection', 'object']),
                                                     (Grimoire.Types.Ability.Deny, [])])
                 class TreeModel(MethodView.TreeModel):
                     prefix = ['introspection', 'object']
