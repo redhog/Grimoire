@@ -5,6 +5,10 @@ Ps = Grimoire.Types.ParamsType.derive
 
 class Performer(Grimoire.Performer.Base):
     class login(Grimoire.Performer.Method):
+        def _related_group(self, path, depth, objectPath, objectDepth):
+            return ['login', self._callWithUnlockedTree(
+                lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.treeinfo(
+                    ['local', 'login', 'description']))]
         def _call(self, userId, password):
             return Grimoire.Performer.Logical(
                 self._callWithUnlockedTree(

@@ -451,7 +451,11 @@ class AbstractMethod(Implementing):
     def _treeOp_impl_related(self, path, depth, objectPath, objectDepth, **kw):
         return {'value': self._related(path, depth, objectPath, objectDepth)}
 
-    # You may override this one in user classes if you whish to.
+    # You may override these one in user classes if you whish to.
+    
+    def _related_group(self, path, depth, objectPath, objectDepth):
+        if not hasattr(self, '__related_group__'): return None
+        return self.__related_group__
 
     def _related(self, path, depth, objectPath, objectDepth):
         """This magic attempts to do "the right thing" for you. In
@@ -468,8 +472,9 @@ class AbstractMethod(Implementing):
         not set, the path to this method or sub method, with any
         terminating treevars removed.
         """
-        if not hasattr(self, '__related_group__'):
-            return []
+        
+        relatedGroup = self._related_group(path, depth, objectPath, objectDepth)
+        if relatedGroup is None: return []
         pathForSelf = self._pathForSelf()
         objPrefix = []
         while pathForSelf and pathForSelf[-1].startswith('$'):
@@ -478,8 +483,8 @@ class AbstractMethod(Implementing):
         description =  getattr(self, '__related_description__', pathForSelf)
         objPrefix, objPrefixLen, which = getPrefix(self,
                                                    objPrefix != [],
-                                                   self.__related_group__ + objPrefix,
-                                                   len(self.__related_group__ + objPrefix),
+                                                   relatedGroup + objPrefix,
+                                                   len(relatedGroup + objPrefix),
                                                    objectPath, True)
         objectPathLen = len(objectPath)
         addPath = []
