@@ -120,7 +120,7 @@ class Performer(Grimoire.Performer.Base):
                         node.invalidate()
                         return node
                     
-                    def updateDirCache(self, prefixPath, depth = Grimoire.Performer.UnlimitedDepth, reupdate=1, treeNode = None):
+                    def updateDirCache(self, prefixPath, depth = Grimoire.Performer.UnlimitedDepth, reupdate=0, treeNode = None):
                         """Updates depth levels down a branch of the tree. If reupdate
                         is not true, nodes with updated == 1 will not be updated
                         again.
@@ -157,7 +157,7 @@ class Performer(Grimoire.Performer.Base):
                                             except Grimoire.Utils.UntranslatableError:
                                                 pass
                                 node.validate()
-                            else:
+                            elif subDepth > 1:
                                 for subNode in node.subNodes.itervalues():
                                     self.updateDirCache([], subDepth - 1, reupdate, treeNode = subNode)
                             return node
@@ -485,7 +485,7 @@ class Performer(Grimoire.Performer.Base):
                                 text = "<span foreground='#999999'>" + text + "</span>"
                             return text
 
-                    def updateDirCacheNumPath(self, numpath, depth = 1, reupdate=1, treeNode = None):
+                    def updateDirCacheNumPath(self, numpath, depth = 1, reupdate=0, treeNode = None):
                         """Updates all nodes along a numeric path down the tree,
                         and then depth nodes from there (that is, if depth
                         == 1, only nodes along the path will get

@@ -1,7 +1,12 @@
 #! /usr/bin/python
 
+profile = False # 'gguiprof'
+
 import _ggui.Composer, Grimoire, gobject, gnome, gtk, gtk.glade, types, sys
 import Grimoire.Utils.Serialize.Writer, Grimoire.Utils.Serialize.Types, StringIO
+
+if profile:
+    import hotshot
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -83,9 +88,10 @@ class Performer(Grimoire.Performer.Base):
                     def __init__(self, view):
                         gtk.GenericTreeModel.__init__(self)
                         self.view = view
+                        self.setRootNode()
 
-                    def getRootNode(self):
-                        return self.view.updateDirCachePath(self.prefix, 1, 0)
+                    def setRootNode(self):
+                        self.rootNode = self.view.updateDirCachePath(self.prefix, 1, 0)
 
                     def on_get_flags(self):
                         return 0
@@ -96,10 +102,10 @@ class Performer(Grimoire.Performer.Base):
 
                     def on_get_path(self, node):
                         if node == None: ()
-                        return node.numpath[len(self.getRootNode().numpath):]
+                        return node.numpath[len(self.rootNode.numpath):]
                     def on_get_iter(self, path):
                         if path[0] != 0: raise IndexError
-                        return self.view.updateDirCacheNumPath(path[1:], 1, treeNode = self.getRootNode())
+                        return self.view.updateDirCacheNumPath(path[1:], 1, treeNode = self.rootNode)
                     def on_get_value(self, node, column):
                         assert column == 0
                         return unicode(node)
@@ -113,7 +119,7 @@ class Performer(Grimoire.Performer.Base):
                             return None
                         return self.view.updateDirCache([], 1, 0, node)
                     def on_iter_children(self, node):
-                        if node == None: return self.getRootNode()
+                        if node == None: return self.rootNode
                         try:
                             node = node.subNodes[node.subNodes.__keys__[0]]
                         except IndexError:
@@ -128,7 +134,7 @@ class Performer(Grimoire.Performer.Base):
                     def on_iter_nth_child(self, node, n):
                         if node == None:
                             assert n == 0
-                            return self.getRootNode()
+                            return self.rootNode
                         try:
                             node = node.subNodes[node.subNodes.__keys__[n]]
                         except IndexError:
@@ -158,11 +164,12 @@ class Performer(Grimoire.Performer.Base):
                 def remove(self, path, treeNode = None, **kw):
                     node = self.getDirCacheNode(path, treeNode = treeNode)
                     self.model.row_deleted((0,) + node.numpath)
+                    self.model.setRootNode()
                     return super(MethodView, self).remove([], node, **kw)
 
                 def selectionChanged(self, treeView):
                     numpath = treeView.get_cursor()[0]
-                    node = self.updateDirCacheNumPath(numpath[1:], treeNode = self.model.getRootNode())
+                    node = self.updateDirCacheNumPath(numpath[1:], treeNode = self.model.rootNode)
                     if node.leaf:
                         self.session.gotoLocation(node.path)
 
@@ -188,6 +195,7 @@ class Performer(Grimoire.Performer.Base):
                     node = super(MethodView, self).remove([], node, **kw) # See above for insert...
                     self.model.row_deleted((0,))
                     self.model.row_inserted((0,), self.model.get_iter((0,)))
+                    self.model.setRootNode()
                     return node
 
             Session.ObjectView = ObjectView
@@ -257,4 +265,12 @@ if __name__ == '__main__':
     newSession(tree = (len(sys.argv) > 1 and sys.argv[1]),
                initCommands = sys.argv[2:])
     windows.signal_autoconnect(__main__)
-    gtk.main()
+
+    if profile:
+        p = hotshot.Profile(profile)
+        try:
+            p.runcall(gtk.main)
+        finally:
+            p.close()
+    else:
+        gtk.main()
