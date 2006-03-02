@@ -20,9 +20,10 @@ class Performer(Grimoire.Performer.Base):
                 composer = _ggui.Composer.GtkComposer
                 sessionPath = FormSession.sessionPath + ['gnome']
 
-                def __init__(self, location, methodInteraction, **kw):
+                def __init__(self, location, methodInteraction, relatedMethods, **kw):
                     self.location = location
                     self.methodInteraction = methodInteraction
+                    self.relatedMethods = relatedMethods
                     class Composer(self.composer):
                         session = self
                     self.composer = Composer
@@ -141,6 +142,7 @@ class Performer(Grimoire.Performer.Base):
                     super(MethodView, self).__init__(**kw)
                     self.model = self.TreeModel(self)
                     self.treeView = treeView
+                    self.treeView.append_column(gtk.TreeViewColumn("tree", gtk.CellRendererText(), markup=0))
                     self.treeView.set_model(self.model)
                     self.treeView.connect("row-activated", self.selectionChanged)
                     self.location = self.session.location
@@ -212,23 +214,22 @@ if __name__ == '__main__':
     windows = gtk.glade.XML(os.path.join(os.path.split(ggui.__file__)[0], "_ggui", "ggui.glade"))
 
     aboutDialog =       windows.get_widget("aboutDialog")
-    goToMethodDialog =  windows.get_widget("goToMethodDialog")
     treeViewType =      windows.get_widget("treeViewType")
     methodTreeView =    windows.get_widget("methodTreeView")
+    location =          windows.get_widget("location")
+    relatedMethods =    windows.get_widget("relatedMethods")
+    methodInteraction = windows.get_widget("methodInteraction")
     objectTreeView =    windows.get_widget("objectTreeView")
     viewAsObjects =     windows.get_widget("viewAsObjects")
-    location =          windows.get_widget("location")
-    methodInteraction = windows.get_widget("methodInteraction")
 
     session = None
-    methodTreeView.append_column(gtk.TreeViewColumn("tree", gtk.CellRendererText(), markup=0))
-    objectTreeView.append_column(gtk.TreeViewColumn("tree", gtk.CellRendererText(), markup=0))
 
     def newSession(**kw):
         global session
         session = Grimoire._.clients.gnome(
             )(location = location,
               methodInteraction = methodInteraction,
+              relatedMethods = relatedMethods,
               **kw)
         session.addView(('methods'), session.MethodView, treeView = methodTreeView)
         session.addView(('objects'), session.ObjectView, treeView = objectTreeView)
@@ -247,9 +248,6 @@ if __name__ == '__main__':
 
     def on_about_activate(menu):
         aboutDialog.run()
-
-    def on_goToMethod_activate(menu):
-        goToMethodDialog.run()
 
     def on_viewAs_activate(menu):
         if menu.active:
