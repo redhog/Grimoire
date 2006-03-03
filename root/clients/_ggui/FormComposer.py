@@ -44,8 +44,8 @@ class ParamsFieldWidget(gtk.Table):
 
         super(ParamsFieldWidget, self).__init__(len(fields), width, homogeneous)
 
-        if composer.session and composer.session.applyForm:
-            self.connect("applied", lambda form, args: composer.session.applyForm(form, args.args))
+        if composer.selection and composer.selection.applyForm:
+            self.connect("applied", lambda form, args: composer.selection.applyForm(form, args.args))
         self.set_row_spacings(10)
         self.set_col_spacings(10)
         for line, field in enumerate(fields):

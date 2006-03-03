@@ -92,6 +92,11 @@ class Performer(Grimoire.Performer.Base):
                             self.hide)
                         self._ = Grimoire.Performer.Logical(self.__)
 
+                    def getComposer(self, *arg, **kw):
+                        class Composer(self.session.getComposer(*arg, **kw)):
+                            view = self
+                        return Composer
+
                     def getDirCacheNode(self, path, create = False, treeNode = None):
                         treeNode = treeNode or self.dirCache
                         restpath = path
@@ -238,6 +243,9 @@ class Performer(Grimoire.Performer.Base):
                     
                     self = object.__new__(cls)
 
+                    class Composer(self.composer):
+                        session = self
+                    self.composer = Composer
                     self.views = {}
                     
                     self.__ = Grimoire.Performer.Composer(
@@ -397,12 +405,8 @@ class Performer(Grimoire.Performer.Base):
                         return None
                     return path
 
-                def getMethodPath(self, path = None):
-                    return path or ()
-
-                def getTranslationTable(self, path = None, language = None):
+                def getTranslationTable(self, path = (), language = None):
                     language = language or self.defaultLanguage
-                    path = self.getMethodPath(path)
                     translationObj = self.__._getpath(path=['introspection', 'translate'] + list(path))
                     def translationTable(message):
                         if debugTranslations: print "Translate:", path, language, message
@@ -410,13 +414,13 @@ class Performer(Grimoire.Performer.Base):
                     return Grimoire.Utils.cachingFunction(translationTable)
                 getTranslationTable = Grimoire.Utils.cachingFunction(getTranslationTable)
 
-                def getComposer(self, path = None, *arg, **kw):
+                def getComposer(self, path = (), *arg, **kw):
                     trtbl = self.getTranslationTable(path, *arg, **kw)
                     class Composer(self.composer):
                         def translationTable(self, *arg, **kw):
                             return trtbl(*arg, **kw)
                         translationTable = classmethod(translationTable)
-                        currentMethod = list(self.getMethodPath(path))
+                        currentMethod = list(path)
                     return Composer
 
                 def handleResult(self, method, result):
@@ -442,16 +446,16 @@ class Performer(Grimoire.Performer.Base):
                         result.result = self.handleResult(method, result.result)
                     return result
 
-                def handleCall(self, method, args):
+                def handleCall(self, method, args, handleExecution = None):
                     if debugCalls: print "Call to method:", method
                     fn = self.__._getpath(path=list(method))
-                    return self.handleExecution(method,
+                    return (handleExecution or self.handleExecution)(method,
                                                 lambda: fn(*(args.args + args.extraArgs),
                                                            **args.kws))
                 
-                def eval(self, expression):
+                def eval(self, expression, handleExecution = None):
                     # FIXME: Call this handleEval...
-                    return self.handleExecution(
+                    return (handleExecution or self.handleExecution)(
                         self._.introspection.methodOfExpression(expression),
                         lambda: self._.introspection.eval(expression))
                 
@@ -522,78 +526,133 @@ class Performer(Grimoire.Performer.Base):
             class FormSession(Session):
                 class View(Session.View):
                     class DirCacheNode(Session.View.DirCacheNode): pass
+                    def __init__(self, *arg, **kw):
+                        super(FormSession.View, self).__init__(*arg, **kw)
+                        self.selections = {}
+
+                    def selectionChanged(self, node):
+                        if node.leaf:
+                            # FIXME: yes, this is a bit uggly, and doesn't
+                            # really support multiple selections per view,
+                            # since it's random. We'd need a concept of
+                            # default selection... And prefferable a
+                            # concept of creating new views on the fly, so
+                            # that we could have an "open in new window"
+                            # option.
+                            self.selections[self.selections.keys()[0]].gotoLocation(node.path)
                 
                 class Selection(object):
-                    __slots__ = ['method', 'params', 'result']
-                    def __init__(self):
+                    __slots__ = ['method', 'params', 'result', 'views']
+                    def __init__(self, session, path, **kw):
+                        self.session = session
+                        self.path = path
+                        self.views = {}
+                        self.clear()
+                        
+                    def getComposer(self, path = None, *arg, **kw):
+                        if path is None: path = self.method
+                        class Composer(self.session.getComposer(path, *arg, **kw)):
+                            selection = self
+                        return Composer
+
+                    def clear(self):
                         self.method = None
                         self.params = None
                         self.result = None
- 
+
+                    def select(self, method):
+                        self.clear()
+                        self.method = method
+                        self.params = self.session.__._getpath(
+                            path=['introspection', 'params'] + list(method))()
+                        if (    not Grimoire.Types.getComment(self.params)
+                            and not self.params.arglist
+                            and not self.params.resargstype
+                            and not self.params.reskwtype):
+                            self.handleCall(self.method,
+                                            Grimoire.Types.getValue(self.params)())
+
+                    def handleExecution(self, *arg, **kw):
+                        self.result = self.session.handleExecution(*arg, **kw)
+                        return self.result
+
+                    def handleCall(self, method = None, args = [], handleExecution = None):
+                        if method is None:
+                            method = self.method
+                        return self.session.handleCall(method, args, handleExecution or self.handleExecution)
+
+                    def eval(self, expression, handleExecution = None):
+                        return self.session.eval(method, args, handleExecution or self.handleExecution)
+
+                    def drawSelection(self, selection):
+                        pass
+
+                    def renderSelection(self):
+                        result = Grimoire.Types.Paragraphs()
+                        if self.result and not self.result.error:
+                            result.append(self.result.result)
+                        else:
+                            if self.result and self.result.error:
+                                result.append(self.result.error)
+                            if self.params:
+                                result.append(self.params)
+                        self.drawSelection(
+                            self.getComposer(self.method or ())(result))
+
+                    def gotoLocation(self, location):
+                        try:
+                            method = self.session._.introspection.methodOfExpression(location, True)
+                        except Exception: # We've got a complex expression...
+                            method = None
+
+                        if method:
+                            self.select(method)
+                        else:
+                            self.eval(location)
+                        return self.renderSelection()
+
+                    def applyForm(self, args):
+                        self.handleCall(self.method, args)
+                        self.renderSelection()
+                        
                 def __new__(cls, **kw):
                     sess = super(FormSession, cls).__new__(cls, **kw)
                     self = Grimoire.Types.getValue(sess)
-                    self.selection = cls.Selection()
-                    self.selection.result = cls.Result()
-                    self.selection.result.result = Grimoire.Types.getComment(sess)
-                    return sess
+                    self.selections = {}
+                    self.comment = Grimoire.Types.getComment(sess)
+                    return self
 
-                def getMethodPath(self, path = None):
-                    if path is None and self.selection:
-                        path = self.selection.method
-                    return path or ()
+                def addSelection(self, path, selectionClass = None, **kw):
+                    path = tuple(path)
+                    if selectionClass is None:
+                        selectionClass = self.Selection
+                    self.selections[path] = selectionClass(session = self, path = path, **kw)
+                    if self.comment:
+                        self.selections[path].result = cls.Result()
+                        self.selections[path].result.result = self.comment
+                        self.comment = None  # Don't display the session comment in more than one view...
 
-                def select(self, method):
-                    self.selection.__init__()
-                    self.selection.method = method
-                    self.selection.params = self.__._getpath(
-                        path=['introspection', 'params'] + list(method))()
-                    if (    not Grimoire.Types.getComment(self.selection.params)
-                        and not self.selection.params.arglist
-                        and not self.selection.params.resargstype
-                        and not self.selection.params.reskwtype):
-                        self.handleCall(self.selection.method,
-                                        Grimoire.Types.getValue(self.selection.params)())
+                def deleteSelection(self, path):
+                    for view in self.selections[path].views:
+                        del view.selections[path]
+                    del self.selections[path]
 
-                def handleExecution(self, *arg, **kw):
-                    self.selection.result = super(FormSession, self).handleExecution(*arg, **kw)
-                    return self.selection.result
+                def deleteView(self, path):
+                    for selection in self.views[path].selections:
+                        del selection.views[path]
+                    super(FormSession, self).deleteView(path)                    
 
-                def handleCall(self, method = None, args = []):
-                    if method is None:
-                        method = self.selection.method
-                    return super(FormSession, self).handleCall(method, args)
-                    
-                def drawSelection(self, selection):
-                    pass
-                                  
-                def renderSelection(self):
-                    result = Grimoire.Types.Paragraphs()
-                    if self.selection.result and not self.selection.result.error:
-                        result.append(self.selection.result.result)
-                    else:
-                        if self.selection.result and self.selection.result.error:
-                            result.append(self.selection.result.error)
-                        if self.selection.params:
-                            result.append(self.selection.params)
-                    self.drawSelection(
-                        self.getComposer()(result))
-                
-                def gotoLocation(self, location):
-                    try:
-                        method = self._.introspection.methodOfExpression(location, True)
-                    except Exception: # We've got a complex expression...
-                        method = None
+                def connectViewAndSelection(self, viewPath, selectionPath):
+                    view = self.views[viewPath]
+                    selection = self.selections[selectionPath]
+                    view.selections[selectionPath] = selection
+                    selection.views[viewPath] = view
 
-                    if method:
-                        self.select(method)
-                    else:
-                        self.eval(location)
-                    return self.renderSelection()
-                
-                def applyForm(self, args):
-                    self.handleCall(self.selection.method, args)
-                    self.renderSelection()
+                def disconnectViewAndSelection(self, viewPath, selectionPath ):
+                    view = self.views[viewPath]
+                    selection = self.selections[selectionPath]
+                    del view.selections[selectionPath]
+                    del selection.views[viewPath]
 
             return FormSession
         _call = Grimoire.Utils.cachingFunction(_call)

@@ -20,15 +20,14 @@ class Performer(Grimoire.Performer.Base):
                 composer = _ggui.Composer.GtkComposer
                 sessionPath = FormSession.sessionPath + ['gnome']
 
-                def __init__(self, location, methodInteraction, relatedMethods, **kw):
+            class Selection(FormSession.Selection):
+                def __init__(self, session, path, location, methodInteraction, relatedMethods, **kw):
+                    super(Selection, self).__init__(session, path, **kw)
                     self.location = location
+                    self.location.child.connect("activate", self.locationChanged)
                     self.methodInteraction = methodInteraction
                     self.relatedMethods = relatedMethods
-                    class Composer(self.composer):
-                        session = self
-                    self.composer = Composer
-                    super(Session, self).__init__(**kw)
-
+                    
                 def gotoLocation(self, location = None):
                     if location:
                         if not Grimoire.Utils.isInstance(location, types.BaseStringType):
@@ -56,7 +55,7 @@ class Performer(Grimoire.Performer.Base):
                     else:
                         location = self.location.get_child().get_text()
                     self.location.prepend_text(location)
-                    super(Session, self).gotoLocation(location)
+                    super(Selection, self).gotoLocation(location)
 
                 def drawSelection(self, selection):
                     self.methodInteraction.remove(self.methodInteraction.get_child())
@@ -64,7 +63,12 @@ class Performer(Grimoire.Performer.Base):
                     self.methodInteraction.show_all()
 
                 def applyForm(self, form, args):
-                    super(Session, self).applyForm(args)
+                    super(Selection, self).applyForm(args)
+
+                def locationChanged(self, *arg, **kw):
+                    self.gotoLocation()
+
+            Session.Selection = Selection
 
             class MethodView(FormSession.View, NumpathSession.View):
                 viewPath = ['methods']
@@ -145,9 +149,6 @@ class Performer(Grimoire.Performer.Base):
                     self.treeView.append_column(gtk.TreeViewColumn("tree", gtk.CellRendererText(), markup=0))
                     self.treeView.set_model(self.model)
                     self.treeView.connect("row-activated", self.selectionChanged)
-                    self.location = self.session.location
-                    self.location.child.connect("activate", self.locationChanged)
-                    self.methodInteraction = self.session.methodInteraction
 
                 def insert(self, path, treeNode = None, root = False, **kw):
                     node = super(MethodView, self).insert(path, treeNode, root, **kw)
@@ -164,11 +165,7 @@ class Performer(Grimoire.Performer.Base):
 
                 def selectionChanged(self, treeView, path, viewColumn):
                     node = self.updateDirCacheNumPath(path[1:], treeNode = self.model.rootNode)
-                    if node.leaf:
-                        self.session.gotoLocation(node.path)
-
-                def locationChanged(self, *arg, **kw):
-                    self.session.gotoLocation()
+                    super(MethodView, self).selectionChanged(node)
 
             Session.MethodView = MethodView
             
@@ -227,12 +224,15 @@ if __name__ == '__main__':
     def newSession(**kw):
         global session
         session = Grimoire._.clients.gnome(
-            )(location = location,
-              methodInteraction = methodInteraction,
-              relatedMethods = relatedMethods,
-              **kw)
-        session.addView(('methods'), session.MethodView, treeView = methodTreeView)
-        session.addView(('objects'), session.ObjectView, treeView = objectTreeView)
+            )(**kw)
+        session.addView(('methods',), session.MethodView, treeView = methodTreeView)
+        session.addView(('objects',), session.ObjectView, treeView = objectTreeView)
+        session.addSelection(('main',), session.Selection,
+                             location = location,
+                             methodInteraction = methodInteraction,
+                             relatedMethods = relatedMethods)
+        session.connectViewAndSelection(('methods',), ('main',))
+        session.connectViewAndSelection(('objects',), ('main',))
         
     def on_newSession_activate(*arg, **kw):
         newSession()
