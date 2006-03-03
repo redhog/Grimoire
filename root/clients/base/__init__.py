@@ -530,7 +530,7 @@ class Performer(Grimoire.Performer.Base):
                         super(FormSession.View, self).__init__(*arg, **kw)
                         self.selections = {}
 
-                    def selectionChanged(self, node):
+                    def selectionChanged(self, node, selection = None):
                         if node.leaf:
                             # FIXME: yes, this is a bit uggly, and doesn't
                             # really support multiple selections per view,
@@ -539,7 +539,9 @@ class Performer(Grimoire.Performer.Base):
                             # concept of creating new views on the fly, so
                             # that we could have an "open in new window"
                             # option.
-                            self.selections[self.selections.keys()[0]].gotoLocation(node.path)
+                            if selection is None:
+                                selection = self.selections.keys()[0]
+                            self.selections[selection].gotoLocation(node.path)
                 
                 class Selection(object):
                     __slots__ = ['method', 'params', 'result', 'views']
