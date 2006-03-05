@@ -32,9 +32,10 @@ class Performer(Grimoire.Performer.Base):
                     if location:
                         if not Grimoire.Utils.isInstance(location, types.BaseStringType):
                             if Grimoire.Utils.isInstance(location, Grimoire.Types.GrimoireReference):
-                                location = self.getMethodPath() + location
+                                print location['levels'], location['path']
+                                location = self.method + location
                                 if location['levels']:
-                                    raise ValueError("Bad reference")
+                                    raise ValueError("Bad reference", self.method, location['levels'], location['path'])
                                 location = location['path']
                             location = list(location)
                             expr = reduce(lambda expr, member:
@@ -61,7 +62,24 @@ class Performer(Grimoire.Performer.Base):
                     self.methodInteraction.remove(self.methodInteraction.get_child())
                     self.methodInteraction.add(selection)
                     self.methodInteraction.show_all()
+                    for child in self.relatedMethods.get_children():
+                        self.relatedMethods.remove(child)
+                    if self.method is not None and not Grimoire.Utils.isPrefix(['introspection', 'object'], self.method):
+                        for link in Grimoire.Types.getValue(Grimoire.Types.getValue(self.session.__._getpath(path=['introspection', 'related'] + self.method)())[0]):
+                            reference = ['introspection', 'related'] + self.method + Grimoire.Types.getValue(link)
 
+                            print "ref:", Grimoire.Types.getValue(link)['levels'], Grimoire.Types.getValue(link)['path']
+                            print "ref:", reference['levels'], reference['path']
+                            reference['levels'] += len(self.method)
+                            
+                            def menuItemActivate(menuItem):
+                                self.gotoLocation(reference)
+                            menuItem = gtk.MenuItem()
+                            menuItem.add(self.getComposer()(Grimoire.Types.getComment(link)))
+                            menuItem.connect('activate', menuItemActivate)
+                            self.relatedMethods.append(menuItem)
+                    self.relatedMethods.show_all()
+                            
                 def applyForm(self, form, args):
                     super(Selection, self).applyForm(args)
 
@@ -218,7 +236,7 @@ if __name__ == '__main__':
     methodInteraction = windows.get_widget("methodInteraction")
     objectTreeView =    windows.get_widget("objectTreeView")
     viewAsObjects =     windows.get_widget("viewAsObjects")
-
+    
     session = None
 
     def newSession(**kw):

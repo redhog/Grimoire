@@ -77,6 +77,7 @@ class Performer(Grimoire.Performer.Base):
     class related(Grimoire.Performer.SubMethod):
         __related_group__ = ['method']
         def _call(self, path):
+            # FIXME: Rewrite references to be relative argument, not object of argument!!!
             return Grimoire.Types.AnnotatedValue(
                 Grimoire.Types.Lines(
                 *[self._getpath(Grimoire.Types.MethodBase, path=['object'] + objectPath)()

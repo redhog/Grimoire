@@ -37,6 +37,8 @@ class GrimoireReference(types.DictType, Representation):
         path, str = GrimoirePath.__parse__(str)
         return cls(path, int(levels)), str
     def __add__(self, child):
+        """If a is rooted at c and b is rooted at a, then a + b
+        references b and is rooted at c."""
         if not Grimoire.Utils.isInstance(child, GrimoireReference):
             child = type(self)(child)
         if child['levels'] > len(self['path']):
@@ -51,6 +53,41 @@ class GrimoireReference(types.DictType, Representation):
         return type(self)(path, levels)
     def __radd__(self, child):
         return type(self)(child) + self
+    def __sub__(self, child):
+
+        """If a and b are both rooted at c, a - b will reference a but
+        rooted at b. This _assumes_ a actually resides under b, if
+        not, the result is random garbage. Examples:
+        3/foo.bar.fie.naja - 3/foo.bar = 0/fie.naja
+        3/foo.bar.fie.naja - 3/foo.xxx = 1/bar.fie.naja
+        
+        And the 'let's just assume things' ones:
+        4/xxx.foo.bar.fie.naja - 3/foo.bar = 0/fie.naja
+        3/foo.bar.fie.naja - 4/xxx.foo.bar = 0/fie.naja
+        
+        """
+        
+        if not Grimoire.Utils.isInstance(child, GrimoireReference):
+            child = type(self)(child)
+
+        selfLevels = self['levels']
+        selfPath = self['path']
+        childLevels = child['levels']
+        childPath = child['path']
+        
+        if selfLevels > childLevels:
+            selfPath = selfPath[selfLevels - childLevels:]
+        if childLevels > selfLevels:
+            childPath = childPath[childLevels - selfLevels:]
+        selfLevels = childLevels = min(selfLevels, childLevels)
+
+        # self and child paths are now rooted at the same place
+        prefixLen = len(Grimoire.Utils.commonPrefix(selfPath, childPath))
+        path = selfPath[prefixLen:]
+        levels = len(childPath) - prefixLen
+        return type(self)(path, levels)        
+    def __rsub__(self, child):
+        return type(self)(child) - self
     def __getattr__(self, name):
         return type(self)(self['path'] + [name], self['levels'])
 

@@ -252,12 +252,7 @@ class Physical(Performer):
         other = Physical(other)
         if self._physicalRoot() is not other._physicalRoot():
             raise ValueError("Can not create references between methods of different trees")
-        selfPath = self._pathForSelf(dynamic=True)
-        otherPath = other._pathForSelf(dynamic=True)
-        commonLen = len(Grimoire.Utils.commonPrefix(selfPath, otherPath))
-        return Grimoire.Types.GrimoireReference(
-            otherPath[commonLen:],
-            len(selfPath) - commonLen)
+        return Grimoire.Types.GrimoireReference(other._pathForSelf(dynamic=True), 0) - Grimoire.Types.GrimoireReference(self._pathForSelf(dynamic=True), 0)
 
     # Physical -> Logical API
     # (methods that returns Logicals)
