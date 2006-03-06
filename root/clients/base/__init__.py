@@ -1,4 +1,6 @@
-import Grimoire, Grimoire.Performer, Grimoire.Types, Grimoire.Types.Ability, Grimoire.Utils, Grimoire.About, types, string, sys, traceback
+import Grimoire, Grimoire.Performer, Grimoire.Types, Grimoire.Types.Ability, Grimoire.Utils
+import Grimoire.Utils.Serialize.Writer, Grimoire.Utils.Serialize.Types, StringIO
+import types, string, sys, traceback
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -530,18 +532,9 @@ class Performer(Grimoire.Performer.Base):
                         super(FormSession.View, self).__init__(*arg, **kw)
                         self.selections = {}
 
-                    def selectionChanged(self, node, selection = None):
+                    def selectionChanged(self, node, selection = ()):
                         if node.leaf:
-                            # FIXME: yes, this is a bit uggly, and doesn't
-                            # really support multiple selections per view,
-                            # since it's random. We'd need a concept of
-                            # default selection... And prefferable a
-                            # concept of creating new views on the fly, so
-                            # that we could have an "open in new window"
-                            # option.
-                            if selection is None:
-                                selection = self.selections.keys()[0]
-                            self.selections[selection].gotoLocation(node.path)
+                            self.selections[selection].gotoPath(node.path)
                 
                 class Selection(object):
                     __slots__ = ['method', 'params', 'result', 'views']
@@ -584,7 +577,7 @@ class Performer(Grimoire.Performer.Base):
                         return self.session.handleCall(method, args, handleExecution or self.handleExecution)
 
                     def eval(self, expression, handleExecution = None):
-                        return self.session.eval(method, args, handleExecution or self.handleExecution)
+                        return self.session.eval(expression, handleExecution or self.handleExecution)
 
                     def drawSelection(self, selection):
                         pass
@@ -601,6 +594,28 @@ class Performer(Grimoire.Performer.Base):
                         self.drawSelection(
                             self.getComposer(self.method or ())(result))
 
+                    def gotoPath(self, path):
+                        if Grimoire.Utils.isInstance(path, Grimoire.Types.GrimoireReference):
+                            path = self.method + path
+                            if path['levels']:
+                                raise ValueError("Bad reference", self.method, path['levels'], path['path'])
+                            path = path['path']
+                        path = list(path)
+                        expr = reduce(lambda expr, member:
+                         Grimoire.Utils.Serialize.Types.Extension(
+                          Grimoire.Utils.Serialize.Types.Member,
+                          [expr,
+                           Grimoire.Utils.Serialize.Types.Extension(
+                            Grimoire.Utils.Serialize.Types.Identifier,
+                            member)]),
+                         path,
+                         Grimoire.Utils.Serialize.Types.Extension(
+                          Grimoire.Utils.Serialize.Types.Identifier,
+                          "_"))
+                        s = StringIO.StringIO()
+                        Grimoire.Utils.Serialize.Writer.write(s, expr)
+                        self.gotoLocation(s.getvalue())
+                        
                     def gotoLocation(self, location):
                         try:
                             method = self.session._.introspection.methodOfExpression(location, True)

@@ -75,9 +75,9 @@ class TitledURILinkWidget(gtk.Button):
         self.target = Grimoire.Types.getValue(obj)
         self.connect('clicked', self.__clicked__)
         if Grimoire.Utils.isInstance(self.target, Grimoire.Types.GrimoireReference):
-            if composer.selection and composer.selection.gotoLocation:
+            if composer.selection and composer.selection.gotoPath:
                 self.connect('selected',
-                             lambda link, target: composer.selection.gotoLocation(target.target))
+                             lambda link, target: composer.selection.gotoPath((composer.selection.method + target.target)['path']))
     def __clicked__(self, button):
         target = gobject.GObject()
         target.target = self.target

@@ -3,7 +3,6 @@
 profile = False # 'gguiprof'
 
 import _ggui.Composer, Grimoire, gobject, gnome, gtk, gtk.glade, types, sys
-import Grimoire.Utils.Serialize.Writer, Grimoire.Utils.Serialize.Types, StringIO
 
 if profile:
     import hotshot
@@ -30,28 +29,6 @@ class Performer(Grimoire.Performer.Base):
                     
                 def gotoLocation(self, location = None):
                     if location:
-                        if not Grimoire.Utils.isInstance(location, types.BaseStringType):
-                            if Grimoire.Utils.isInstance(location, Grimoire.Types.GrimoireReference):
-                                print location['levels'], location['path']
-                                location = self.method + location
-                                if location['levels']:
-                                    raise ValueError("Bad reference", self.method, location['levels'], location['path'])
-                                location = location['path']
-                            location = list(location)
-                            expr = reduce(lambda expr, member:
-                             Grimoire.Utils.Serialize.Types.Extension(
-                              Grimoire.Utils.Serialize.Types.Member,
-                              [expr,
-                               Grimoire.Utils.Serialize.Types.Extension(
-                                Grimoire.Utils.Serialize.Types.Identifier,
-                                member)]),
-                             location,
-                             Grimoire.Utils.Serialize.Types.Extension(
-                              Grimoire.Utils.Serialize.Types.Identifier,
-                              "_"))
-                            s = StringIO.StringIO()
-                            Grimoire.Utils.Serialize.Writer.write(s, expr)
-                            location = s.getvalue()
                         self.location.get_child().set_text(location)
                     else:
                         location = self.location.get_child().get_text()
@@ -64,20 +41,28 @@ class Performer(Grimoire.Performer.Base):
                     self.methodInteraction.show_all()
                     for child in self.relatedMethods.get_children():
                         self.relatedMethods.remove(child)
-                    if self.method is not None and not Grimoire.Utils.isPrefix(['introspection', 'object'], self.method):
-                        for link in Grimoire.Types.getValue(Grimoire.Types.getValue(self.session.__._getpath(path=['introspection', 'related'] + self.method)())[0]):
-                            reference = ['introspection', 'related'] + self.method + Grimoire.Types.getValue(link)
 
-                            print "ref:", Grimoire.Types.getValue(link)['levels'], Grimoire.Types.getValue(link)['path']
-                            print "ref:", reference['levels'], reference['path']
-                            reference['levels'] += len(self.method)
+                    def addRelated(base, link):
+                        reference = gobject.GObject()
+                        reference.reference = base + Grimoire.Types.getValue(link)
+                        reference.reference['levels'] += len(self.method)
                             
-                            def menuItemActivate(menuItem):
-                                self.gotoLocation(reference)
-                            menuItem = gtk.MenuItem()
-                            menuItem.add(self.getComposer()(Grimoire.Types.getComment(link)))
-                            menuItem.connect('activate', menuItemActivate)
-                            self.relatedMethods.append(menuItem)
+                        def menuItemActivate(menuItem, reference):
+                            self.gotoPath(reference.reference)
+                        menuItem = gtk.MenuItem()
+                        menuItem.add(self.getComposer()(Grimoire.Types.getComment(link)))
+                        menuItem.connect('activate', menuItemActivate, reference)
+                        self.relatedMethods.append(menuItem)
+
+                    if self.method is not None:
+                        if Grimoire.Utils.isPrefix(['introspection', 'object'], self.method):
+                            for link in Grimoire.Types.getValue(self.session.__._getpath(path=self.method)()):
+                                addRelated(self.method, link)
+                        else:
+                            for objectLinks in Grimoire.Types.getValue(self.session.__._getpath(path=['introspection', 'related'] + self.method)()):
+                                for link in Grimoire.Types.getValue(objectLinks):
+                                    addRelated(['introspection', 'related'] + self.method, link)
+                    
                     self.relatedMethods.show_all()
                             
                 def applyForm(self, form, args):
@@ -87,7 +72,7 @@ class Performer(Grimoire.Performer.Base):
                     self.gotoLocation()
 
             Session.Selection = Selection
-
+                    
             class MethodView(FormSession.View, NumpathSession.View):
                 viewPath = ['methods']
 
@@ -166,7 +151,7 @@ class Performer(Grimoire.Performer.Base):
                     self.treeView = treeView
                     self.treeView.append_column(gtk.TreeViewColumn("tree", gtk.CellRendererText(), markup=0))
                     self.treeView.set_model(self.model)
-                    self.treeView.connect("row-activated", self.selectionChanged)
+                    self.treeView.connect("row-activated", self.rowActivated)
 
                 def insert(self, path, treeNode = None, root = False, **kw):
                     node = super(MethodView, self).insert(path, treeNode, root, **kw)
@@ -181,9 +166,9 @@ class Performer(Grimoire.Performer.Base):
                     self.model.setRootNode()
                     return super(MethodView, self).remove([], node, **kw)
 
-                def selectionChanged(self, treeView, path, viewColumn):
+                def rowActivated(self, treeView, path, viewColumn):
                     node = self.updateDirCacheNumPath(path[1:], treeNode = self.model.rootNode)
-                    super(MethodView, self).selectionChanged(node)
+                    self.selectionChanged(node)
 
             Session.MethodView = MethodView
             
@@ -245,12 +230,12 @@ if __name__ == '__main__':
             )(**kw)
         session.addView(('methods',), session.MethodView, treeView = methodTreeView)
         session.addView(('objects',), session.ObjectView, treeView = objectTreeView)
-        session.addSelection(('main',), session.Selection,
+        session.addSelection((), session.Selection,
                              location = location,
                              methodInteraction = methodInteraction,
                              relatedMethods = relatedMethods)
-        session.connectViewAndSelection(('methods',), ('main',))
-        session.connectViewAndSelection(('objects',), ('main',))
+        session.connectViewAndSelection(('methods',), ())
+        session.connectViewAndSelection(('objects',), ())
         
     def on_newSession_activate(*arg, **kw):
         newSession()
