@@ -254,6 +254,11 @@ class Physical(Performer):
             raise ValueError("Can not create references between methods of different trees")
         return Grimoire.Types.GrimoireReference(other._pathForSelf(dynamic=True), 0) - Grimoire.Types.GrimoireReference(self._pathForSelf(dynamic=True), 0)
 
+    def _reReference(self, other, path):
+        """Given a reference path relative another method object,
+        return the same reference but relative the current method."""
+        return Physical(other)._physicalGetpath(path) - self._pathForSelf(dynamic=True)
+
     # Physical -> Logical API
     # (methods that returns Logicals)
 

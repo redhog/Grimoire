@@ -77,13 +77,18 @@ class Performer(Grimoire.Performer.Base):
     class related(Grimoire.Performer.SubMethod):
         __related_group__ = ['method']
         def _call(self, path):
-            # FIXME: Rewrite references to be relative argument, not object of argument!!!
             return Grimoire.Types.AnnotatedValue(
-                Grimoire.Types.Lines(
-                *[self._getpath(Grimoire.Types.MethodBase, path=['object'] + objectPath)()
-                  for (leaf, objectPath, description, methodPath)
-                  in self._getpath(Grimoire.Types.MethodBase, path=['objdir']
-                                   )(Grimoire.Performer.UnlimitedDepth, path, 0)]),
+                Grimoire.Types.Lines(*[(lambda links: type(links)(
+                    Grimoire.Types.Lines(*[type(link)(self._physicalGetpath(path=path
+                                                                            )._reference(self._physicalGetpath(Grimoire.Types.MethodBase,
+                                                                                                               path = ['object'] + objectPath + Grimoire.Types.getValue(link))),
+                                                      Grimoire.Types.getComment(link))
+                                           for link in Grimoire.Types.getValue(links)]),
+                    Grimoire.Types.getComment(links))
+                                        )(self._getpath(Grimoire.Types.MethodBase, path=['object'] + objectPath)())
+                                       for (leaf, objectPath, description, methodPath)
+                                       in self._getpath(Grimoire.Types.MethodBase, path=['objdir']
+                                                        )(Grimoire.Performer.UnlimitedDepth, path, 0)]),
                 Grimoire.Types.Formattable("Methods related to the method %(method)s",
                                            method=Grimoire.Types.GrimoirePath(path)))
         def _dir(self, path, depth):

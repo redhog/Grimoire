@@ -111,12 +111,12 @@ class GenericComposer(Composer):
         type = Representation.GrimoireReference
 
         def compose(cls, composer, obj):
-            if composer.currentMethod is None:
-                raise TypeError("Unable to render GrimoireReferences outside of method context")
-            base = composer.currentMethod
-            if obj['levels']:
-                base = base[:-obj['levels']]
-            return composer(Representation.GrimoirePath(base + obj['path']))
+            if composer.currentMethod:
+                obj = composer.currentMethod + obj
+            res = Representation.GrimoirePath(obj['path'])
+            if obj['levels'] != 0:
+                res = Grimoire.Types.Formattable("%(levels)s/%(path)s", levels = obj['levels'], path = res)
+            return composer(res)
 
 class TextComposer(GenericComposer):
     class ComposePythonObject(ComposeObjType):
