@@ -39,29 +39,36 @@ class Performer(Grimoire.Performer.Base):
                     self.methodInteraction.remove(self.methodInteraction.get_child())
                     self.methodInteraction.add(selection)
                     self.methodInteraction.show_all()
+
+                def renderHoverSelection(self):
                     for child in self.relatedMethods.get_children():
                         self.relatedMethods.remove(child)
+                        
+                    composer = self.getComposer(self.hover)
 
                     def addRelated(base, link):
+                        comment = Grimoire.Types.getComment(link)
+                        link = base + Grimoire.Types.getValue(link)
                         reference = gobject.GObject()
-                        reference.reference = base + Grimoire.Types.getValue(link)
-                        reference.reference['levels'] += len(self.method)
+                        if link['levels']:
+                            raise Exception(link)
+                        reference.reference = link['path']
                             
                         def menuItemActivate(menuItem, reference):
                             self.gotoPath(reference.reference)
                         menuItem = gtk.MenuItem()
-                        menuItem.add(self.getComposer()(Grimoire.Types.getComment(link)))
+                        menuItem.add(composer(comment))
                         menuItem.connect('activate', menuItemActivate, reference)
                         self.relatedMethods.append(menuItem)
 
-                    if self.method is not None:
-                        if Grimoire.Utils.isPrefix(['introspection', 'object'], self.method):
-                            for link in Grimoire.Types.getValue(self.session.__._getpath(path=self.method)()):
-                                addRelated(self.method, link)
+                    if self.hover is not None:
+                        if Grimoire.Utils.isPrefix(['introspection', 'object'], self.hover):
+                            for link in Grimoire.Types.getValue(self.session.__._getpath(path=self.hover)()):
+                                addRelated(self.hover, link)
                         else:
-                            for objectLinks in Grimoire.Types.getValue(self.session.__._getpath(path=['introspection', 'related'] + self.method)()):
+                            for objectLinks in Grimoire.Types.getValue(self.session.__._getpath(path=['introspection', 'related'] + self.hover)()):
                                 for link in Grimoire.Types.getValue(objectLinks):
-                                    addRelated(['introspection', 'related'] + self.method, link)
+                                    addRelated(['introspection', 'related'] + self.hover, link)
                     
                     self.relatedMethods.show_all()
                             
@@ -152,6 +159,7 @@ class Performer(Grimoire.Performer.Base):
                     self.treeView.append_column(gtk.TreeViewColumn("tree", gtk.CellRendererText(), markup=0))
                     self.treeView.set_model(self.model)
                     self.treeView.connect("row-activated", self.rowActivated)
+                    self.treeView.connect("cursor-changed", self.rowSelected)
 
                 def insert(self, path, treeNode = None, root = False, **kw):
                     node = super(MethodView, self).insert(path, treeNode, root, **kw)
@@ -170,12 +178,17 @@ class Performer(Grimoire.Performer.Base):
                     node = self.updateDirCacheNumPath(path[1:], treeNode = self.model.rootNode)
                     self.selectionChanged(node)
 
+                def rowSelected(self, treeView):
+                    node = self.updateDirCacheNumPath(treeView.get_cursor()[0][1:], treeNode = self.model.rootNode)
+                    self.hoverChanged(node)
+
             Session.MethodView = MethodView
             
             class ObjectView(MethodView):
                 viewPath = ['objects']
                 hide = Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['introspection', 'object', 'object']),
                                                     (Grimoire.Types.Ability.Ignore, ['introspection', 'object', 'method']),
+                                                    # FIXME: This doesn't work for some reason: (Grimoire.Types.Ability.Ignore, ['introspection', 'object', '']),
                                                     (Grimoire.Types.Ability.Allow, ['introspection', 'object']),
                                                     (Grimoire.Types.Ability.Deny, [])])
                 class TreeModel(MethodView.TreeModel):

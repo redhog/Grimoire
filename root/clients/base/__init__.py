@@ -536,6 +536,10 @@ class Performer(Grimoire.Performer.Base):
                         if node.leaf:
                             self.selections[selection].gotoPath(node.path)
                 
+                    def hoverChanged(self, node, selection = ()):
+                        if node.leaf:
+                            self.selections[selection].hoverPath(node.path)
+                
                 class Selection(object):
                     __slots__ = ['method', 'params', 'result', 'views']
                     def __init__(self, session, path, **kw):
@@ -551,9 +555,14 @@ class Performer(Grimoire.Performer.Base):
                         return Composer
 
                     def clear(self):
+                        self.hover = None
                         self.method = None
                         self.params = None
                         self.result = None
+
+                    def hoverSelect(self, method):
+                        self.hover = method
+                        self.renderHoverSelection()
 
                     def select(self, method):
                         self.clear()
@@ -594,7 +603,10 @@ class Performer(Grimoire.Performer.Base):
                         self.drawSelection(
                             self.getComposer(self.method or ())(result))
 
-                    def gotoPath(self, path):
+                    def renderHoverSelection(self):
+                        pass
+
+                    def pathToExpression(self, path):
                         if Grimoire.Utils.isInstance(path, Grimoire.Types.GrimoireReference):
                             path = self.method + path
                             if path['levels']:
@@ -614,7 +626,10 @@ class Performer(Grimoire.Performer.Base):
                           "_"))
                         s = StringIO.StringIO()
                         Grimoire.Utils.Serialize.Writer.write(s, expr)
-                        self.gotoLocation(s.getvalue())
+                        return s.getvalue()
+                        
+                    def gotoPath(self, path):
+                        self.gotoLocation(self.pathToExpression(path))
                         
                     def gotoLocation(self, location):
                         try:
@@ -627,6 +642,13 @@ class Performer(Grimoire.Performer.Base):
                         else:
                             self.eval(location)
                         return self.renderSelection()
+
+                    def hoverPath(self, path):
+                        self.hoverLocation(self.pathToExpression(path))
+                        
+                    def hoverLocation(self, location):
+                        method = self.session._.introspection.methodOfExpression(location, True)
+                        self.hoverSelect(method)
 
                     def applyForm(self, args):
                         self.handleCall(self.method, args)
