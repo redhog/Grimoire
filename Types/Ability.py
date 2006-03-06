@@ -6,6 +6,7 @@ import Grimoire.Utils, time, string
 
 debugSorting = 0
 debugCalls = 0
+debugSearch = 0
 
 abilityCacheTimout = 60 * 10 # 10 minutes ought to be enougth for everyone.
 
@@ -191,9 +192,17 @@ class List(object):
                 pos += 1
                 
     def eval(self, path, isPrefixOnly = 0, *arg, **kw):
+        """Evaluates if a path is allowed, denied or ignored by the
+        list. If isPrefixOnly, the result is Allow if there exist any
+        allowed path with the current path as a prefix. This is used
+        to generate proper directory listings of non-leaf nodes with
+        allowed leaf-nodes under them."""
         if isPrefixOnly:
             if self.eval(path, 0, *arg, **kw) is Allow:
                 return Allow
+            # FIXME: Are we handling list-entries that ends in ''
+            # correctly? See the other if-branch and how it appends
+            # [''] to the path... Seems to work though...
             path = Simple(path)
             pos = self.abilities.pos((None, path))
             if pos >= len(self.abilities):
@@ -209,9 +218,10 @@ class List(object):
                 pos -= 1
             return Ignore
         else:
-            for path in Grimoire.Utils.Prefixes(path):
+            for path in Grimoire.Utils.Prefixes(path + ['']):
                 path = Simple(path)
                 pos = self.abilities.pos((None, path))
+                if debugSearch: print "%s -> %s" % (path, pos)
                 if pos < len(self.abilities) and self.abilities[pos][1](path, 0, *arg, **kw):
                     return self.abilities[pos][0]
                 elif pos > 0 and self.abilities[pos - 1][1](path, 0, *arg, **kw):

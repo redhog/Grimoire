@@ -188,7 +188,7 @@ class Performer(Grimoire.Performer.Base):
                 viewPath = ['objects']
                 hide = Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['introspection', 'object', 'object']),
                                                     (Grimoire.Types.Ability.Ignore, ['introspection', 'object', 'method']),
-                                                    # FIXME: This doesn't work for some reason: (Grimoire.Types.Ability.Ignore, ['introspection', 'object', '']),
+                                                    (Grimoire.Types.Ability.Ignore, ['introspection', 'object', '']),
                                                     (Grimoire.Types.Ability.Allow, ['introspection', 'object']),
                                                     (Grimoire.Types.Ability.Deny, [])])
                 class TreeModel(MethodView.TreeModel):
