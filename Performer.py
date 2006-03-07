@@ -284,7 +284,7 @@ class Physical(Performer):
         """
         if debugTreeOps:
             tr = traceback.extract_stack()[:-1]
-            if tr[-1][1] == 141:
+            if tr[-1][1] == 151:
                 tr = tr[:-1]
             tr.reverse()
             def filter(item):
