@@ -398,40 +398,6 @@ class ImplementingHandling(AbstractImplementing, Handling):
     def _treeOp_handle(self, treeOp, **kw):
         return getattr(self, "_treeOp_impl_" +  treeOp,
                        self._treeOp_impl)(treeOp=treeOp, **kw)
-    
-
-class Cutter(Physical):
-    """
-    A Cutter cuts out a part of a Performer-object and presents it as a
-    (new) Physical-object, namely all methods with a common prefix
-    (basepath)."""
-    __slots__ = ['_basepath']
-    
-    def __init__(self, performer, basepath = []):
-        Physical.__init__(self)
-        self._basepath = basepath
-        self._setParent(Physical(performer))
-
-    # Optimizations
-
-    def _chunk(self, extrapath):
-        return Cutter(self._physicalParent(), self._path(extrapath))
-
-    # Physical node API
-
-    def _performer(self):
-        return self._physicalParent()
-
-    def _path(self, extraPath = []):
-        return self._basepath + extraPath
-
-    def _pathForSelf(self, extraPath = [], dynamic=False):
-        return self._physicalParent()._pathForSelf(self._path(extraPath), dynamic)
-
-    # Logical node API
-
-    def _treeOp_recurse(self, path, **kw):
-        return self._physicalParent()._treeOp_recurse(path=self._path(path), **kw)
 
 class Translation(Implementing):
     __slots__ = ['_translations']
@@ -660,6 +626,46 @@ class Isolator(ThinSingleChildContainer):
 
     def _treeOp_recurse(self, path, wholePath, **kw):
         return self._child._treeOp_recurse(path=path, wholePath=path, **kw)
+
+class Cutter(Isolator):
+    """
+    A Cutter cuts out a part of a Performer-object and presents it as a
+    (new) Physical-object, namely all methods with a common prefix
+    (basepath)."""
+    __slots__ = ['_basepath']
+    
+    def __init__(self, performer, basepath = []):
+        Isolator.__init__(self, performer)
+        self._basepath = basepath
+
+    # Optimizations
+
+    def _chunk(self, extrapath):
+        return Cutter(self._child, self._path(extrapath))
+
+    # Physical node API
+
+    def _performer(self):
+        return self._child
+
+    def _path(self, extraPath = []):
+        return self._basepath + extraPath
+
+    def _pathForSelf(self, extraPath = [], dynamic=False):
+        return self._child._pathForSelf(self._path(extraPath), dynamic)
+
+    def _insert(self, obj, *arg, **kw):
+        return self._child._insert(Prefixer(self._basepath, obj), *arg, **kw)
+
+    def _remove(self, obj, *arg, **kw):
+        raise Exception("Unable to remove object from Cutter since cutters can not remember the object it actually inserted into its child")
+        #return self._child._remove(Prefixer(self._basepath, obj), *arg, **kw)
+
+    # Logical node API
+
+    def _treeOp_recurse(self, path, wholePath, **kw):
+        return self._child._treeOp_recurse(path=self._path(path), wholePath=path, **kw)
+
 
 class AbstractRestrictor(ThinSingleChildContainer):
     __slots__ = ['_abilityObject']    
