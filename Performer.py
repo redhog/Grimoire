@@ -122,7 +122,17 @@ def treeOp_combine_add(self, fns, **kw):
     return {'value': reduce(operator.add, Grimoire.Utils.Map(apply, fns), 0)}
 
 
-class Performer(Grimoire.Utils.RPC.ServerObject): pass
+class Performer(Grimoire.Utils.RPC.ServerObject):
+    def __add__(self, other):
+        if Grimoire.Utils.isInstance(other, Performer):
+            return Composer(Physical(self), Physical(self))
+        else:
+            path = other
+            if not Grimoire.Utils.isInstance(path, Grimoire.Types.GrimoireReference):
+                path = Grimoire.Types.GrimoireReference(path)
+            return Physical(self)._physicalGetpath(Grimoire.Types.CurrentNode, path['levels'], path['path'])
+    def __radd__(self, path):
+        return Prefixer(path, Physical(self))
 
 class Logical(Performer):
     __slots__ = ['_physical']
@@ -140,10 +150,11 @@ class Logical(Performer):
         # debug-printout-filter in Physical._treeOp
         return Physical(self)._treeOp([], "call", callarg=arg, callkw=kw)
 
-    def __add__(self, path):
-        if not Grimoire.Utils.isInstance(path, Grimoire.Types.GrimoireReference):
-            path = Grimoire.Types.GrimoireReference(path)
-        return Physical(self)._getpath(Grimoire.Types.CurrentNode, path['levels'], path['path'])
+    def __add__(self, other):
+        return Logical(super(Logical, self).__add__(other))
+
+    def __radd__(self, other):
+        return Logical(super(Logical, self).__radd__(other))
 
 class Physical(Performer):
     """Physical is the base-class for all objects that makes up a
