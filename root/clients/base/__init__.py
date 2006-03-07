@@ -561,8 +561,9 @@ class Performer(Grimoire.Performer.Base):
                         self.result = None
 
                     def hoverSelect(self, method):
-                        self.hover = method
-                        self.renderHoverSelection()
+                        if self.hover != method:
+                            self.hover = method
+                            self.renderHoverSelection()
 
                     def select(self, method):
                         self.clear()
