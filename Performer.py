@@ -125,7 +125,7 @@ def treeOp_combine_add(self, fns, **kw):
 class Performer(Grimoire.Utils.RPC.ServerObject):
     def __add__(self, other):
         if Grimoire.Utils.isInstance(other, Performer):
-            return Composer(Physical(self), Physical(self))
+            return Composer(Physical(self), Physical(other))
         else:
             path = other
             if not Grimoire.Utils.isInstance(path, Grimoire.Types.GrimoireReference):
