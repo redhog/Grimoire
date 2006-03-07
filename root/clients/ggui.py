@@ -26,6 +26,11 @@ class Performer(Grimoire.Performer.Base):
                     self.location.child.connect("activate", self.locationChanged)
                     self.methodInteraction = methodInteraction
                     self.relatedMethods = relatedMethods
+
+                def hoverPath(self, path, popup = None):
+                    super(Selection, self).hoverPath(path)
+                    if popup:
+                        self.relatedMethods.popup(None, None, None, popup.button, popup.time)
                     
                 def gotoLocation(self, location = None):
                     if location:
@@ -160,6 +165,7 @@ class Performer(Grimoire.Performer.Base):
                     self.treeView.set_model(self.model)
                     self.treeView.connect("row-activated", self.rowActivated)
                     self.treeView.connect("cursor-changed", self.rowSelected)
+                    self.treeView.connect("button-press-event", self.rowExamined)
 
                 def insert(self, path, treeNode = None, root = False, **kw):
                     node = super(MethodView, self).insert(path, treeNode, root, **kw)
@@ -175,12 +181,20 @@ class Performer(Grimoire.Performer.Base):
                     return super(MethodView, self).remove([], node, **kw)
 
                 def rowActivated(self, treeView, path, viewColumn):
-                    node = self.updateDirCacheNumPath(path[1:], treeNode = self.model.rootNode)
-                    self.selectionChanged(node)
+                    self.selectionChanged(self.updateDirCacheNumPath(path[1:],
+                                                                     treeNode = self.model.rootNode))
 
                 def rowSelected(self, treeView):
-                    node = self.updateDirCacheNumPath(treeView.get_cursor()[0][1:], treeNode = self.model.rootNode)
-                    self.hoverChanged(node)
+                    self.hoverChanged(self.updateDirCacheNumPath(treeView.get_cursor()[0][1:],
+                                                                 treeNode = self.model.rootNode))
+
+                def rowExamined(self, widget, event):
+                    if event.button == 3 and event.state == 0:
+                        self.hoverChanged(self.updateDirCacheNumPath(self.treeView.get_path_at_pos(int(event.x), int(event.y))[0][1:],
+                                                                     treeNode = self.model.rootNode),
+                                          popup=event)
+                        #return True
+                    return False
 
             Session.MethodView = MethodView
             
@@ -231,6 +245,7 @@ if __name__ == '__main__':
     methodTreeView =    windows.get_widget("methodTreeView")
     location =          windows.get_widget("location")
     relatedMethods =    windows.get_widget("relatedMethods")
+    relatedMethodsItem =windows.get_widget("relatedMethodsItem")
     methodInteraction = windows.get_widget("methodInteraction")
     objectTreeView =    windows.get_widget("objectTreeView")
     viewAsObjects =     windows.get_widget("viewAsObjects")
@@ -269,8 +284,12 @@ if __name__ == '__main__':
         if menu.active:
             if viewAsObjects.active:
                 treeViewType.set_current_page(1)
+                relatedMethodsItem.child.set_text("Object methods")
+                relatedMethods.set_title("Object methods")
             else:
                 treeViewType.set_current_page(0)
+                relatedMethodsItem.child.set_text("Related methods")
+                relatedMethods.set_title("Related methods")
 
     def on_quit(*arg, **kw):
         gtk.main_quit()

@@ -532,13 +532,13 @@ class Performer(Grimoire.Performer.Base):
                         super(FormSession.View, self).__init__(*arg, **kw)
                         self.selections = {}
 
-                    def selectionChanged(self, node, selection = ()):
+                    def selectionChanged(self, node, selection = (), *arg, **kw):
                         if node.leaf:
-                            self.selections[selection].gotoPath(node.path)
+                            self.selections[selection].gotoPath(node.path, *arg, **kw)
                 
-                    def hoverChanged(self, node, selection = ()):
+                    def hoverChanged(self, node, selection = (), *arg, **kw):
                         if node.leaf:
-                            self.selections[selection].hoverPath(node.path)
+                            self.selections[selection].hoverPath(node.path, *arg, **kw)
                 
                 class Selection(object):
                     __slots__ = ['method', 'params', 'result', 'views']
