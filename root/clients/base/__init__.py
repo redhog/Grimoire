@@ -40,8 +40,9 @@ class Performer(Grimoire.Performer.Base):
                                                         (Grimoire.Types.Ability.Ignore, ['clients']),
                                                         (Grimoire.Types.Ability.Ignore, ['trees']),
                                                         (Grimoire.Types.Ability.Ignore, ['introspection']),
-                                                        (Grimoire.Types.Ability.Allow, [])])
-                    
+                                                        (Grimoire.Types.Ability.Allow, [])]) 
+                    prefix = []
+                   
                     class DirCacheNode(object):
                         __slots__ = ['view', 'parent', 'path', 'subNodes', 'oldSubNodes',
                                      'leaf', 'updated', 'translation']
@@ -86,12 +87,16 @@ class Performer(Grimoire.Performer.Base):
                             Grimoire.Types.TreeRoot,
                             path = ['directory', 'get'] + self.session.sessionPath + self.viewPath + list(self.path)
                             )(['view', 'hide'], self.hide, False)
-                        self.__ = Grimoire.Performer.Hide(
-                            Grimoire.Performer.Composer(
-                                Grimoire.Performer.Prefixer(['introspection'],
-                                                            Grimoire._.trees.introspection()),
-                                Grimoire.Performer.Isolator(self.__)),
-                            self.hide)
+                        self.prefix = hide or Grimoire.__._getpath(
+                            Grimoire.Types.TreeRoot,
+                            path = ['directory', 'get'] + self.session.sessionPath + self.viewPath + list(self.path)
+                            )(['view', 'prefix'], self.prefix, False)
+                        self.__ = Grimoire.Performer.Composer(
+                            Grimoire.Performer.Hide(Grimoire.Performer.Prefixer(['introspection'],
+                                                                                Grimoire._.trees.introspection()),
+                                                    Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Deny, ['introspection'])])),
+                            Grimoire.Performer.Hide(Grimoire.Performer.Isolator(self.__),
+                                                    self.hide)._physicalGetpath(path=self.prefix))
                         self._ = Grimoire.Performer.Logical(self.__)
 
                     def getComposer(self, *arg, **kw):
@@ -534,11 +539,11 @@ class Performer(Grimoire.Performer.Base):
 
                     def selectionChanged(self, node, selection = (), *arg, **kw):
                         if node.leaf:
-                            self.selections[selection].gotoPath(node.path, *arg, **kw)
+                            self.selections[selection].gotoPath(self.prefix + node.path, *arg, **kw)
                 
                     def hoverChanged(self, node, selection = (), *arg, **kw):
                         if node.leaf:
-                            self.selections[selection].hoverPath(node.path, *arg, **kw)
+                            self.selections[selection].hoverPath(self.prefix + node.path, *arg, **kw)
                 
                 class Selection(object):
                     __slots__ = ['method', 'params', 'result', 'views']

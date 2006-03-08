@@ -96,15 +96,13 @@ class Performer(Grimoire.Performer.Base):
                 class DirCacheNode(FormSession.View.DirCacheNode, NumpathSession.View.DirCacheNode): pass
 
                 class TreeModel(gtk.GenericTreeModel):
-                    prefix = []
-
                     def __init__(self, view):
                         gtk.GenericTreeModel.__init__(self)
                         self.view = view
                         self.setRootNode()
 
                     def setRootNode(self):
-                        self.rootNode = self.view.updateDirCachePath(self.prefix, 1, 0)
+                        self.rootNode = self.view.updateDirCachePath([], 1, 0)
 
                     def on_get_flags(self):
                         return 0
@@ -200,13 +198,13 @@ class Performer(Grimoire.Performer.Base):
             
             class ObjectView(MethodView):
                 viewPath = ['objects']
+                prefix = ['introspection', 'object']
                 hide = Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['introspection', 'object', 'object']),
                                                     (Grimoire.Types.Ability.Ignore, ['introspection', 'object', 'method']),
                                                     (Grimoire.Types.Ability.Ignore, ['introspection', 'object', '']),
                                                     (Grimoire.Types.Ability.Allow, ['introspection', 'object']),
                                                     (Grimoire.Types.Ability.Deny, [])])
-                class TreeModel(MethodView.TreeModel):
-                    prefix = ['introspection', 'object']
+                class TreeModel(MethodView.TreeModel): pass
 
                 def insert(self, path, treeNode = None, root = False, **kw):
                     self.updateDirCachePath([], reupdate=1, treeNode = self.model.rootNode)
