@@ -278,16 +278,13 @@ if __name__ == '__main__':
     def on_about_activate(menu):
         aboutDialog.run()
 
-    def on_viewAs_activate(menu):
-        if menu.active:
-            if viewAsObjects.active:
-                treeViewType.set_current_page(1)
-                relatedMethodsItem.child.set_text("Object methods")
-                relatedMethods.set_title("Object methods")
-            else:
-                treeViewType.set_current_page(0)
-                relatedMethodsItem.child.set_text("Related methods")
-                relatedMethods.set_title("Related methods")
+    def on_treeViewType_switch_page(treeViewType, page, pagenum):
+        if pagenum == 0:
+            relatedMethodsItem.child.set_markup_with_mnemonic("_Related methods")
+            relatedMethods.set_title("Related methods")
+        else:
+            relatedMethodsItem.child.set_markup_with_mnemonic("_Object methods")
+            relatedMethods.set_title("Object methods")
 
     def on_quit(*arg, **kw):
         gtk.main_quit()

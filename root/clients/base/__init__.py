@@ -673,7 +673,7 @@ class Performer(Grimoire.Performer.Base):
                         selectionClass = self.Selection
                     self.selections[path] = selectionClass(session = self, path = path, **kw)
                     if self.comment:
-                        self.selections[path].result = cls.Result()
+                        self.selections[path].result = self.Result()
                         self.selections[path].result.result = self.comment
                         self.comment = None  # Don't display the session comment in more than one view...
 
