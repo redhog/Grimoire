@@ -105,10 +105,11 @@ class CommentedValuesModel(gtk.GenericTreeModel):
         return path
     def on_get_value(self, node, column):
         assert len(node) == 1 and column == 0
-        return self.composer(Grimoire.Types.getComment(self.values[node[0]], self.values[node[0]]))
+        return TextComposer(Grimoire.Types.getComment(self.values[node[0]], self.values[node[0]]))
     def on_iter_next(self, node):
+        if node is None: return None
         assert len(node) == 1
-        if node[0] < len(self.values):
+        if node[0] + 1 < len(self.values):
             return (node[0] + 1,)
         return None
     def on_iter_children(self, node):
@@ -132,6 +133,9 @@ class CommentedValuesTypeWidget(gtk.ComboBox):
     def __init__(self, *arg, **kw):
         super(CommentedValuesTypeWidget, self).__init__(
             CommentedValuesModel(*arg, **kw))
+        cell = gtk.CellRendererText()
+        self.pack_start(cell, True)
+        self.add_attribute(cell, 'text', 0)
 
 class RestrictedTypeWidget(CommentedValuesTypeWidget):
     def __init__(self, composer, obj):
