@@ -148,7 +148,7 @@ class Performer(Grimoire.Performer.Base):
 
             Session.Selection = Selection
                     
-            class MethodView(FormSession.View, NumpathSession.View):
+            class MethodView(FormSession.TreeView, NumpathSession.TreeView):
                 viewPath = ['methods']
 
                 # Fake - we'll override this with an instance
@@ -156,7 +156,7 @@ class Performer(Grimoire.Performer.Base):
                 # has been overridden...
                 model = None 
 
-                class DirCacheNode(FormSession.View.DirCacheNode, NumpathSession.View.DirCacheNode): pass
+                class DirCacheNode(FormSession.TreeView.DirCacheNode, NumpathSession.TreeView.DirCacheNode): pass
 
                 class TreeModel(gtk.GenericTreeModel):
                     def __init__(self, view):
@@ -290,8 +290,9 @@ class Performer(Grimoire.Performer.Base):
             Session.ObjectView = ObjectView
                 
 
-            class ClientView(FormSession.View, NumpathSession.View):
+            class ClientView(FormSession.ViewGroup):
                 def __init__(self, session, path, methodTreeView = None, objectTreeView = None, location = None, methodInteraction = None, relatedMethods = None, **kw):
+                    super(ClientView, self).__init__(session, path)
                     if not (methodTreeView and objectTreeView and location and methodInteraction and relatedMethods):
                         self.client = session.Client(session, self)
 
@@ -301,14 +302,12 @@ class Performer(Grimoire.Performer.Base):
                         methodInteraction = self.client.methodInteraction
                         relatedMethods =    self.client.relatedMethods
                         
-                    session.addView(path + ('methods',), session.MethodView, treeView = methodTreeView)
-                    session.addView(path + ('objects',), session.ObjectView, treeView = objectTreeView)
-                    session.addSelection(path, session.Selection,
-                                         location = location,
-                                         methodInteraction = methodInteraction,
-                                         relatedMethods = relatedMethods)
-                    session.connectViewAndSelection(path + ('methods',), path)
-                    session.connectViewAndSelection(path + ('objects',), path)
+                    self.addView(('methods',), session.MethodView, treeView = methodTreeView)
+                    self.addView(('objects',), session.ObjectView, treeView = objectTreeView)
+                    self.addView(('selection',), session.Selection,
+                                 location = location,
+                                 methodInteraction = methodInteraction,
+                                 relatedMethods = relatedMethods)
 
             Session.ClientView = ClientView
             

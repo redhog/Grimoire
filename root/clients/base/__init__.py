@@ -34,8 +34,63 @@ class Performer(Grimoire.Performer.Base):
                         self.error = error
 
                 class View(object):
-
                     viewPath = []
+                    parent = None
+
+                    class Send(object):
+                        class __SendMethod(object):
+                            def __init__(self, view, method):
+                                self.view = view
+                                self.method = method
+                            def __call__(self, *arg, **kw):
+                                return self.view.viewOp(self.method, *arg, **kw)
+                        def __init__(self, view):
+                            self.__view = view
+                        def __getattr__(self, name):
+                            return self.__SendMethod(self.__view, name)
+                            
+                    def __init__(self, session, path, parent = None):
+                        self.session = session
+                        self.path = path
+                        self.parent = parent
+                        self.send = self.Send(self)
+                        
+                    def viewOp(self, operation, *arg, **kw):
+                        if self.parent:
+                            return self.parent.viewOp(operation, *arg, **kw)
+                        return self.viewOpRecurse(operation, *arg, **kw)
+
+                    def viewOpRecurse(self, operation, *arg, **kw):
+                        if not hasattr(self, operation):
+                            raise Grimoire.Types.MethodNotImplementedHere
+                        return [getattr(self, operation)(*arg, **kw)]
+
+                class ViewGroup(View):
+                    def __init__(self, *arg, **kw):
+                        super(Session.ViewGroup, self).__init__(*arg, **kw)
+                        self.children = {}
+                        
+                    def addView(self, path = (), viewClass = None, **kw):
+                        path = tuple(path)
+                        if viewClass is None:
+                            viewClass = self.TreeView
+                        view = viewClass(path = self.path + path, session = self.session, parent = self, **kw)
+                        self.children[path] = view
+                        return view
+
+                    def deleteView(self, path):
+                        del self.children[path]
+
+                    def viewOpRecurse(self, operation, *arg, **kw):
+                        result = []
+                        for child in self.children.itervalues():
+                            try:
+                                result.append(child.viewOpRecurse(operation, *arg, **kw))
+                            except Grimoire.Types.MethodNotImplementedHere:
+                                pass
+                        return result
+                        
+                class TreeView(View):
                     hide = Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['directory']),
                                                         (Grimoire.Types.Ability.Ignore, ['clients']),
                                                         (Grimoire.Types.Ability.Ignore, ['trees']),
@@ -78,9 +133,8 @@ class Performer(Grimoire.Performer.Base):
                                 self.oldSubNodes = Grimoire.Utils.OrderedMapping()
                                 self.updated = 1
 
-                    def __init__(self, session, path, hide = None):
-                        self.session = session
-                        self.path = path
+                    def __init__(self, session, path, parent = None, hide = None):
+                        super(Session.TreeView, self).__init__(session, path, parent)
                         self.dirCache = self.DirCacheNode(view = self)
                         self.__ = session.__
                         self.hide = hide or Grimoire.__._getpath(
@@ -310,26 +364,28 @@ class Performer(Grimoire.Performer.Base):
 
                 # View operations
 
-                def addView(self, path, viewClass = None, **kw):
+                def addView(self, path = (), viewClass = None, **kw):
                     path = tuple(path)
                     if viewClass is None:
-                        viewClass = self.View
-                    self.views[path] = viewClass(session = self, path = path, **kw)
+                        viewClass = self.TreeView
+                    view = viewClass(path = path, session = self, **kw)
+                    self.views[path] = view
+                    return view
 
                 def deleteView(self, path):
                     del self.views[path]
-
+                    
                 def invalidateDirCache(self, *arg, **kw):
                     for view in self.views.itervalues():
-                        view.invalidateDirCache(*arg, **kw)
+                        view.send.invalidateDirCache(*arg, **kw)
 
                 def updateDirCache(self, *arg, **kw):
                     """Updates depth levels down a branch of the tree. If reupdate
                     is not true, nodes with updated == 1 will not be updated
                     again.
                     """
-                    return dict([(viewname, view.updateDirCache(*arg, **kw))
-                                 for viewname, view in self.views.iteritems()])
+                    return dict([(path, view.send.updateDirCache(*arg, **kw))
+                                 for path, view in self.views.iteritems()])
 
                 def updateDirCachePath(self, *arg, **kw):
                     """Updates all nodes along a path down the tree,
@@ -338,8 +394,8 @@ class Performer(Grimoire.Performer.Base):
                     updated). If reupdate is not true, nodes with
                     updated == 1 will not be updated again.
                     """
-                    return dict([(viewname, view.updateDirCachePath(*arg, **kw))
-                                 for viewname, view in self.views.iteritems()])
+                    return dict([(path, view.send.updateDirCachePath(*arg, **kw))
+                                 for path, view in self.views.iteritems()])
                                 
                 # Tree operations
 
@@ -372,7 +428,7 @@ class Performer(Grimoire.Performer.Base):
                         Grimoire.Performer.Physical(directory)._callWithUnlockedTree(unlocked)
                     self.__._insert(obj, **kw)
                     for view in self.views.itervalues():
-                        view.insert(path, root = root, **kw)
+                        view.send.insert(path, root = root, **kw)
                     return obj
 
                 def insertUnique(self, path, obj, **kw):
@@ -389,7 +445,7 @@ class Performer(Grimoire.Performer.Base):
                 def remove(self, path, obj, **kw):
                     self.__._remove(obj)
                     for view in self.views.itervalues():
-                        view.remove(path, **kw)
+                        view.send.remove(path, **kw)
 
                 # Method operations
 
@@ -476,11 +532,11 @@ class Performer(Grimoire.Performer.Base):
         def _call(performer):
             Session = performer._getpath(Grimoire.Types.MethodBase).base()
             class NumpathSession(Session):
-                class View(Session.View):
-                    class DirCacheNode(Session.View.DirCacheNode):
+                class TreeView(Session.TreeView):
+                    class DirCacheNode(Session.TreeView.DirCacheNode):
                         __slots__ = ['numpath']
                         def setParent(self, parent, name):
-                            super(NumpathSession.View.DirCacheNode, self).setParent(parent, name)
+                            super(NumpathSession.TreeView.DirCacheNode, self).setParent(parent, name)
                             if parent:
                                 self.numpath = parent.numpath + (parent.subNodes.__keys__.index(name),)
                             else:
@@ -531,26 +587,24 @@ class Performer(Grimoire.Performer.Base):
         def _call(performer):
             Session = performer._getpath(Grimoire.Types.MethodBase).base()
             class FormSession(Session):
-                class View(Session.View):
-                    class DirCacheNode(Session.View.DirCacheNode): pass
+                class TreeView(Session.TreeView):
+                    class DirCacheNode(Session.TreeView.DirCacheNode): pass
                     def __init__(self, *arg, **kw):
-                        super(FormSession.View, self).__init__(*arg, **kw)
+                        super(FormSession.TreeView, self).__init__(*arg, **kw)
                         self.selections = {}
 
                     def selectionChanged(self, node, selection = (), *arg, **kw):
                         if node.leaf:
-                            self.selections[selection].gotoPath(self.prefix + node.path, *arg, **kw)
+                            self.send.gotoPath(self.prefix + node.path, *arg, **kw)
                 
                     def hoverChanged(self, node, selection = (), *arg, **kw):
                         if node.leaf:
-                            self.selections[selection].hoverPath(self.prefix + node.path, *arg, **kw)
+                            self.send.hoverPath(self.prefix + node.path, *arg, **kw)
                 
-                class Selection(object):
-                    __slots__ = ['method', 'params', 'result', 'views']
-                    def __init__(self, session, path, **kw):
-                        self.session = session
-                        self.path = path
-                        self.views = {}
+                class Selection(Session.View):
+                    __slots__ = ['method', 'params', 'result']
+                    def __init__(self, *arg, **kw):
+                        super(FormSession.Selection, self).__init__(*arg, **kw)
                         self.clear()
                         
                     def getComposer(self, path = None, *arg, **kw):
@@ -663,41 +717,8 @@ class Performer(Grimoire.Performer.Base):
                 def __new__(cls, **kw):
                     sess = super(FormSession, cls).__new__(cls, **kw)
                     self = Grimoire.Types.getValue(sess)
-                    self.selections = {}
                     self.comment = Grimoire.Types.getComment(sess)
                     return self
-
-                def addSelection(self, path, selectionClass = None, **kw):
-                    path = tuple(path)
-                    if selectionClass is None:
-                        selectionClass = self.Selection
-                    self.selections[path] = selectionClass(session = self, path = path, **kw)
-                    if self.comment:
-                        self.selections[path].result = self.Result()
-                        self.selections[path].result.result = self.comment
-                        self.comment = None  # Don't display the session comment in more than one view...
-
-                def deleteSelection(self, path):
-                    for view in self.selections[path].views:
-                        del view.selections[path]
-                    del self.selections[path]
-
-                def deleteView(self, path):
-                    for selection in self.views[path].selections:
-                        del selection.views[path]
-                    super(FormSession, self).deleteView(path)                    
-
-                def connectViewAndSelection(self, viewPath, selectionPath):
-                    view = self.views[viewPath]
-                    selection = self.selections[selectionPath]
-                    view.selections[selectionPath] = selection
-                    selection.views[viewPath] = view
-
-                def disconnectViewAndSelection(self, viewPath, selectionPath ):
-                    view = self.views[viewPath]
-                    selection = self.selections[selectionPath]
-                    del view.selections[selectionPath]
-                    del selection.views[viewPath]
 
             return FormSession
         _call = Grimoire.Utils.cachingFunction(_call)
@@ -709,11 +730,11 @@ class Performer(Grimoire.Performer.Base):
         def _call(performer):
             Session = performer._getpath(Grimoire.Types.MethodBase).base()
             class RenderableSession(Session):
-                class View(Session.View):
-                    class DirCacheNode(Session.View.DirCacheNode):
+                class TreeView(Session.TreeView):
+                    class DirCacheNode(Session.TreeView.DirCacheNode):
                         __slots__ = ['expanded']
                         def __init__(self, expanded = 0, *arg, **kw):
-                            super(RenderableSession.View.DirCacheNode, self).__init__(*arg, **kw)
+                            super(RenderableSession.TreeView.DirCacheNode, self).__init__(*arg, **kw)
                             self.expanded = expanded
 
                     def expand(self, path, depth = Grimoire.Performer.UnlimitedDepth):
@@ -775,15 +796,15 @@ class Performer(Grimoire.Performer.Base):
 
                 def expand(self, *arg, **kw):
                     for view in self.views.itervalues():
-                        view.expand(*arg, **kw)
+                        view.send.expand(*arg, **kw)
 
                 def expandPath(self, *arg, **kw):
                     for view in self.views.itervalues():
-                        view.expandPath(*arg, **kw)
+                        view.send.expandPath(*arg, **kw)
 
                 def collapse(self, *arg, **kw):
                     for view in self.views.itervalues():
-                        view.collapse(*arg, **kw)
+                        view.send.collapse(*arg, **kw)
                         
                 def insertUnique(self, path, obj, **kw):
                     upath = super(RenderableSession, self).insertUnique(path, obj, **kw)
