@@ -1,8 +1,8 @@
 #! /usr/bin/python
 
-profile = False # 'gguiprof'
+profile = False # 'gnomoireprof'
 
-import ggui, _ggui.Composer, Grimoire, gobject, gnome, gtk, gtk.glade, types, sys, os.path
+import gnomoire, _gnomoire.Composer, Grimoire, gobject, gnome, gtk, gtk.glade, types, sys, os.path
 
 if profile:
     import hotshot
@@ -11,12 +11,13 @@ A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
 
 class Performer(Grimoire.Performer.Base):
-    class gnome(Grimoire.Performer.Method):
+    class gnomoire(Grimoire.Performer.Method):
+        __path__ = []
         def _call(performer):
             NumpathSession = Grimoire._.clients.numpath()
             FormSession = Grimoire._.clients.form()
             class Session(FormSession, NumpathSession):
-                composer = _ggui.Composer.GtkComposer
+                composer = _gnomoire.Composer.GtkComposer
                 sessionPath = FormSession.sessionPath + ['gnome']
 
             class Client(object):
@@ -26,7 +27,7 @@ class Performer(Grimoire.Performer.Base):
                     self.showMethodTree = showMethodTree
                     self.showObjectTree = showObjectTree
                     self.showMethodInteraction = showMethodInteraction
-                    self.windows = gtk.glade.XML(os.path.join(os.path.split(ggui.__file__)[0], "_ggui", "ggui.glade"))
+                    self.windows = gtk.glade.XML(os.path.join(os.path.split(gnomoire.__file__)[0], "_gnomoire", "gnomoire.glade"))
 
                     self.methodTreeView =    self.windows.get_widget("methodTreeView")
                     self.objectTreeView =    self.windows.get_widget("objectTreeView")
@@ -320,7 +321,7 @@ class Performer(Grimoire.Performer.Base):
 if __name__ == '__main__':
     program = gnome.program_init("Gnomoire", Grimoire.About.grimoireVersion)
 
-    session = Grimoire._.clients.gnome(
+    session = Grimoire._.clients.gnomoire(
         )(tree = (len(sys.argv) > 1 and sys.argv[1]),
           initCommands = sys.argv[2:])
     session.addView((), session.ClientView)
