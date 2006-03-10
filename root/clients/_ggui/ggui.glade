@@ -48,7 +48,7 @@
 		    <widget class="GtkMenu" id="file_menu">
 
 		      <child>
-			<widget class="GtkImageMenuItem" id="newSession">
+			<widget class="GtkImageMenuItem" id="newSessionMenuItem">
 			  <property name="visible">True</property>
 			  <property name="stock_item">GNOMEUIINFO_MENU_NEW_ITEM</property>
 			  <property name="label" translatable="yes">_New session</property>
@@ -343,7 +343,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkImageMenuItem" id="about_gnomoire1">
+			<widget class="GtkImageMenuItem" id="aboutGnomoire">
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">About Gnomoire</property>
 			  <property name="use_underline">True</property>
@@ -364,7 +364,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkImageMenuItem" id="about_grimoire1">
+			<widget class="GtkImageMenuItem" id="aboutGrimoire">
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">About Grimoire</property>
 			  <property name="use_underline">True</property>
@@ -413,7 +413,7 @@
 	      <property name="show_arrow">True</property>
 
 	      <child>
-		<widget class="GtkToolButton" id="newButton">
+		<widget class="GtkToolButton" id="newSessionButton">
 		  <property name="visible">True</property>
 		  <property name="tooltip" translatable="yes">New session</property>
 		  <property name="stock_id">gtk-new</property>
@@ -528,7 +528,7 @@
 	      </child>
 
 	      <child>
-		<widget class="GtkToolItem" id="toolitem4">
+		<widget class="GtkToolItem" id="locationToolItem">
 		  <property name="visible">True</property>
 		  <property name="visible_horizontal">True</property>
 		  <property name="visible_vertical">True</property>
@@ -585,7 +585,6 @@
 
 	  <child>
 	    <widget class="GtkNotebook" id="treeViewType">
-	      <property name="visible">True</property>
 	      <property name="can_focus">True</property>
 	      <property name="show_tabs">True</property>
 	      <property name="show_border">False</property>
@@ -706,8 +705,7 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkScrolledWindow" id="scrolledwindow3">
-	      <property name="visible">True</property>
+	    <widget class="GtkScrolledWindow" id="methodInteractionPane">
 	      <property name="can_focus">True</property>
 	      <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
 	      <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
