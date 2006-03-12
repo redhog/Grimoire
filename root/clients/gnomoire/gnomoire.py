@@ -95,13 +95,17 @@ class Performer(Grimoire.Performer.Base):
                 def __init__(self, location = None, methodInteraction = None, **kw):
                     super(Selection, self).__init__(**kw)
                     if not (location and methodInteraction):
-                        self.client =       self.session.Client(self, showMethodInteraction = True)
-                        location =          self.client.location
-                        methodInteraction = self.client.methodInteraction
-                    self.location = location
+                        self.makeGUI()
+                    else:
+                        self.location = location
+                        self.methodInteraction = methodInteraction
                     self.location.child.connect("activate", self.locationChanged)
-                    self.methodInteraction = methodInteraction
-                    
+
+                def makeGUI(self):
+                    self.client =   self.session.Client(self, showMethodInteraction = True)
+                    self.location =          self.client.location
+                    self.methodInteraction = self.client.methodInteraction
+
                 def gotoLocation(self, location = None):
                     if location:
                         self.location.get_child().set_text(location)
@@ -240,15 +244,19 @@ class Performer(Grimoire.Performer.Base):
                 def __init__(self, treeView = None, **kw):
                     super(MethodView, self).__init__(**kw)
                     if not treeView:
-                        self.client = self.session.Client(self, showMethodTree = True)
-                        treeView =    self.client.methodTreeView
+                        self.makeGUI()
+                    else:
+                        self.treeView = treeView
                     self.model = self.TreeModel(self)
-                    self.treeView = treeView
                     self.treeView.append_column(gtk.TreeViewColumn("tree", gtk.CellRendererText(), markup=0))
                     self.treeView.set_model(self.model)
                     self.treeView.connect("row-activated", self.rowActivated)
                     self.treeView.connect("cursor-changed", self.rowSelected)
                     self.treeView.connect("button-press-event", self.rowExamined)
+
+                def makeGUI(self):
+                    self.client =   self.session.Client(self, showMethodTree = True)
+                    self.treeView = self.client.methodTreeView
 
                 def insert(self, path, treeNode = None, root = False, **kw):
                     node = super(MethodView, self).insert(path, treeNode, root, **kw)
@@ -291,11 +299,9 @@ class Performer(Grimoire.Performer.Base):
                                                     (Grimoire.Types.Ability.Deny, [])])
                 class TreeModel(MethodView.TreeModel): pass
 
-                def __init__(self, treeView, session, **kw):
-                    if not treeView:
-                        self.client = session.Client(self, showObjectTree = True)
-                        treeView =    self.client.objectTreeView
-                    super(ObjectView, self).__init__(treeView = treeView, session = session, **kw)
+                def makeGUI(self):
+                    self.client =   self.session.Client(self, showObjectTree = True)
+                    self.treeView = self.client.objectTreeView
 
                 def insert(self, path, treeNode = None, root = False, **kw):
                     self.updateDirCachePath([], reupdate=1, treeNode = self.model.rootNode)
@@ -321,15 +327,22 @@ class Performer(Grimoire.Performer.Base):
                 def __init__(self, methodTreeView = None, objectTreeView = None, relatedMethods = None, **kw):
                     super(CombinationView, self).__init__(**kw)
                     if not (methodTreeView and objectTreeView and relatedMethods):
-                        self.client =       self.session.Client(view = self, showMethodTree = True, showObjectTree = True)
-                        methodTreeView =    self.client.methodTreeView
-                        objectTreeView =    self.client.objectTreeView
-                        relatedMethods =    self.client.relatedMethods
-                        self.client.windows.get_widget("openMethodsInNewWindow").set_active(True)
-                        self.send.setOenMethodsInNewWindow(True)
-                    self.addView(('hover',), self.session.HoverSelection, relatedMethods = relatedMethods)
-                    self.addView(('methods',), self.session.MethodView, treeView = methodTreeView)
-                    self.addView(('objects',), self.session.ObjectView, treeView = objectTreeView)
+                        self.makeGUI()
+                    else:
+                        self.methodTreeView = methodTreeView
+                        self.objectTreeView = objectTreeView
+                        self.relatedMethods = relatedMethods
+                    self.addView(('hover',), self.session.HoverSelection, relatedMethods = self.relatedMethods)
+                    self.addView(('methods',), self.session.MethodView, treeView = self.methodTreeView)
+                    self.addView(('objects',), self.session.ObjectView, treeView = self.objectTreeView)
+                    
+                def makeGUI(self):
+                    self.client =         self.session.Client(view = self, showMethodTree = True, showObjectTree = True)
+                    self.methodTreeView = self.client.methodTreeView
+                    self.objectTreeView = self.client.objectTreeView
+                    self.relatedMethods = self.client.relatedMethods
+                    self.client.windows.get_widget("openMethodsInNewWindow").set_active(True)
+                    self.send.setOenMethodsInNewWindow(True)
 
             Session.CombinationView = CombinationView
 
@@ -337,19 +350,29 @@ class Performer(Grimoire.Performer.Base):
                 def __init__(self, methodTreeView = None, objectTreeView = None, location = None, methodInteraction = None, relatedMethods = None, **kw):
                     super(ClientView, self).__init__(**kw)
                     if not (methodTreeView and objectTreeView and location and methodInteraction and relatedMethods):
-                        self.client =       self.session.Client(view = self, showMethodTree = True, showObjectTree = True, showMethodInteraction = True)
-                        methodTreeView =    self.client.methodTreeView
-                        objectTreeView =    self.client.objectTreeView
-                        location =          self.client.location
-                        methodInteraction = self.client.methodInteraction
-                        relatedMethods =    self.client.relatedMethods
+                        self.makeGUI()
+                    else:
+                        self.methodTreeView =    methodTreeView
+                        self.objectTreeView =    objectTreeView
+                        self.location =          location
+                        self.methodInteraction = methodInteraction
+                        self.relatedMethods =    relatedMethods
                     self.addView(('tree',), self.session.CombinationView,
-                                 methodTreeView = methodTreeView,
-                                 objectTreeView = objectTreeView,
-                                 relatedMethods = relatedMethods)
+                                 methodTreeView = self.methodTreeView,
+                                 objectTreeView = self.objectTreeView,
+                                 relatedMethods = self.relatedMethods)
                     self.addView(('selection',), self.session.Selection,
-                                 location = location,
-                                 methodInteraction = methodInteraction)
+                                 location = self.location,
+                                 methodInteraction = self.methodInteraction)
+
+                def makeGUI(self):
+                    self.client =            self.session.Client(view = self, showMethodTree = True, showObjectTree = True, showMethodInteraction = True)
+                    self.methodTreeView =    self.client.methodTreeView
+                    self.objectTreeView =    self.client.objectTreeView
+                    self.location =          self.client.location
+                    self.methodInteraction = self.client.methodInteraction
+                    self.relatedMethods =    self.client.relatedMethods
+
 
             Session.ClientView = ClientView
             
