@@ -47,6 +47,10 @@ class Performer(Grimoire.Performer.Base):
                         if not showMethodTree: treeViewType.set_current_page(1)
                         self.windows.get_widget('treeViewType').show()
                     if showMethodInteraction:
+                        self.windows.get_widget('goMenuItem').show()
+                        self.windows.get_widget('bookmarksMenuItem').show()
+                        self.windows.get_widget('forwardButton').show()
+                        self.windows.get_widget('locationToolItem').show()
                         self.windows.get_widget('methodInteractionPane').show()
                     self.windows.get_widget('mainWindow').show()
 
