@@ -92,22 +92,15 @@ class Performer(Grimoire.Performer.Base):
             Session.Client = Client
 
             class Selection(FormSession.Selection):
-                def __init__(self, location = None, methodInteraction = None, relatedMethods = None, **kw):
+                def __init__(self, location = None, methodInteraction = None, **kw):
                     super(Selection, self).__init__(**kw)
-                    if not (location and methodInteraction and relatedMethods):
+                    if not (location and methodInteraction):
                         self.client =       self.session.Client(self, showMethodInteraction = True)
                         location =          self.client.location
                         methodInteraction = self.client.methodInteraction
-                        relatedMethods =    self.client.relatedMethods
                     self.location = location
                     self.location.child.connect("activate", self.locationChanged)
                     self.methodInteraction = methodInteraction
-                    self.relatedMethods = relatedMethods
-
-                def hoverPath(self, path, popup = None):
-                    super(Selection, self).hoverPath(path)
-                    if popup:
-                        self.relatedMethods.popup(None, None, None, popup.button, popup.time)
                     
                 def gotoLocation(self, location = None):
                     if location:
@@ -121,12 +114,30 @@ class Performer(Grimoire.Performer.Base):
                     self.methodInteraction.remove(self.methodInteraction.get_child())
                     self.methodInteraction.add(selection)
                     self.methodInteraction.show_all()
+                            
+                def applyForm(self, form, args):
+                    super(Selection, self).applyForm(args)
+
+                def locationChanged(self, *arg, **kw):
+                    self.gotoLocation()
+
+            Session.Selection = Selection
+
+            class HoverSelection(FormSession.HoverSelection):
+                def __init__(self, relatedMethods, **kw):
+                    super(HoverSelection, self).__init__(**kw)
+                    self.relatedMethods = relatedMethods
+                
+                def hoverPath(self, path, popup = None):
+                    super(HoverSelection, self).hoverPath(path)
+                    if popup:
+                        self.relatedMethods.popup(None, None, None, popup.button, popup.time)
 
                 def renderHoverSelection(self):
                     for child in self.relatedMethods.get_children():
                         self.relatedMethods.remove(child)
                         
-                    composer = self.getComposer(self.hover)
+                    composer = self.getComposer(self.method)
 
                     def addRelated(base, link):
                         comment = Grimoire.Types.getComment(link)
@@ -137,31 +148,25 @@ class Performer(Grimoire.Performer.Base):
                         reference.reference = link['path']
                             
                         def menuItemActivate(menuItem, reference):
-                            self.gotoPath(reference.reference)
+                            self.send.gotoPath(reference.reference)
                         menuItem = gtk.MenuItem()
                         menuItem.add(composer(comment))
                         menuItem.connect('activate', menuItemActivate, reference)
                         self.relatedMethods.append(menuItem)
 
-                    if self.hover is not None:
-                        if Grimoire.Utils.isPrefix(['introspection', 'object'], self.hover):
-                            for link in Grimoire.Types.getValue(self.session.__._getpath(path=self.hover)()):
-                                addRelated(self.hover, link)
+                    if self.method is not None:
+                        if Grimoire.Utils.isPrefix(['introspection', 'object'], self.method):
+                            for link in Grimoire.Types.getValue(self.session.__._getpath(path=self.method)()):
+                                addRelated(self.method, link)
                         else:
-                            for objectLinks in Grimoire.Types.getValue(self.session.__._getpath(path=['introspection', 'related'] + self.hover)()):
+                            for objectLinks in Grimoire.Types.getValue(self.session.__._getpath(path=['introspection', 'related'] + self.method)()):
                                 for link in Grimoire.Types.getValue(objectLinks):
-                                    addRelated(['introspection', 'related'] + self.hover, link)
+                                    addRelated(['introspection', 'related'] + self.method, link)
                     
                     self.relatedMethods.show_all()
-                            
-                def applyForm(self, form, args):
-                    super(Selection, self).applyForm(args)
 
-                def locationChanged(self, *arg, **kw):
-                    self.gotoLocation()
-
-            Session.Selection = Selection
-                    
+            Session.HoverSelection = HoverSelection
+            
             class MethodView(FormSession.TreeView, NumpathSession.TreeView):
                 viewPath = ['methods']
 
@@ -233,10 +238,10 @@ class Performer(Grimoire.Performer.Base):
                         return node.parent
 
                 def __init__(self, treeView = None, **kw):
+                    super(MethodView, self).__init__(**kw)
                     if not treeView:
                         self.client = self.session.Client(self, showMethodTree = True)
                         treeView =    self.client.methodTreeView
-                    super(MethodView, self).__init__(**kw)
                     self.model = self.TreeModel(self)
                     self.treeView = treeView
                     self.treeView.append_column(gtk.TreeViewColumn("tree", gtk.CellRendererText(), markup=0))
@@ -259,12 +264,12 @@ class Performer(Grimoire.Performer.Base):
                     return super(MethodView, self).remove([], node, **kw)
 
                 def rowActivated(self, treeView, path, viewColumn):
-                    self.selectionChanged(self.updateDirCacheNumPath(path[1:],
-                                                                     treeNode = self.model.rootNode))
+                    self.send.selectionChanged(self.updateDirCacheNumPath(path[1:],
+                                                                          treeNode = self.model.rootNode))
 
                 def rowSelected(self, treeView):
-                    self.hoverChanged(self.updateDirCacheNumPath(treeView.get_cursor()[0][1:],
-                                                                 treeNode = self.model.rootNode))
+                    self.send.hoverChanged(self.updateDirCacheNumPath(treeView.get_cursor()[0][1:],
+                                                                      treeNode = self.model.rootNode))
 
                 def rowExamined(self, widget, event):
                     if event.button == 3 and event.state == 0:
@@ -312,17 +317,17 @@ class Performer(Grimoire.Performer.Base):
 
             Session.ObjectView = ObjectView
 
-            # FIXME: Related methods should be part of tree view, not selection...
-            
             class CombinationView(FormSession.ViewGroup):
-                def __init__(self, methodTreeView = None, objectTreeView = None, methodInteraction = None, **kw):
+                def __init__(self, methodTreeView = None, objectTreeView = None, relatedMethods = None, **kw):
                     super(CombinationView, self).__init__(**kw)
-                    if not (methodTreeView and objectTreeView):
+                    if not (methodTreeView and objectTreeView and relatedMethods):
                         self.client =       self.session.Client(view = self, showMethodTree = True, showObjectTree = True)
                         methodTreeView =    self.client.methodTreeView
                         objectTreeView =    self.client.objectTreeView
+                        relatedMethods =    self.client.relatedMethods
                         self.client.windows.get_widget("openMethodsInNewWindow").set_active(True)
                         self.send.setOenMethodsInNewWindow(True)
+                    self.addView(('hover',), self.session.HoverSelection, relatedMethods = relatedMethods)
                     self.addView(('methods',), self.session.MethodView, treeView = methodTreeView)
                     self.addView(('objects',), self.session.ObjectView, treeView = objectTreeView)
 
@@ -338,11 +343,13 @@ class Performer(Grimoire.Performer.Base):
                         location =          self.client.location
                         methodInteraction = self.client.methodInteraction
                         relatedMethods =    self.client.relatedMethods
-                    self.addView(('tree',), self.session.CombinationView, methodTreeView = methodTreeView, objectTreeView = objectTreeView)
+                    self.addView(('tree',), self.session.CombinationView,
+                                 methodTreeView = methodTreeView,
+                                 objectTreeView = objectTreeView,
+                                 relatedMethods = relatedMethods)
                     self.addView(('selection',), self.session.Selection,
                                  location = location,
-                                 methodInteraction = methodInteraction,
-                                 relatedMethods = relatedMethods)
+                                 methodInteraction = methodInteraction)
 
             Session.ClientView = ClientView
             

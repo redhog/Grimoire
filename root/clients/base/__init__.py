@@ -613,29 +613,67 @@ class Performer(Grimoire.Performer.Base):
                     def hoverChanged(self, node, selection = (), *arg, **kw):
                         if node.leaf:
                             self.send.hoverPath(self.prefix + node.path, *arg, **kw)
-                
-                class Selection(Session.View):
-                    __slots__ = ['method', 'params', 'result']
+
+                class GenericSelection(Session.View):
+                    __slots__ = ['method']
                     def __init__(self, **kw):
-                        super(FormSession.Selection, self).__init__(**kw)
+                        super(FormSession.GenericSelection, self).__init__(**kw)
                         self.clear()
-                        
+
+                    def clear(self):
+                        self.method = None
+
+                    def pathToExpression(self, path):
+                        if Grimoire.Utils.isInstance(path, Grimoire.Types.GrimoireReference):
+                            path = self.method + path
+                            if path['levels']:
+                                raise ValueError("Bad reference", self.method, path['levels'], path['path'])
+                            path = path['path']
+                        path = list(path)
+                        expr = reduce(lambda expr, member:
+                         Grimoire.Utils.Serialize.Types.Extension(
+                          Grimoire.Utils.Serialize.Types.Member,
+                          [expr,
+                           Grimoire.Utils.Serialize.Types.Extension(
+                            Grimoire.Utils.Serialize.Types.Identifier,
+                            member)]),
+                         path,
+                         Grimoire.Utils.Serialize.Types.Extension(
+                          Grimoire.Utils.Serialize.Types.Identifier,
+                          "_"))
+                        s = StringIO.StringIO()
+                        Grimoire.Utils.Serialize.Writer.write(s, expr)
+                        return s.getvalue()
+
                     def getComposer(self, path = None, *arg, **kw):
                         if path is None: path = self.method
                         class Composer(self.session.getComposer(path, *arg, **kw)):
                             selection = self
                         return Composer
 
+                class HoverSelection(GenericSelection):
+                    def hoverSelect(self, method):
+                        if self.method != method:
+                            self.method = method
+                            self.renderHoverSelection()
+
+                    def renderHoverSelection(self):
+                        pass
+
+                    def hoverPath(self, path):
+                        self.hoverLocation(self.pathToExpression(path))
+                        
+                    def hoverLocation(self, location):
+                        method = self.session._.introspection.methodOfExpression(location, True)
+                        self.hoverSelect(method)
+
+                class Selection(GenericSelection):
+                    __slots__ = ['params', 'result']
+                        
                     def clear(self):
-                        self.hover = None
-                        self.method = None
+                        super(FormSession.Selection, self).clear()
                         self.params = None
                         self.result = None
-
-                    def hoverSelect(self, method):
-                        if self.hover != method:
-                            self.hover = method
-                            self.renderHoverSelection()
 
                     def select(self, method):
                         self.clear()
@@ -675,31 +713,6 @@ class Performer(Grimoire.Performer.Base):
                                 result.append(self.params)
                         self.drawSelection(
                             self.getComposer(self.method or ())(result))
-
-                    def renderHoverSelection(self):
-                        pass
-
-                    def pathToExpression(self, path):
-                        if Grimoire.Utils.isInstance(path, Grimoire.Types.GrimoireReference):
-                            path = self.method + path
-                            if path['levels']:
-                                raise ValueError("Bad reference", self.method, path['levels'], path['path'])
-                            path = path['path']
-                        path = list(path)
-                        expr = reduce(lambda expr, member:
-                         Grimoire.Utils.Serialize.Types.Extension(
-                          Grimoire.Utils.Serialize.Types.Member,
-                          [expr,
-                           Grimoire.Utils.Serialize.Types.Extension(
-                            Grimoire.Utils.Serialize.Types.Identifier,
-                            member)]),
-                         path,
-                         Grimoire.Utils.Serialize.Types.Extension(
-                          Grimoire.Utils.Serialize.Types.Identifier,
-                          "_"))
-                        s = StringIO.StringIO()
-                        Grimoire.Utils.Serialize.Writer.write(s, expr)
-                        return s.getvalue()
                         
                     def gotoPath(self, path):
                         self.gotoLocation(self.pathToExpression(path))
@@ -715,13 +728,6 @@ class Performer(Grimoire.Performer.Base):
                         else:
                             self.eval(location)
                         return self.renderSelection()
-
-                    def hoverPath(self, path):
-                        self.hoverLocation(self.pathToExpression(path))
-                        
-                    def hoverLocation(self, location):
-                        method = self.session._.introspection.methodOfExpression(location, True)
-                        self.hoverSelect(method)
 
                     def applyForm(self, args):
                         self.handleCall(self.method, args)
