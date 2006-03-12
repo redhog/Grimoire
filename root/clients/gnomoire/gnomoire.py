@@ -38,16 +38,7 @@ class Performer(Grimoire.Performer.Base):
                     self.aboutDialog =        self.windows.get_widget("aboutDialog")
                     self.relatedMethodsItem = self.windows.get_widget("relatedMethodsItem")
 
-                    self.windows.get_widget('openMethodsInNewWindow').connect('toggled', self.on_openMethodsInNewWindow_toggled)
-                    self.windows.get_widget('newSessionMenuItem').connect('activate', self.on_newSession_activate)
-                    self.windows.get_widget('newSessionButton').connect('clicked', self.on_newSession_activate)
-                    self.windows.get_widget('newViewButton').connect('clicked', self.on_newView_activate)
-                    self.windows.get_widget('newTreeViewButton').connect('clicked', self.on_newTreeView_activate)
-                    self.location.connect('editing-done', self.on_location_editing_done)
-                    self.windows.get_widget('aboutGnomoire').connect('activate', self.on_aboutGnomoire_activate)
-                    self.windows.get_widget('treeViewType').connect('switch-page', self.on_treeViewType_switch_page)
-                    self.windows.get_widget('mainWindow').connect("delete-event", self.on_close)
-                    self.windows.get_widget('quit').connect("activate", self.on_close)
+                    self.windows.signal_autoconnect(self)
                     
                     if showMethodTree or showObjectTree:
                         treeViewType = self.windows.get_widget('treeViewType')
@@ -74,10 +65,13 @@ class Performer(Grimoire.Performer.Base):
                     self.session.addView(self.view.path + (Grimoire.Utils.Password.getasciisalt(16),), self.session.CombinationView)
 
                 def on_location_editing_done(self, location):
-                    self.session.gotoLocation()
+                    self.view.send.gotoLocation()
 
                 def on_aboutGnomoire_activate(self, menu):
                     self.aboutDialog.run()
+
+                def on_aboutGrimoire_activate(self, menu):
+                    self.view.send.gotoLocation('_.about')
 
                 def on_treeViewType_switch_page(self, treeViewType, page, pagenum):
                     if pagenum == 0:
@@ -345,7 +339,6 @@ class Performer(Grimoire.Performer.Base):
                         methodInteraction = self.client.methodInteraction
                         relatedMethods =    self.client.relatedMethods
                     self.addView(('tree',), self.session.CombinationView, methodTreeView = methodTreeView, objectTreeView = objectTreeView)
-                    self.addView(('objects',), self.session.ObjectView, treeView = objectTreeView)
                     self.addView(('selection',), self.session.Selection,
                                  location = location,
                                  methodInteraction = methodInteraction,

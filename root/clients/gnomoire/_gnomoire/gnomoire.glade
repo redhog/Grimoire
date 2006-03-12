@@ -23,7 +23,7 @@
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="focus_on_map">True</property>
   <property name="enable_layout_config">True</property>
-  <signal name="delete_event" handler="on_quit" last_modification_time="Mon, 30 Jan 2006 14:35:39 GMT"/>
+  <signal name="delete_event" handler="on_close" last_modification_time="Sun, 12 Mar 2006 13:52:07 GMT"/>
 
   <child internal-child="dock">
     <widget class="BonoboDock" id="bonobodock1">
@@ -58,10 +58,10 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkImageMenuItem" id="quit">
+			<widget class="GtkImageMenuItem" id="close">
 			  <property name="visible">True</property>
-			  <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
-			  <signal name="activate" handler="on_quit" last_modification_time="Mon, 30 Jan 2006 14:35:24 GMT"/>
+			  <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
+			  <signal name="activate" handler="on_close" last_modification_time="Sun, 12 Mar 2006 13:48:15 GMT"/>
 			</widget>
 		      </child>
 		    </widget>
@@ -78,22 +78,22 @@
 		    <widget class="GtkMenu" id="view_menu">
 
 		      <child>
-			<widget class="GtkImageMenuItem" id="new_view1">
+			<widget class="GtkImageMenuItem" id="newViewMenuItem">
 			  <property name="visible">True</property>
 			  <property name="stock_item">GNOMEUIINFO_MENU_NEW_ITEM</property>
 			  <property name="label" translatable="yes">_New view</property>
 			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_new_view1_activate" last_modification_time="Wed, 08 Mar 2006 07:26:16 GMT"/>
+			  <signal name="activate" handler="on_newView_activate" last_modification_time="Sun, 12 Mar 2006 13:49:44 GMT"/>
 			</widget>
 		      </child>
 
 		      <child>
-			<widget class="GtkImageMenuItem" id="new_tree_view1">
+			<widget class="GtkImageMenuItem" id="newTreeViewMenuItem">
 			  <property name="visible">True</property>
 			  <property name="stock_item">GNOMEUIINFO_MENU_NEW_ITEM</property>
 			  <property name="label" translatable="yes">_New tree view</property>
 			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_new_tree_view1_activate" last_modification_time="Wed, 08 Mar 2006 07:26:16 GMT"/>
+			  <signal name="activate" handler="on_newTreeView_activate" last_modification_time="Sun, 12 Mar 2006 14:03:44 GMT"/>
 			</widget>
 		      </child>
 
@@ -102,8 +102,8 @@
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">Open methods in new window</property>
 			  <property name="use_underline">True</property>
-			  <property name="active">False</property>
-			  <signal name="activate" handler="on_open_methods_in_new_window1_activate" last_modification_time="Wed, 08 Mar 2006 07:26:16 GMT"/>
+			  <property name="active">True</property>
+			  <signal name="toggled" handler="on_openMethodsInNewWindow_toggled" last_modification_time="Sun, 12 Mar 2006 13:47:35 GMT"/>
 			</widget>
 		      </child>
 		    </widget>
@@ -128,7 +128,7 @@
 			  <signal name="activate" handler="on_forward_activate" last_modification_time="Mon, 30 Jan 2006 07:30:36 GMT"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image99">
+			    <widget class="GtkImage" id="image108">
 			      <property name="visible">True</property>
 			      <property name="stock">gtk-media-forward</property>
 			      <property name="icon_size">1</property>
@@ -149,7 +149,7 @@
 			  <signal name="activate" handler="on_back_activate" last_modification_time="Mon, 30 Jan 2006 07:30:36 GMT"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image100">
+			    <widget class="GtkImage" id="image109">
 			      <property name="visible">True</property>
 			      <property name="stock">gtk-go-back</property>
 			      <property name="icon_size">1</property>
@@ -183,7 +183,7 @@
 			  <signal name="activate" handler="on_add_bookmark1_activate" last_modification_time="Fri, 17 Feb 2006 17:47:10 GMT"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image101">
+			    <widget class="GtkImage" id="image110">
 			      <property name="visible">True</property>
 			      <property name="stock">gtk-add</property>
 			      <property name="icon_size">1</property>
@@ -204,7 +204,7 @@
 			  <signal name="activate" handler="on_manage_bookmarks1_activate" last_modification_time="Fri, 17 Feb 2006 17:47:10 GMT"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image102">
+			    <widget class="GtkImage" id="image111">
 			      <property name="visible">True</property>
 			      <property name="stock">gtk-properties</property>
 			      <property name="icon_size">1</property>
@@ -266,7 +266,7 @@
 			  <accelerator key="F1" modifiers="0" signal="activate"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image103">
+			    <widget class="GtkImage" id="image112">
 			      <property name="visible">True</property>
 			      <property name="stock">gnome-stock-book-yellow</property>
 			      <property name="icon_size">1</property>
@@ -287,7 +287,7 @@
 			  <signal name="activate" handler="on_item1_activate" last_modification_time="Wed, 08 Mar 2006 07:18:41 GMT"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image104">
+			    <widget class="GtkImage" id="image113">
 			      <property name="visible">True</property>
 			      <property name="stock">gnome-stock-book-green</property>
 			      <property name="icon_size">1</property>
@@ -308,7 +308,7 @@
 			  <signal name="activate" handler="on_grimoire_programming_manual1_activate" last_modification_time="Wed, 08 Mar 2006 07:18:41 GMT"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image105">
+			    <widget class="GtkImage" id="image114">
 			      <property name="visible">True</property>
 			      <property name="stock">gnome-stock-book-blue</property>
 			      <property name="icon_size">1</property>
@@ -329,7 +329,7 @@
 			  <signal name="activate" handler="on_grimoire_homepage1_activate" last_modification_time="Wed, 08 Mar 2006 07:18:41 GMT"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image106">
+			    <widget class="GtkImage" id="image115">
 			      <property name="visible">True</property>
 			      <property name="stock">gtk-home</property>
 			      <property name="icon_size">1</property>
@@ -347,10 +347,10 @@
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">About Gnomoire</property>
 			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_about_activate" last_modification_time="Wed, 08 Mar 2006 08:11:53 GMT"/>
+			  <signal name="activate" handler="on_aboutGnomoire_activate" last_modification_time="Sun, 12 Mar 2006 13:51:15 GMT"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image107">
+			    <widget class="GtkImage" id="image116">
 			      <property name="visible">True</property>
 			      <property name="stock">gtk-about</property>
 			      <property name="icon_size">1</property>
@@ -368,10 +368,10 @@
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">About Grimoire</property>
 			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_about_grimoire1_activate" last_modification_time="Wed, 08 Mar 2006 08:11:53 GMT"/>
+			  <signal name="activate" handler="on_aboutGrimoire_activate" last_modification_time="Sun, 12 Mar 2006 13:50:55 GMT"/>
 
 			  <child internal-child="image">
-			    <widget class="GtkImage" id="image108">
+			    <widget class="GtkImage" id="image117">
 			      <property name="visible">True</property>
 			      <property name="stock">gtk-about</property>
 			      <property name="icon_size">1</property>
@@ -438,7 +438,7 @@
 		  <property name="visible_horizontal">True</property>
 		  <property name="visible_vertical">True</property>
 		  <property name="is_important">False</property>
-		  <signal name="clicked" handler="on_newSession_activate" last_modification_time="Mon, 30 Jan 2006 16:58:20 GMT"/>
+		  <signal name="clicked" handler="on_newView_activate" last_modification_time="Sun, 12 Mar 2006 13:49:12 GMT"/>
 		</widget>
 		<packing>
 		  <property name="expand">False</property>
@@ -456,7 +456,7 @@
 		  <property name="visible_horizontal">True</property>
 		  <property name="visible_vertical">True</property>
 		  <property name="is_important">False</property>
-		  <signal name="clicked" handler="on_newSession_activate" last_modification_time="Mon, 30 Jan 2006 16:58:20 GMT"/>
+		  <signal name="clicked" handler="on_newTreeView_activate" last_modification_time="Sun, 12 Mar 2006 13:49:25 GMT"/>
 		</widget>
 		<packing>
 		  <property name="expand">False</property>
@@ -555,6 +555,7 @@
 			  <property name="add_tearoffs">False</property>
 			  <property name="has_frame">True</property>
 			  <property name="focus_on_click">True</property>
+			  <signal name="editing_done" handler="on_location_editing_done" last_modification_time="Sun, 12 Mar 2006 13:51:44 GMT"/>
 			</widget>
 		      </child>
 		    </widget>
