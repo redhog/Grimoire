@@ -1,6 +1,6 @@
 import Grimoire, Grimoire.Performer, Grimoire.Types, Grimoire.Types.Ability, Grimoire.Utils
-import Grimoire.Utils.Serialize.Writer, Grimoire.Utils.Serialize.Types, StringIO
-import types, string, sys, traceback
+import Grimoire.Utils.Serialize.Writer, Grimoire.Utils.Serialize.Types, Grimoire.Utils.Password
+import types, string, sys, traceback, StringIO
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -49,16 +49,21 @@ class Performer(Grimoire.Performer.Base):
                         def __getattr__(self, name):
                             return self.__SendMethod(self.__view, name)
                             
-                    def __init__(self, session, path, parent = None):
+                    def __init__(self, session, path, parent = None, **kw):
                         self.session = session
                         self.path = path
                         self.parent = parent
+                        if self.parent:
+                            self.root = self.parent.root
+                        else:
+                            self.root = self
                         self.send = self.Send(self)
                         
                     def viewOp(self, operation, *arg, **kw):
-                        if self.parent:
-                            return self.parent.viewOp(operation, *arg, **kw)
-                        return self.viewOpRecurse(operation, *arg, **kw)
+                        try:
+                            return self.root.viewOpRecurse(operation, *arg, **kw)
+                        except Grimoire.Types.MethodNotImplementedHere:
+                            return []
 
                     def viewOpRecurse(self, operation, *arg, **kw):
                         if not hasattr(self, operation):
@@ -133,10 +138,10 @@ class Performer(Grimoire.Performer.Base):
                                 self.oldSubNodes = Grimoire.Utils.OrderedMapping()
                                 self.updated = 1
 
-                    def __init__(self, session, path, parent = None, hide = None):
-                        super(Session.TreeView, self).__init__(session, path, parent)
+                    def __init__(self, hide = None, **kw):
+                        super(Session.TreeView, self).__init__(**kw)
                         self.dirCache = self.DirCacheNode(view = self)
-                        self.__ = session.__
+                        self.__ = self.session.__
                         self.hide = hide or Grimoire.__._getpath(
                             Grimoire.Types.TreeRoot,
                             path = ['directory', 'get'] + self.session.sessionPath + self.viewPath + list(self.path)
@@ -427,7 +432,7 @@ class Performer(Grimoire.Performer.Base):
                             directory.directory.set.treeinfo(['local', 'client', 'logout', 'path'], path)
                         Grimoire.Performer.Physical(directory)._callWithUnlockedTree(unlocked)
                     self.__._insert(obj, **kw)
-                    for view in self.views.itervalues():
+                    for viewpath, view in self.views.iteritems():
                         view.send.insert(path, root = root, **kw)
                     return obj
 
@@ -588,14 +593,22 @@ class Performer(Grimoire.Performer.Base):
             Session = performer._getpath(Grimoire.Types.MethodBase).base()
             class FormSession(Session):
                 class TreeView(Session.TreeView):
+                    openMethodsInNewView = False
                     class DirCacheNode(Session.TreeView.DirCacheNode): pass
-                    def __init__(self, *arg, **kw):
-                        super(FormSession.TreeView, self).__init__(*arg, **kw)
+                    def __init__(self, **kw):
+                        super(FormSession.TreeView, self).__init__(**kw)
                         self.selections = {}
+
+                    def setOpenMethodsInNewView(self,  openMethodsInNewView):
+                        self.openMethodsInNewView = openMethodsInNewView
 
                     def selectionChanged(self, node, selection = (), *arg, **kw):
                         if node.leaf:
-                            self.send.gotoPath(self.prefix + node.path, *arg, **kw)
+                            if self.openMethodsInNewView:
+                                self.session.addView(self.path + (Grimoire.Utils.Password.getasciisalt(16),), self.session.Selection
+                                                     ).send.gotoPath(self.prefix + node.path, *arg, **kw)
+                            else:
+                                self.send.gotoPath(self.prefix + node.path, *arg, **kw)
                 
                     def hoverChanged(self, node, selection = (), *arg, **kw):
                         if node.leaf:
@@ -603,8 +616,8 @@ class Performer(Grimoire.Performer.Base):
                 
                 class Selection(Session.View):
                     __slots__ = ['method', 'params', 'result']
-                    def __init__(self, *arg, **kw):
-                        super(FormSession.Selection, self).__init__(*arg, **kw)
+                    def __init__(self, **kw):
+                        super(FormSession.Selection, self).__init__(**kw)
                         self.clear()
                         
                     def getComposer(self, path = None, *arg, **kw):

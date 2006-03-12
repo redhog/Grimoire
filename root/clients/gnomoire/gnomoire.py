@@ -2,7 +2,7 @@
 
 profile = False # 'gnomoireprof'
 
-import gnomoire, _gnomoire.Composer, Grimoire, gobject, gnome, gtk, gtk.glade, types, sys, os.path
+import gnomoire, _gnomoire.Composer, Grimoire, Grimoire.Utils.Password, gobject, gnome, gtk, gtk.glade, types, sys, os.path
 
 if profile:
     import hotshot
@@ -21,9 +21,9 @@ class Performer(Grimoire.Performer.Base):
                 sessionPath = FormSession.sessionPath + ['gnome']
 
             class Client(object):
-                def __init__(self, session, view, showMethodTree = True, showObjectTree = True, showMethodInteraction = True):
-                    self.session = session
+                def __init__(self, view, showMethodTree = False, showObjectTree = False, showMethodInteraction = False):
                     self.view = view
+                    self.session = view.session
                     self.showMethodTree = showMethodTree
                     self.showObjectTree = showObjectTree
                     self.showMethodInteraction = showMethodInteraction
@@ -37,9 +37,12 @@ class Performer(Grimoire.Performer.Base):
                     
                     self.aboutDialog =        self.windows.get_widget("aboutDialog")
                     self.relatedMethodsItem = self.windows.get_widget("relatedMethodsItem")
-                    
+
+                    self.windows.get_widget('openMethodsInNewWindow').connect('toggled', self.on_openMethodsInNewWindow_toggled)
                     self.windows.get_widget('newSessionMenuItem').connect('activate', self.on_newSession_activate)
                     self.windows.get_widget('newSessionButton').connect('clicked', self.on_newSession_activate)
+                    self.windows.get_widget('newViewButton').connect('clicked', self.on_newView_activate)
+                    self.windows.get_widget('newTreeViewButton').connect('clicked', self.on_newTreeView_activate)
                     self.location.connect('editing-done', self.on_location_editing_done)
                     self.windows.get_widget('aboutGnomoire').connect('activate', self.on_aboutGnomoire_activate)
                     self.windows.get_widget('treeViewType').connect('switch-page', self.on_treeViewType_switch_page)
@@ -56,10 +59,19 @@ class Performer(Grimoire.Performer.Base):
                         self.windows.get_widget('methodInteractionPane').show()
                     self.windows.get_widget('mainWindow').show()
 
+                def on_openMethodsInNewWindow_toggled(self, menuItem):
+                    self.view.send.setOpenMethodsInNewView(menuItem.get_active())
+
                 def on_newSession_activate(self, *arg, **kw):
                     session = Grimoire._.clients.gnome(
                         )()
                     session.addView((), session.ClientView)
+
+                def on_newView_activate(self, *arg, **kw):
+                    self.session.addView(self.view.path + (Grimoire.Utils.Password.getasciisalt(16),), self.session.ClientView)
+
+                def on_newTreeView_activate(self, *arg, **kw):
+                    self.session.addView(self.view.path + (Grimoire.Utils.Password.getasciisalt(16),), self.session.CombinationView)
 
                 def on_location_editing_done(self, location):
                     self.session.gotoLocation()
@@ -75,16 +87,24 @@ class Performer(Grimoire.Performer.Base):
                         self.relatedMethodsItem.child.set_markup_with_mnemonic("_Object methods")
                         self.relatedMethods.set_title("Object methods")
 
-                def on_close(*arg, **kw):
-                    # FIXME: Just remove session and close everything
-                    # down if there are no more ones or something...
-                    gtk.main_quit()
+                def on_close(self, *arg, **kw):
+                    if self.view.parent:
+                        self.view.parent.deleteView(self.view.path)
+                    else:
+                        self.view.session.deleteView(self.view.path)
+                    if not self.session.views:
+                        gtk.main_quit()
 
             Session.Client = Client
 
             class Selection(FormSession.Selection):
-                def __init__(self, session, path, location, methodInteraction, relatedMethods, **kw):
-                    super(Selection, self).__init__(session, path, **kw)
+                def __init__(self, location = None, methodInteraction = None, relatedMethods = None, **kw):
+                    super(Selection, self).__init__(**kw)
+                    if not (location and methodInteraction and relatedMethods):
+                        self.client =       self.session.Client(self, showMethodInteraction = True)
+                        location =          self.client.location
+                        methodInteraction = self.client.methodInteraction
+                        relatedMethods =    self.client.relatedMethods
                     self.location = location
                     self.location.child.connect("activate", self.locationChanged)
                     self.methodInteraction = methodInteraction
@@ -218,7 +238,10 @@ class Performer(Grimoire.Performer.Base):
                         if node is None: return None
                         return node.parent
 
-                def __init__(self, treeView, **kw):
+                def __init__(self, treeView = None, **kw):
+                    if not treeView:
+                        self.client = self.session.Client(self, showMethodTree = True)
+                        treeView =    self.client.methodTreeView
                     super(MethodView, self).__init__(**kw)
                     self.model = self.TreeModel(self)
                     self.treeView = treeView
@@ -269,6 +292,12 @@ class Performer(Grimoire.Performer.Base):
                                                     (Grimoire.Types.Ability.Deny, [])])
                 class TreeModel(MethodView.TreeModel): pass
 
+                def __init__(self, treeView, session, **kw):
+                    if not treeView:
+                        self.client = session.Client(self, showObjectTree = True)
+                        treeView =    self.client.objectTreeView
+                    super(ObjectView, self).__init__(treeView = treeView, session = session, **kw)
+
                 def insert(self, path, treeNode = None, root = False, **kw):
                     self.updateDirCachePath([], reupdate=1, treeNode = self.model.rootNode)
                     self.model.setRootNode()
@@ -288,23 +317,36 @@ class Performer(Grimoire.Performer.Base):
                     return None
 
             Session.ObjectView = ObjectView
-                
+
+            # FIXME: Related methods should be part of tree view, not selection...
+            
+            class CombinationView(FormSession.ViewGroup):
+                def __init__(self, methodTreeView = None, objectTreeView = None, methodInteraction = None, **kw):
+                    super(CombinationView, self).__init__(**kw)
+                    if not (methodTreeView and objectTreeView):
+                        self.client =       self.session.Client(view = self, showMethodTree = True, showObjectTree = True)
+                        methodTreeView =    self.client.methodTreeView
+                        objectTreeView =    self.client.objectTreeView
+                        self.client.windows.get_widget("openMethodsInNewWindow").set_active(True)
+                        self.send.setOenMethodsInNewWindow(True)
+                    self.addView(('methods',), self.session.MethodView, treeView = methodTreeView)
+                    self.addView(('objects',), self.session.ObjectView, treeView = objectTreeView)
+
+            Session.CombinationView = CombinationView
 
             class ClientView(FormSession.ViewGroup):
-                def __init__(self, session, path, methodTreeView = None, objectTreeView = None, location = None, methodInteraction = None, relatedMethods = None, **kw):
-                    super(ClientView, self).__init__(session, path)
+                def __init__(self, methodTreeView = None, objectTreeView = None, location = None, methodInteraction = None, relatedMethods = None, **kw):
+                    super(ClientView, self).__init__(**kw)
                     if not (methodTreeView and objectTreeView and location and methodInteraction and relatedMethods):
-                        self.client = session.Client(session, self)
-
+                        self.client =       self.session.Client(view = self, showMethodTree = True, showObjectTree = True, showMethodInteraction = True)
                         methodTreeView =    self.client.methodTreeView
                         objectTreeView =    self.client.objectTreeView
                         location =          self.client.location
                         methodInteraction = self.client.methodInteraction
                         relatedMethods =    self.client.relatedMethods
-                        
-                    self.addView(('methods',), session.MethodView, treeView = methodTreeView)
-                    self.addView(('objects',), session.ObjectView, treeView = objectTreeView)
-                    self.addView(('selection',), session.Selection,
+                    self.addView(('tree',), self.session.CombinationView, methodTreeView = methodTreeView, objectTreeView = objectTreeView)
+                    self.addView(('objects',), self.session.ObjectView, treeView = objectTreeView)
+                    self.addView(('selection',), self.session.Selection,
                                  location = location,
                                  methodInteraction = methodInteraction,
                                  relatedMethods = relatedMethods)

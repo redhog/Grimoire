@@ -98,7 +98,7 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkCheckMenuItem" id="open_methods_in_new_window1">
+			<widget class="GtkCheckMenuItem" id="openMethodsInNewWindow">
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">Open methods in new window</property>
 			  <property name="use_underline">True</property>
@@ -429,7 +429,7 @@
 	      </child>
 
 	      <child>
-		<widget class="GtkToolButton" id="toolbutton1">
+		<widget class="GtkToolButton" id="newViewButton">
 		  <property name="visible">True</property>
 		  <property name="tooltip" translatable="yes">New view</property>
 		  <property name="label" translatable="yes">New view</property>
@@ -447,7 +447,7 @@
 	      </child>
 
 	      <child>
-		<widget class="GtkToolButton" id="toolbutton2">
+		<widget class="GtkToolButton" id="newTreeViewButton">
 		  <property name="visible">True</property>
 		  <property name="tooltip" translatable="yes">New tree view</property>
 		  <property name="label" translatable="yes">New tree view</property>
