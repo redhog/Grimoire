@@ -33,12 +33,14 @@ class Performer(Grimoire.Performer.Base):
                     self.objectTreeView =    self.windows.get_widget("objectTreeView")
                     self.location =          self.windows.get_widget("location")
                     self.methodInteraction = self.windows.get_widget("methodInteraction")
-                    self.relatedMethods =    self.windows.get_widget("relatedMethods")
+                    self.relatedMethods =    self.windows.get_widget("relatedMethods_menu")
                     
                     self.aboutDialog =        self.windows.get_widget("aboutDialog")
-                    self.relatedMethodsItem = self.windows.get_widget("relatedMethodsItem")
+                    self.relatedMethodsItem = self.windows.get_widget("relatedMethods")
 
                     self.windows.signal_autoconnect(self)
+
+                    self.windows.get_widget("toolbar").child_set(self.windows.get_widget("locationToolItem"), "expand", True)
                     
                     if showMethodTree or showObjectTree:
                         treeViewType = self.windows.get_widget('treeViewType')
@@ -47,8 +49,9 @@ class Performer(Grimoire.Performer.Base):
                         if not showMethodTree: treeViewType.set_current_page(1)
                         self.windows.get_widget('treeViewType').show()
                     if showMethodInteraction:
-                        self.windows.get_widget('goMenuItem').show()
-                        self.windows.get_widget('bookmarksMenuItem').show()
+                        self.windows.get_widget('go').show()
+                        self.windows.get_widget('bookmarks').show()
+                        self.windows.get_widget('backButton').show()
                         self.windows.get_widget('forwardButton').show()
                         self.windows.get_widget('locationToolItem').show()
                         self.windows.get_widget('methodInteractionPane').show()
