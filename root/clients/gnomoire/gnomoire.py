@@ -58,7 +58,7 @@ class Performer(Grimoire.Performer.Base):
                     self.windows.get_widget('mainWindow').show()
 
                 def on_openMethodsInNewWindow_toggled(self, menuItem):
-                    self.view.send.setOpenMethodsInNewView(menuItem.get_active())
+                    self.view.root.openMethodsInNewView = menuItem.get_active()
 
                 def on_newSession_activate(self, *arg, **kw):
                     session = Grimoire._.clients.gnome(
@@ -109,7 +109,7 @@ class Performer(Grimoire.Performer.Base):
                     self.location.child.connect("activate", self.locationChanged)
 
                 def makeGUI(self):
-                    self.client =   self.session.Client(self, showMethodInteraction = True)
+                    self.client =            self.session.Client(self, showMethodInteraction = True)
                     self.location =          self.client.location
                     self.methodInteraction = self.client.methodInteraction
 
@@ -159,7 +159,7 @@ class Performer(Grimoire.Performer.Base):
                         reference.reference = link['path']
                             
                         def menuItemActivate(menuItem, reference):
-                            self.send.gotoPath(reference.reference)
+                            self.selectionChanged(reference.reference)
                         menuItem = gtk.MenuItem()
                         menuItem.add(composer(comment))
                         menuItem.connect('activate', menuItemActivate, reference)
@@ -264,6 +264,7 @@ class Performer(Grimoire.Performer.Base):
                 def makeGUI(self):
                     self.client =   self.session.Client(self, showMethodTree = True)
                     self.treeView = self.client.methodTreeView
+                    self.client.windows.get_widget("openMethodsInNewWindow").set_active(True)
 
                 def insert(self, path, treeNode = None, root = False, **kw):
                     node = super(MethodView, self).insert(path, treeNode, root, **kw)
@@ -279,12 +280,12 @@ class Performer(Grimoire.Performer.Base):
                     return super(MethodView, self).remove([], node, **kw)
 
                 def rowActivated(self, treeView, path, viewColumn):
-                    self.send.selectionChanged(self.updateDirCacheNumPath(path[1:],
-                                                                          treeNode = self.model.rootNode))
+                    self.selectionChanged(self.updateDirCacheNumPath(path[1:],
+                                                                     treeNode = self.model.rootNode))
 
                 def rowSelected(self, treeView):
-                    self.send.hoverChanged(self.updateDirCacheNumPath(treeView.get_cursor()[0][1:],
-                                                                      treeNode = self.model.rootNode))
+                    self.hoverChanged(self.updateDirCacheNumPath(treeView.get_cursor()[0][1:],
+                                                                 treeNode = self.model.rootNode))
 
                 def rowExamined(self, widget, event):
                     if event.button == 3 and event.state == 0:
@@ -309,6 +310,7 @@ class Performer(Grimoire.Performer.Base):
                 def makeGUI(self):
                     self.client =   self.session.Client(self, showObjectTree = True)
                     self.treeView = self.client.objectTreeView
+                    self.client.windows.get_widget("openMethodsInNewWindow").set_active(True)
 
                 def insert(self, path, treeNode = None, root = False, **kw):
                     self.updateDirCachePath([], reupdate=1, treeNode = self.model.rootNode)
@@ -349,8 +351,7 @@ class Performer(Grimoire.Performer.Base):
                     self.objectTreeView = self.client.objectTreeView
                     self.relatedMethods = self.client.relatedMethods
                     self.client.windows.get_widget("openMethodsInNewWindow").set_active(True)
-                    self.send.setOenMethodsInNewWindow(True)
-
+                    
             Session.CombinationView = CombinationView
 
             class ClientView(FormSession.ViewGroup):
@@ -392,11 +393,39 @@ class Performer(Grimoire.Performer.Base):
 if __name__ == '__main__':
     program = gnome.program_init("Gnomoire", Grimoire.About.grimoireVersion)
 
+    args = []
+    opts = []
+    for arg in sys.argv[1:]:
+        if arg.startswith('--'):
+            opts.append(arg[2:].split('=', 1))
+        else:
+            args.append(arg)
     session = Grimoire._.clients.gnomoire(
-        )(tree = (len(sys.argv) > 1 and sys.argv[1]),
-          initCommands = sys.argv[2:])
-    session.addView((), session.ClientView)
-    
+        )(tree = (args and args[0]),
+          initCommands = args[1:])
+    if not opts:
+        session.addView((), session.ClientView)
+    else:
+        for opt in opts:
+            view = None
+            value = ['']
+            optname = opt[0]
+            if len(opt) > 1:
+                value = opt[1].split(',')
+            path = (Grimoire.Utils.Password.getasciisalt(16),)
+            if optname == 'tree':
+                session.addView(path, session.CombinationView)
+            elif optname == 'method-tree':
+                session.addView(path, session.MethodView)
+            elif optname == 'object-tree':
+                session.addView(path, session.ObjectView)
+            elif optname == 'method':
+                session.addView(path, session.Selection)
+                if value:
+                    session.views[path].send.gotoLocation(value[0])
+            else:
+                print "Unknown option", optname
+                sys.exit(1)
     if profile:
         p = hotshot.Profile(profile)
         try:

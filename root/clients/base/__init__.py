@@ -593,18 +593,14 @@ class Performer(Grimoire.Performer.Base):
             Session = performer._getpath(Grimoire.Types.MethodBase).base()
             class FormSession(Session):
                 class TreeView(Session.TreeView):
-                    openMethodsInNewView = False
                     class DirCacheNode(Session.TreeView.DirCacheNode): pass
                     def __init__(self, **kw):
                         super(FormSession.TreeView, self).__init__(**kw)
                         self.selections = {}
 
-                    def setOpenMethodsInNewView(self,  openMethodsInNewView):
-                        self.openMethodsInNewView = openMethodsInNewView
-
                     def selectionChanged(self, node, selection = (), *arg, **kw):
                         if node.leaf:
-                            if self.openMethodsInNewView:
+                            if hasattr(self.root, "openMethodsInNewView") and self.root.openMethodsInNewView:
                                 self.session.addView(self.path + (Grimoire.Utils.Password.getasciisalt(16),), self.session.Selection
                                                      ).send.gotoPath(self.prefix + node.path, *arg, **kw)
                             else:
@@ -666,6 +662,13 @@ class Performer(Grimoire.Performer.Base):
                     def hoverLocation(self, location):
                         method = self.session._.introspection.methodOfExpression(location, True)
                         self.hoverSelect(method)
+
+                    def selectionChanged(self, method, *arg, **kw):
+                        if hasattr(self.root, "openMethodsInNewView") and self.root.openMethodsInNewView:
+                            self.session.addView(self.path + (Grimoire.Utils.Password.getasciisalt(16),), self.session.Selection
+                                                 ).send.gotoPath(method, *arg, **kw)
+                        else:
+                            self.send.gotoPath(method, *arg, **kw)
 
                 class Selection(GenericSelection):
                     __slots__ = ['params', 'result']
