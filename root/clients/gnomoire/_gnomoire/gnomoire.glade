@@ -149,7 +149,7 @@
 			  <child internal-child="image">
 			    <widget class="GtkImage" id="image139">
 			      <property name="visible">True</property>
-			      <property name="stock">gtk-media-forward</property>
+			      <property name="stock">gtk-go-forward</property>
 			      <property name="icon_size">1</property>
 			      <property name="xalign">0.5</property>
 			      <property name="yalign">0.5</property>
@@ -483,12 +483,26 @@
 	      </child>
 
 	      <child>
+		<widget class="GtkToolItem" id="toolitem1">
+		  <property name="visible">True</property>
+		  <property name="visible_horizontal">True</property>
+		  <property name="visible_vertical">True</property>
+		  <property name="is_important">False</property>
+		</widget>
+		<packing>
+		  <property name="expand">False</property>
+		  <property name="homogeneous">False</property>
+		</packing>
+	      </child>
+
+	      <child>
 		<widget class="GtkToolButton" id="backButton">
 		  <property name="tooltip" translatable="yes">New File</property>
 		  <property name="stock_id">gtk-go-back</property>
 		  <property name="visible_horizontal">True</property>
 		  <property name="visible_vertical">True</property>
-		  <property name="is_important">False</property>
+		  <property name="is_important">True</property>
+		  <signal name="clicked" handler="on_back_activate" last_modification_time="Mon, 13 Mar 2006 05:01:57 GMT"/>
 		</widget>
 		<packing>
 		  <property name="expand">False</property>
@@ -502,7 +516,8 @@
 		  <property name="stock_id">gtk-go-forward</property>
 		  <property name="visible_horizontal">True</property>
 		  <property name="visible_vertical">True</property>
-		  <property name="is_important">False</property>
+		  <property name="is_important">True</property>
+		  <signal name="clicked" handler="on_forward_activate" last_modification_time="Mon, 13 Mar 2006 05:01:46 GMT"/>
 		</widget>
 		<packing>
 		  <property name="expand">False</property>

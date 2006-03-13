@@ -720,7 +720,7 @@ class Performer(Grimoire.Performer.Base):
                     def gotoPath(self, path):
                         self.gotoLocation(self.pathToExpression(path))
                         
-                    def gotoLocation(self, location):
+                    def gotoLocation(self, location, **kw):
                         try:
                             method = self.session._.introspection.methodOfExpression(location, True)
                         except Exception: # We've got a complex expression...

@@ -71,6 +71,19 @@ class Performer(Grimoire.Performer.Base):
                 def on_newTreeView_activate(self, *arg, **kw):
                     self.session.addView(self.view.path + (Grimoire.Utils.Password.getasciisalt(16),), self.session.CombinationView)
 
+                def on_back_activate(self, *arg, **kw):
+                    active = self.location.get_active() +  1
+                    self.location.set_active(active)
+                    self.view.send.gotoLocation(self.location.get_active_text(), old = True)
+                    
+                def on_forward_activate(self, *arg, **kw):
+                    active = self.location.get_active()
+                    active -= 1
+                    if active < 0:
+                        active = 0
+                    self.location.set_active(active)
+                    self.view.send.gotoLocation(self.location.get_active_text(), old = True)
+
                 def on_location_editing_done(self, location):
                     self.view.send.gotoLocation()
 
@@ -113,13 +126,14 @@ class Performer(Grimoire.Performer.Base):
                     self.location =          self.client.location
                     self.methodInteraction = self.client.methodInteraction
 
-                def gotoLocation(self, location = None):
+                def gotoLocation(self, location = None, old = False, **kw):
                     if location:
                         self.location.get_child().set_text(location)
                     else:
                         location = self.location.get_child().get_text()
-                    self.location.prepend_text(location)
-                    super(Selection, self).gotoLocation(location)
+                    if not old:
+                        self.location.prepend_text(location)
+                    super(Selection, self).gotoLocation(location = location, old = old, **kw)
 
                 def drawSelection(self, selection):
                     self.methodInteraction.remove(self.methodInteraction.get_child())
