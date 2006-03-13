@@ -276,11 +276,11 @@
 		    <widget class="GtkMenu" id="help_menu">
 
 		      <child>
-			<widget class="GtkImageMenuItem" id="gnomoire_user_manual1">
+			<widget class="GtkImageMenuItem" id="gnomoireUserManual">
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">Gnomoire user manual</property>
 			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_gnomoire_user_manual1_activate" last_modification_time="Wed, 08 Mar 2006 07:18:41 GMT"/>
+			  <signal name="activate" handler="on_gnomoireUserManual_activate" last_modification_time="Mon, 13 Mar 2006 05:45:06 GMT"/>
 			  <accelerator key="F1" modifiers="0" signal="activate"/>
 
 			  <child internal-child="image">
@@ -298,11 +298,11 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkImageMenuItem" id="item1">
+			<widget class="GtkImageMenuItem" id="grimoireUserManual">
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">Grimoire user manual</property>
 			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_item1_activate" last_modification_time="Wed, 08 Mar 2006 07:18:41 GMT"/>
+			  <signal name="activate" handler="on_grimoireUserManual_activate" last_modification_time="Mon, 13 Mar 2006 05:44:57 GMT"/>
 
 			  <child internal-child="image">
 			    <widget class="GtkImage" id="image144">
@@ -319,11 +319,11 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkImageMenuItem" id="grimoire_programming_manual1">
+			<widget class="GtkImageMenuItem" id="grimoireProgrammingManual">
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">Grimoire programming manual</property>
 			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_grimoire_programming_manual1_activate" last_modification_time="Wed, 08 Mar 2006 07:18:41 GMT"/>
+			  <signal name="activate" handler="on_grimoireProgrammingManual_activate" last_modification_time="Mon, 13 Mar 2006 05:44:48 GMT"/>
 
 			  <child internal-child="image">
 			    <widget class="GtkImage" id="image145">
@@ -340,11 +340,11 @@
 		      </child>
 
 		      <child>
-			<widget class="GtkImageMenuItem" id="grimoire_homepage1">
+			<widget class="GtkImageMenuItem" id="grimoireHomepage">
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">Grimoire homepage</property>
 			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_grimoire_homepage1_activate" last_modification_time="Wed, 08 Mar 2006 07:18:41 GMT"/>
+			  <signal name="activate" handler="on_grimoireHomepage_activate" last_modification_time="Mon, 13 Mar 2006 05:44:36 GMT"/>
 
 			  <child internal-child="image">
 			    <widget class="GtkImage" id="image146">

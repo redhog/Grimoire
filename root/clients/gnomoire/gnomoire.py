@@ -50,7 +50,7 @@ class Performer(Grimoire.Performer.Base):
                         self.windows.get_widget('treeViewType').show()
                     if showMethodInteraction:
                         self.windows.get_widget('go').show()
-                        self.windows.get_widget('bookmarks').show()
+                        #self.windows.get_widget('bookmarks').show()
                         self.windows.get_widget('backButton').show()
                         self.windows.get_widget('forwardButton').show()
                         self.windows.get_widget('locationToolItem').show()
@@ -87,6 +87,18 @@ class Performer(Grimoire.Performer.Base):
                 def on_location_editing_done(self, location):
                     self.view.send.gotoLocation()
 
+                def on_gnomoireUserManual_activate(self, *arg, **kw):
+                    gnome.help_display('Overview.html')
+                    
+                def on_grimoireUserManual_activate(self, *arg, **kw):
+                    gnome.help_display('Overview.html')
+
+                def on_grimoireProgrammingManual_activate(self, *arg, **kw):
+                    gnome.help_display('Overview.html')
+
+                def on_grimoireHomepage_activate(self, *arg, **kw):
+                    gnome.url_show('http://home.gna.org/grimoire')
+                
                 def on_aboutGnomoire_activate(self, menu):
                     self.aboutDialog.run()
 
@@ -405,7 +417,9 @@ class Performer(Grimoire.Performer.Base):
                      'This method returns a class nearly implementing a Gnome Grimoire client application.')
 
 if __name__ == '__main__':
-    program = gnome.program_init("Gnomoire", Grimoire.About.grimoireVersion)
+    program = gnome.program_init("Gnomoire", Grimoire.About.grimoireVersion,
+                                 properties={gnome.PARAM_APP_PREFIX: Grimoire.__path__[0],
+                                             gnome.PARAM_APP_DATADIR: _gnomoire.__path__[0]})
 
     args = []
     opts = []

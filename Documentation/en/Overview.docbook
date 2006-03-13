@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd"
 [
-<!ENTITY vendor SYSTEM "vendor">
-<!ENTITY version SYSTEM "version">
+<!ENTITY vendor SYSTEM "../vendor">
+<!ENTITY version SYSTEM "../version">
 ]>
 
 <article lang="en">
@@ -16,10 +16,10 @@
    <mediaobject>
     <caption><ulink url="http://www.takeit.se/">AB TakeIT</ulink></caption>
     <imageobject>
-      <imagedata fileref="Pictures/Logos/Orm.eps" format="EPS" width="300pt" scalefit="1"/>
+      <imagedata fileref="../Pictures/Logos/Orm.eps" format="EPS" width="300pt" scalefit="1"/>
     </imageobject>
     <imageobject>
-     <imagedata fileref="Pictures/Logos/Orm.png" format="PNG" width="300pt" scalefit="1"/>
+     <imagedata fileref="../Pictures/Logos/Orm.png" format="PNG" width="300pt" scalefit="1"/>
     </imageobject>
     <textobject>
      <phrase>AB TakeIT</phrase>
