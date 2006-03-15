@@ -259,6 +259,25 @@ class Performer(Grimoire.Performer.Base):
                             treeNode = treeNode.parent
                         return self.invalidateDirCache(path, treeNode = treeNode)
 
+                    def defaultMethod(self):
+                        path = []
+                        self.updateDirCachePath(path)
+                        node = self.dirCache
+                        if len(node.subNodes) == 2:
+                            for key in node.subNodes:
+                                if key != 'about':
+                                    path += [key]
+                                    self.updateDirCachePath(path)
+                                    node = node.subNodes[key]
+                        while len(node.subNodes) == 1:
+                            key = node.subNodes.keys()[0]
+                            path += [key]
+                            self.updateDirCachePath(path)
+                            node = node.subNodes[key]
+                        if len(node.subNodes) != 0 or not node.leaf:
+                            return None
+                        return path
+
                     def traverseTree(self, traverseEntry, traverseSubEntries, res, *args, **kw):
                         def traverseTreeEntries(node, subNodeNr, res, *args, **kw):
                             (nres, nargs, nkw) = traverseEntry(node, subNodeNr, res, *args, **kw)
@@ -453,25 +472,6 @@ class Performer(Grimoire.Performer.Base):
                         view.send.remove(path, **kw)
 
                 # Method operations
-
-                def defaultMethod(self):
-                    path = []
-                    self.updateDirCachePath(path)
-                    node = self.dirCache
-                    if len(node.subNodes) == 2:
-                        for key in node.subNodes:
-                            if key != 'about':
-                                path += [key]
-                                self.updateDirCachePath(path)
-                                node = node.subNodes[key]
-                    while len(node.subNodes) == 1:
-                        key = node.subNodes.keys()[0]
-                        path += [key]
-                        self.updateDirCachePath(path)
-                        node = node.subNodes[key]
-                    if len(node.subNodes) != 0 or not node.leaf:
-                        return None
-                    return path
 
                 def getTranslationTable(self, path = (), language = None):
                     language = language or self.defaultLanguage
