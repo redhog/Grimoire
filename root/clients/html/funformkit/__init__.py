@@ -284,6 +284,7 @@ class Performer(Grimoire.Performer.Base):
                     sess = performer._callWithUnlockedTree(
                         lambda: performer._getpath(Grimoire.Types.MethodBase)()
                         )(extraTrees = extraTrees + self.extraTrees(), **kw)
+                    sess.addView(())
                     self.session().setValue('GrimoireSession', Grimoire.Types.getValue(sess))
                     return sess
 

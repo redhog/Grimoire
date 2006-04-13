@@ -43,7 +43,7 @@ class Performer(Grimoire.Performer.Base):
                                 continue
                             method = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase, 3).urlname.name2method(value))
                             if method is None:
-                                method = sess.defaultMethod()
+                                method = sess.views[()].defaultMethod()
                                 method = method and tuple(method)
                             if method is not None:
                                 methodName = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase, 3).urlname.method2name(method))
@@ -72,7 +72,7 @@ class Performer(Grimoire.Performer.Base):
                             sess.selection.form = None
 
                 def renderMenu(self):
-                    return self.grimoireSession().renderTreeToHtml()
+                    return self.grimoireSession().views[()].renderTreeToHtml()
 
                 def renderFormTitle(self):
                     sess = self.grimoireSession()
@@ -172,8 +172,8 @@ class Performer(Grimoire.Performer.Base):
                          %(link)s
                         </td>
                         """ % {'link': sess.getComposer()(Grimoire.Types.TitledURILink(
-                            Grimoire.Types.GrimoireReference(len(sess.selection.method),
-                                                             ['introspection', 'related'] + list(sess.selection.method)),
+                            Grimoire.Types.GrimoireReference(['introspection', 'related'] + list(sess.selection.method),
+                                                             len(sess.selection.method)),
                             'Related methods'))}
                     else:
                         relatedLink = ''

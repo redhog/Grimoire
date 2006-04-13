@@ -16,11 +16,62 @@ class Performer(Grimoire.Performer.Base):
             FormSession = performer._callWithUnlockedTree(
                 lambda: performer._getpath(Grimoire.Types.MethodBase).form())
             class Session(RenderableSession, FormSession):
+                sessionPath = FormSession.sessionPath + ['html']
+
+                class TreeView(RenderableSession.TreeView, FormSession.TreeView):
+                    def renderTreeToHtml(self):
+                        if debugTree:
+                            print "RenderTree:"
+                            print self.renderTreeToText()
+
+
+                        def renderEntry(node, sibling, res, indent=''):
+                            path = node.path
+                            siblings = node.parent and len(node.parent.subNodes) or 1
+                            subNodes = len(node.subNodes)
+
+                            res = (res or '') + '<div class="menuRow">' + indent
+                            res += '<span class="%s">' % ['shadedMenuItem', 'menuItem'][node.leaf]
+
+                            method = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase).urlname.method2name(path))
+
+                            if subNodes or not node.updated:
+                                res += "<a href='%(url)s?%(command)s=%(method)s'>" % {
+                                    'url': enc(self.session.pageurl),
+                                    'command': ['expand', 'collapse'][node.expanded],
+                                    'method': method}
+                            res += self.session.pictExpander[subNodes > 0 or not node.updated][node.expanded][sibling == siblings - 1]
+                            if subNodes or not node.updated:
+                                res += '</a>'
+
+                            if node.leaf:
+                                res += "<a href='%(url)s?select=%(method)s'>" % {
+                                    'url': enc(self.session.pageurl),
+                                    'method': method
+                                    }
+
+                            res += self.session.pictIcon[subNodes > 0][node.expanded]
+                            if node.translation is not None:
+                                res += enc(node.translation)
+                            elif path:
+                                res += enc(path[-1])
+                            else:
+                                res += 'Grimoire'
+
+                            if node.leaf:
+                                res += '</a>'
+                            res += "</span></div>\n"
+                            return (res,
+                                    (' ' + indent + self.session.pictIndent[sibling == siblings - 1],),
+                                    {})
+
+                        return self.renderTree(renderEntry, '    ')
+                    
                 def __init__(self, *arg, **kw):
-                    RenderableSession.__init__(self, *arg, **kw)
+                    super(Session, self).__init__(*arg, **kw)
                     params = Grimoire._.directory.get.parameters
-                    self.pageurl = params(['clients', 'html', 'url'])
-                    self.baseurl = params(['clients', 'html', 'static', 'url'], self.pageurl, 0)
+                    self.pageurl = params.clients.html(['url'])
+                    self.baseurl = params.clients.html(['static', 'url'], self.pageurl, 0)
 
                     self.pageurl = Grimoire.Types.URI(self.pageurl)
                     self.baseurl = Grimoire.Types.URI(self.baseurl)
@@ -76,52 +127,6 @@ class Performer(Grimoire.Performer.Base):
                     if debugTree:
                         print "Boot:"
                         print self.renderTreeToText()
-
-                def renderTreeToHtml(self):
-                    if debugTree:
-                        print "RenderTree:"
-                        print self.renderTreeToText()
-
-
-                    def renderEntry(node, path, sibblings, sibbling, res, indent='', ):
-                        subNodes = len(node.subNodes)
-
-                        res = (res or '') + '<div class="menuRow">' + indent
-                        res += '<span class="%s">' % ['shadedMenuItem', 'menuItem'][node.leaf]
-
-                        method = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase).urlname.method2name(path))
-
-                        if subNodes or not node.updated:
-                            res += "<a href='%(url)s?%(command)s=%(method)s'>" % {
-                                'url': enc(self.pageurl),
-                                'command': ['expand', 'collapse'][node.expanded],
-                                'method': method}
-                        res += self.pictExpander[subNodes > 0 or not node.updated][node.expanded][sibbling == sibblings - 1]
-                        if subNodes or not node.updated:
-                            res += '</a>'
-
-                        if node.leaf:
-                            res += "<a href='%(url)s?select=%(method)s'>" % {
-                                'url': enc(self.pageurl),
-                                'method': method
-                                }
-
-                        res += self.pictIcon[subNodes > 0][node.expanded]
-                        if node.translation is not None:
-                            res += enc(node.translation)
-                        elif path:
-                            res += enc(path[-1])
-                        else:
-                            res += 'Grimoire'
-
-                        if node.leaf:
-                            res += '</a>'
-                        res += "</span></div>\n"
-                        return (res,
-                                (' ' + indent + self.pictIndent[sibbling == sibblings - 1],),
-                                {})
-
-                    return self.renderTree(renderEntry, '    ')
             return Session
         _call = Grimoire.Utils.cachingFunction(_call)
         def _params(self):
