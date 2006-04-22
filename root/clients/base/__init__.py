@@ -6,6 +6,7 @@ A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
 
 
+debugInit = 1
 debugDirCache = 0
 debugTree = 0
 debugTranslations = 0
@@ -325,7 +326,8 @@ class Performer(Grimoire.Performer.Base):
                     the initializer of this class instead of an instance of the
                     class.
                     """
-                    
+                    if debugInit: print "%s/%s(%s, %s, %s, %s)" % (cls.__name__, '.'.join(cls.sessionPath), repr(tree), repr(extraTrees), repr(initCommands), repr(kw))
+
                     self = object.__new__(cls)
 
                     class Composer(self.composer):
@@ -346,6 +348,7 @@ class Performer(Grimoire.Performer.Base):
                             Grimoire.Types.TreeRoot,
                             path = ['directory', 'get'] + self.sessionPath
                             )(['child', 'hide'], self.hide, False)
+                    if debugInit: print  "       hide: %s" % self.hide
 
                     comment = None
                     tree = tree or self.__._getpath(
@@ -353,6 +356,7 @@ class Performer(Grimoire.Performer.Base):
                         path = ['directory', 'get'] + self.sessionPath
                         )(['tree'], '_', False)
                     if not Grimoire.Utils.isInstance(tree, Grimoire.Performer.Performer):
+                        if debugInit: print  "       tree: %s" % tree
                         result = self._.introspection.eval(tree)
                         tree = Grimoire.Types.getValue(result)
                         comment = Grimoire.Types.getComment(result)
@@ -366,6 +370,7 @@ class Performer(Grimoire.Performer.Base):
                         Grimoire.Types.TreeRoot,
                         path = ['directory', 'get'] + self.sessionPath
                         )(['initcommands'], all=True) + [initCommands]
+                    if debugInit: print  "       initCommands: %s" % initCommands
 
                     initCommandsResults = []
                     for initCommand in Grimoire.Utils.Flatten(initCommands):
@@ -643,7 +648,7 @@ class Performer(Grimoire.Performer.Base):
 
                     def getComposer(self, path = None, *arg, **kw):
                         if path is None: path = self.method
-                        class Composer(self.session.getComposer(path, *arg, **kw)):
+                        class Composer(self.session.getComposer(path or (), *arg, **kw)):
                             selection = self
                         return Composer
 

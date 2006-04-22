@@ -27,21 +27,8 @@ class VerifyField(FunFormKit.Field.VerifyField):
         FunFormKit.Field.CompoundField.__init__(self, name, [password, verify], **kw)
 
 class Performer(Grimoire.Performer.Base):
-    class funformkit_result(Grimoire.Performer.Method):
+    class funformkit(Grimoire.Performer.Method):
         def _call(performer):
-            class Result:
-                def __init__(self, result = None, error = None):
-                    self.result = result
-                    self.error = error
-            return Result
-        _call = Grimoire.Utils.cachingFunction(_call)
-        def _params(self):
-            return A(Ps(),
-                     'Container class for results')
-    class funformkit_formservlet(Grimoire.Performer.Method):
-        def _call(performer):
-            Result = performer._callWithUnlockedTree(lambda: performer._getpath(levels=1).result())
-            
             def argValues2Selections(argvalues, composer, optional = False):
                 """Transforms a list of allowed values (from a ValuedType) into a
                 "selection" list suitable for FunFormKit.Field.SelectField, i.e. a
@@ -199,63 +186,43 @@ class Performer(Grimoire.Performer.Base):
                             name = name),
                         defaults)
 
-            class FormServlet(FunFormKit.Form.FormServlet):
-                def __init__(self, *arg, **kw):
-                    FunFormKit.Form.FormServlet.__init__(self, *arg, **kw)
-                    self._formDefinitions = {}
-                    self._defaults = {}
-                    self._params = {}
- 
-                def createForm(self, method):
-                    if method is not None:
-                        methodName = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase, 1).urlname.method2name(method))
-                        if methodName not in self._formDefinitions:
-                            self._params[method] = self.getParams(method)
-                            if not Grimoire.Types.getComment(self._params[method]) and \
-                               not len(Grimoire.Types.getValue(self._params[method]).arglist):
-                                return None
-                            else:
-                                self._formDefinitions[methodName], self._defaults[method] = paramsTypeObjectToForm(
-                                    methodName,
-                                    Grimoire.Types.getValue(self._params[method]),
-                                    self.getComposer(method))
-                        return (self._formDefinitions[methodName], self._defaults[method])
-                    return None
 
-                def getParams(self, method):
-                    raise NotImplemented
+            Session = performer._callWithUnlockedTree(
+                lambda: performer._getpath(Grimoire.Types.MethodBase)())
 
-                def getFn(self, method):
-                    raise NotImplemented
+            class FormSession(Session):
+                def __new__(cls, server, **kw):
+                    sess = super(FormSession, cls).__new__(cls, **kw)
+                    Grimoire.Types.getValue(sess).server = server
+                    return sess
 
-                def getComposer(self, *arg, **kw):
-                    raise NotImplemented
+                class Selection(Session.Selection):
+                    def renderSelection(self):
+                        result = []
+                        composer = self.getComposer()
+                        result = Grimoire.Types.Paragraphs()
+                        if self.result and not self.result.error:
+                            result.append(composer(Grimoire.Types.getComment(self.result.result)))
+                            result.append(composer(Grimoire.Types.getValue(self.result.result)))
+                        else:
+                            if self.result and self.result.error:
+                                result.append(composer(self.result.error))
+                            if self.params:
+                                if (    not Grimoire.Types.getComment(self.params)
+                                    and not len(Grimoire.Types.getValue(self.params).arglist)):
+                                    form, defaults = paramsTypeObjectToForm(
+                                        methodName,
+                                        Grimoire.Types.getValue(self.params),
+                                        self.getComposer())
+                                    result.append(
+                                        self.session.server.renderableForm(formDefinition=form,
+                                                                           defaults=defaults
+                                                                           ).htFormTable(bgcolor=self.session.property_form_color))                                
+                        return result
 
-                def handleCall(self, method, data):
-                    # FIXME: Implemented in the base-client, remove from here
-                    fn = self.getFn(method)
-                    args = Grimoire.Types.getValue(
-                        self._params[method]).compileArgs([], [], data, 0, 1, 1)
-                    result = Result()
-                    try:
-                        result.result = fn(*(args.args + args.extraArgs),
-                                           **args.kws)
-                    except:
-                        result.error = sys.exc_info()[1]
-                        if debugMethods:
-                            traceback.print_exc()
-                    return result
-            return FormServlet
-        _call = Grimoire.Utils.cachingFunction(_call)
-        def _params(self):
-            return A(Ps(),
-                     'FunFormKit.Form.FormServlet that renders (and caches) Grimoire method parameter forms')
-
-    class funformkit(Grimoire.Performer.Method):
-        def _call(performer):
-            FormServlet = performer._callWithUnlockedTree(lambda: performer._getpath().formservlet())
-            
-            class SessionFormServlet(FormServlet):
+            class SessionFormServlet(FunFormKit.Form.FormServlet):
+                Session = FormSession
+                
                 def getParams(self, method):
                     return self.grimoireSession().__._getpath(
                         path=['introspection', 'params'] + list(method)
@@ -265,7 +232,7 @@ class Performer(Grimoire.Performer.Base):
                     return self.grimoireSession().__._getpath(path=list(method))
 
                 def getComposer(self, *arg, **kw):
-                    return self.grimoireSession().getComposer(*arg, **kw) 
+                    return self.grimoireSession().views[('selection')].getComposer(*arg, **kw) 
 
                 def handleCall(self, method, data):
                     result = FormServlet.handleCall(self, method, data)
@@ -281,10 +248,10 @@ class Performer(Grimoire.Performer.Base):
                             directory]
 
                 def connectGrimoire(self, extraTrees = [], **kw):
-                    sess = performer._callWithUnlockedTree(
-                        lambda: performer._getpath(Grimoire.Types.MethodBase)()
-                        )(extraTrees = extraTrees + self.extraTrees(), **kw)
-                    sess.addView(())
+                    sess = self.Session(extraTrees = extraTrees + self.extraTrees(), server = self, **kw)
+                    sess.addView(('tree',), sess.TreeView)
+                    sess.addView(('selection',), sess.Selection)
+                    sess.fields = None
                     self.session().setValue('GrimoireSession', Grimoire.Types.getValue(sess))
                     return sess
 

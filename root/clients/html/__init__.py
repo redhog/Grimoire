@@ -93,9 +93,6 @@ class Performer(Grimoire.Performer.Base):
                     self.property_mini_logo = enc(self.property_pictureUrl + (self.property_picturePattern % {'name': 'mini-logo'}))
                     self.property_form_color = params(['clients', 'html', 'theme', 'form', 'box', 'colour'], "#ffffff", 0)
 
-                    self.selection = None
-                    self.fields = None
-
                     def img(name, alt):
                         return "<img class='menuIcon' src='%(src)s' alt='%(alt)s'>" % {
                             'src': enc(self.property_pictureUrl + (self.property_picturePattern % {'name': name})),
