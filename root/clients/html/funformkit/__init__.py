@@ -3,7 +3,7 @@ import FunFormKit.Field, FunFormKit.Form, traceback
 
 
 debugTypes = 0
-debugMethods = 1
+debugMethods = 0
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -205,7 +205,6 @@ class Performer(Grimoire.Performer.Base):
                         composer = self.getComposer()
                         result = Grimoire.Types.Paragraphs()
                         if self.result and not self.result.error:
-                            print "FOO"
                             result.append(composer(Grimoire.Types.getComment(self.result.result)))
                             result.append(composer(Grimoire.Types.getValue(self.result.result)))
                         else:
@@ -214,6 +213,14 @@ class Performer(Grimoire.Performer.Base):
                             if self.params:
                                 if (   Grimoire.Types.getComment(self.params)
                                     or Grimoire.Types.getValue(self.params).arglist):
+                                    result.append(composer(
+                                        Grimoire.Types.Formattable(
+                                            "%(comment)s:",
+                                            comment = Grimoire.Types.getComment(
+                                                self.params,
+                                                Grimoire.Types.Formattable(
+                                                    "Call %(path)s",
+                                                    path = Grimoire.Types.GrimoirePath(self.method))))))
                                     form, defaults = paramsTypeObjectToForm(
                                         method2name(self.method),
                                         Grimoire.Types.getValue(self.params),

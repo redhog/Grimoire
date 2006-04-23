@@ -50,9 +50,6 @@ class Performer(Grimoire.Performer.Base):
 
                     if submitted:
                         sess.views[()].children[('selection',)].handleCall(args = data)
-                    print "METHOD:", sess.views[()].children[('selection',)].method
-                    print "  PARAMS:", sess.views[()].children[('selection',)].params
-                    print "  RESULT:", sess.views[()].children[('selection',)].result
                
                 def writeStyleSheet(self):
                     sess = self.grimoireSession()
