@@ -36,20 +36,23 @@ class Performer(Grimoire.Performer.Base):
                                 continue
                             method = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase, 3).urlname.name2method(value))
                             if method is None:
-                                method = sess.views[('tree',)].defaultMethod()
+                                method = sess.views[()].children[('tree',)].children[('methods',)].defaultMethod()
                                 method = method and tuple(method)
                             if method is not None:
                                 if key == 'expand':
-                                    sess.views[('tree',)].expand(list(method), 1)
+                                    sess.views[()].children[('tree',)].children[('methods',)].expand(list(method), 1)
                                 elif key == 'expandPath':
-                                    sess.views[('tree',)].expandPath(list(method), 1)
+                                    sess.views[()].children[('tree',)].children[('methods',)].expandPath(list(method), 1)
                                 elif key == 'collapse':
-                                    sess.views[('tree',)].collapse(list(method))
+                                    sess.views[()].children[('tree',)].children[('methods',)].collapse(list(method))
                                 elif key == 'select':
-                                    sess.views[('tree',)].send.gotoPath(method)
+                                    sess.views[()].send.gotoPath(method)
 
                     if submitted:
-                        self.views[('selection',)].handleCall(args = data)
+                        sess.views[()].children[('selection',)].handleCall(args = data)
+                    print "METHOD:", sess.views[()].children[('selection',)].method
+                    print "  PARAMS:", sess.views[()].children[('selection',)].params
+                    print "  RESULT:", sess.views[()].children[('selection',)].result
                
                 def writeStyleSheet(self):
                     sess = self.grimoireSession()
@@ -84,7 +87,7 @@ class Performer(Grimoire.Performer.Base):
                     sess = self.grimoireSession()
 
                     data = filter(lambda x: x,
-                                  sess.views[('selection',)].renderSelection())
+                                  sess.views[()].children[('selection',)].renderSelection())
 
                     bordertopextension = """
                      <td class="pageDividerVExtension">
@@ -92,14 +95,14 @@ class Performer(Grimoire.Performer.Base):
                      </td>
                      """ % {'bordertopextension': sess.property_border_top_extension}
 
-                    if sess.views[('selection',)].method is not None:
+                    if sess.views[()].children[('selection',)].method is not None:
                         relatedLink = """
                         <td class="relatedLink">
                          %(link)s
                         </td>
                         """ % {'link': self.getComposer()(Grimoire.Types.TitledURILink(
-                            Grimoire.Types.GrimoireReference(['introspection', 'related'] + list(sess.views[('selection',)].method),
-                                                             len(sess.views[('selection',)].method)),
+                            Grimoire.Types.GrimoireReference(['introspection', 'related'] + list(sess.views[()].children[('selection',)].method),
+                                                             len(sess.views[()].children[('selection',)].method)),
                             'Related methods'))}
                     else:
                         relatedLink = ''
@@ -149,7 +152,7 @@ class Performer(Grimoire.Performer.Base):
                        </tr>
                       </tbody>
                      </table>
-                     """ % {'menu': self.grimoireSession().views[('tree',)].renderTreeToHtml(),
+                     """ % {'menu': self.grimoireSession().views[()].children[('tree',)].children[('methods',)].renderTreeToHtml(),
                             'data': dataTrs,
                             'bordertop': sess.property_border_top,
                             })
@@ -164,7 +167,7 @@ class Performer(Grimoire.Performer.Base):
                 def reconnectGrimoire(self, *arg, **kw):
                     sess = FormPage.reconnectGrimoire(self, *arg, **kw)
                     sessvalue = Grimoire.Types.getValue(sess)
-                    sessvalue.views[('selection',)].result = sessvalue.Result(
+                    sessvalue.views[()].children[('selection',)].result = sessvalue.Result(
                         error = Exception("Your Grimoire login has expired and you have thus been logged out automatically"))
                     return sess
 

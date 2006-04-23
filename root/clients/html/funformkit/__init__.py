@@ -190,6 +190,9 @@ class Performer(Grimoire.Performer.Base):
             Session = performer._callWithUnlockedTree(
                 lambda: performer._getpath(Grimoire.Types.MethodBase)())
 
+            def method2name(*arg, **kw):
+                return performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase, 1).urlname.method2name(*arg, **kw))
+
             class FormSession(Session):
                 def __new__(cls, server, **kw):
                     sess = super(FormSession, cls).__new__(cls, **kw)
@@ -202,22 +205,23 @@ class Performer(Grimoire.Performer.Base):
                         composer = self.getComposer()
                         result = Grimoire.Types.Paragraphs()
                         if self.result and not self.result.error:
+                            print "FOO"
                             result.append(composer(Grimoire.Types.getComment(self.result.result)))
                             result.append(composer(Grimoire.Types.getValue(self.result.result)))
                         else:
                             if self.result and self.result.error:
                                 result.append(composer(self.result.error))
                             if self.params:
-                                if (    not Grimoire.Types.getComment(self.params)
-                                    and not len(Grimoire.Types.getValue(self.params).arglist)):
+                                if (   Grimoire.Types.getComment(self.params)
+                                    or Grimoire.Types.getValue(self.params).arglist):
                                     form, defaults = paramsTypeObjectToForm(
-                                        methodName,
+                                        method2name(self.method),
                                         Grimoire.Types.getValue(self.params),
                                         self.getComposer())
                                     result.append(
                                         self.session.server.renderableForm(formDefinition=form,
                                                                            defaults=defaults
-                                                                           ).htFormTable(bgcolor=self.session.property_form_color))                                
+                                                                           ).htFormTable(bgcolor=self.session.property_form_color))
                         return result
 
             class SessionFormServlet(FunFormKit.Form.FormServlet):
@@ -232,7 +236,7 @@ class Performer(Grimoire.Performer.Base):
                     return self.grimoireSession().__._getpath(path=list(method))
 
                 def getComposer(self, *arg, **kw):
-                    return self.grimoireSession().views[('selection')].getComposer(*arg, **kw) 
+                    return self.grimoireSession().views[()].children[('selection',)].getComposer(*arg, **kw) 
 
                 def handleCall(self, method, data):
                     result = FormServlet.handleCall(self, method, data)
@@ -249,8 +253,7 @@ class Performer(Grimoire.Performer.Base):
 
                 def connectGrimoire(self, extraTrees = [], **kw):
                     sess = self.Session(extraTrees = extraTrees + self.extraTrees(), server = self, **kw)
-                    sess.addView(('tree',), sess.TreeView)
-                    sess.addView(('selection',), sess.Selection)
+                    sess.addView((), sess.ClientView)
                     sess.fields = None
                     self.session().setValue('GrimoireSession', Grimoire.Types.getValue(sess))
                     return sess
