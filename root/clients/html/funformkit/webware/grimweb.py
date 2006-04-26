@@ -11,6 +11,22 @@ class Performer(Grimoire.Performer.Base):
                 def __init__(self):
                     FormPage.__init__(self, [])
 
+                def parsePath(self):
+                    """Returns an object with members session, view and method."""
+                    path = self.request().extraURLPath().split('/')
+                    class Result(object): pass
+                    result = Result()
+                    result.session = result.view = ()
+                    result.method = None
+                    try:
+                        result.session = tuple(path[1].split('.'))
+                        result.view = tuple(path[2].split('.'))
+                        if path[3:] != '':
+                            result.method = tuple(path[3:])
+                    except:
+                        pass
+                    return result
+
                 def parseCommand(self):
                     sess = self.grimoireSession()
                     fields = self.request().fields()
