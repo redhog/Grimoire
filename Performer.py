@@ -8,7 +8,7 @@ import operator, string, types, sys, Grimoire.Types, Grimoire.Types.Ability, Gri
 
 
 debugMethodNotImplementedHere = 0
-debugTreeOps = 0
+debugTreeOps = () # ('dir', 'related')
 
 if debugMethodNotImplementedHere: import traceback
 
@@ -282,7 +282,7 @@ class Physical(Performer):
         """Execute an operation named by treeOp (with argument *arg,
         **kw) on a node in the logical tree, specified by path.
         """
-        if debugTreeOps:
+        if treeOp in debugTreeOps:
             tr = traceback.extract_stack()[:-1]
             if tr[-1][1] == 151:
                 tr = tr[:-1]
