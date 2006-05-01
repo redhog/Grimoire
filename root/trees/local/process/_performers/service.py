@@ -1,90 +1,68 @@
-import Grimoire.Performer, Grimoire.Types, Grimoire.Utils, types
+import Grimoire.Performer, Grimoire.Types, Grimoire.Utils, types, os, time
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
 
 
+class ChangeService(Grimoire.Performer.SubMethod):
+    __related_group__ = ['service']
+    __dir_allowall__ = False
+    def _call(self, path):
+        filepath = os.path.join("/etc/init.d", path[0])
+        out, err = Grimoire.Utils.system(filepath,(filepath, self.__cmd__, path[0]), onlyOkStatus = True)
+        return out
+    def _dir(self, path, depth):
+        return self._callWithUnlockedTree(lambda: self._getpath(Grimoire.Types.MethodBase,
+                                                                path = ['list', 'services', 'running', '$processservername', self.__status__] + path)(depth))
+
+    def _params(self, path):
+        return A(Ps([]),
+                 Grimoire.Types.Formattable(
+                     '%(name)s %(service)s',
+                     name = self.__name__,
+                     service = path[0]))
+
 class Performer(Grimoire.Performer.Base):
     class list_services(Grimoire.Performer.SubMethod):
-        __path__ = ['list', 'services', '$processservername']
-        __related_group__ = ['initd']
+        __path__ = ['list', 'services', 'running', '$processservername']
+        __related_group__ = ['service']
         def _call(self, path, depth = Grimoire.Performer.UnlimitedDepth):
-            """This is a quick and dirty hack, ok?"""
             if depth == -1: depth = Grimoire.Performer.UnlimitedDepth
-            cpid, cstdin, cstdout, cstderr = Grimoire.Utils.popen("chkconfig",
-                                                                  ("chkconfig", "--list"),
-                                                                  bindpty = False)
-            result = []
-            for items in [line.split('\t') for line in cstdout]:
-                service = items[0].strip()
-                for item in [item.strip() for item in items[1:]]:
-                    result.append((0, [item.strip()[2:]]))
-                    result.append((0, [item.strip()[2:], item[0]]))
-                    result.append((1, [item.strip()[2:], item[0], service]))
-            cstdin.close()
-            cstdout.close()
-            cstderr.close()
+            if len(path) + depth < 2:
+                result = [(0, ['on']),
+                          (0, ['off'])]
+            else:
+                result = []
+                for name in os.listdir("/etc/init.d"):
+                    filepath = os.path.join("/etc/init.d", name)
+                    try:
+                        status, out, err = Grimoire.Utils.system(filepath, (filepath, "status"))
+                        status = ['off', 'on'][status == 0]
+                        result.append((1, [status, name]))
+                    except Exception, e:
+                        pass
             return Grimoire.Performer.DirListFilter(path, depth, result)
-        def _dir(self, path, depth):
-            return [(1, [])]
+        _dir = _call
         def _params(self, path):
+            if path:
+                comment = Grimoire.Types.Formattable(
+                    'List services that are %(status)s',
+                    status=path[0])
+            else:
+                comment = 'List services'
             return A(Ps([('depth',
                           A(types.IntType,
                             "Only return entries this far down in the tree (-1 means infinity)"))]),
-                     Grimoire.Types.Formattable(
-                         'List services under %(path)s',
-                         path=Grimoire.Types.GrimoirePath(path)))
+                     comment)
 
-    class enable_service(Grimoire.Performer.SubMethod):
-        __path__ = ['enable', 'service', '$processservername']
-        __related_group__ = ['service']
-        __dir_allowall__ = False
-        def _call(self, path):
-            cpid, cstdin, cstdout, cstderr = Grimoire.Utils.popen("chkconfig",
-                                                                  ("chkconfig", "--level", path[0], path[1], "on"),
-                                                                  bindpty = False)
-            err = cstderr.read()
-            cstdin.close()
-            cstdout.close()
-            cstderr.close()
-            status = waitpit(cpid)[1]
-            if status != 0:
-                raise Exception(stderr, status)
-            return stdout
-        def _dir(self, path, depth):
-            return self._callWithUnlockedTree(lambda: self._getpath(Grimoire.Types.MethodBase,
-                                                                    path = ['list', 'services', '$processservername', 'off'] + path)(depth))
+    class enable_service(ChangeService):
+        __path__ = ['enable', 'service', 'running', '$processservername']
+        __cmd__ = "start"
+        __status__ = "off"
+        __name__ = "Enable"
 
-        def _params(self, path):
-            return A(Ps([]),
-                     Grimoire.Types.Formattable(
-                         'Enable %(service)s in runlevel %(runlevel)s',
-                         service = path[1],
-                         runlevel = path[0]))
-
-    class disable_service(Grimoire.Performer.SubMethod):
-        __path__ = ['disable', 'service', '$processservername']
-        __related_group__ = ['service']
-        __dir_allowall__ = False
-        def _call(self, path):
-            cpid, cstdin, cstdout, cstderr = Grimoire.Utils.popen("chkconfig",
-                                                                  ("chkconfig", "--level", path[0], path[1], "off"),
-                                                                  bindpty = False)
-            err = cstderr.read()
-            cstdin.close()
-            cstdout.close()
-            cstderr.close()
-            status = waitpit(cpid)[1]
-            if status != 0:
-                raise Exception(stderr, status)
-            return stdout
-        def _dir(self, path, depth):
-            return self._callWithUnlockedTree(lambda: self._getpath(Grimoire.Types.MethodBase,
-                                                                    path = ['list', 'services', '$processservername', 'on'] + path)(depth))
-
-        def _params(self, path):
-            return A(Ps([]),
-                     Grimoire.Types.Formattable(
-                         'Disable %(service)s in runlevel %(runlevel)s',
-                         service = path[1],
-                         runlevel = path[0]))
+    class disable_service(ChangeService):
+        __path__ = ['disable', 'service', 'running', '$processservername']
+        __cmd__ = "stop"
+        __status__ = "on"
+        __name__ = "Disable"
