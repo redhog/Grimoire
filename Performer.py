@@ -8,7 +8,7 @@ import operator, string, types, sys, Grimoire.Types, Grimoire.Types.Ability, Gri
 
 
 debugMethodNotImplementedHere = 0
-debugTreeOps = () # ('dir', 'related')
+debugTreeOps = ('dir', 'related')
 
 
 UnlimitedDepth = Grimoire.Utils.InfinityClass(True)
@@ -269,6 +269,13 @@ class Physical(Performer):
         return the same reference but relative the current method."""
         return Physical(other)._physicalGetpath(path) - self._pathForSelf(dynamic=True)
 
+    def __description__(self, indentation):
+        return indentation + self.__class__.__name__ + '\n'
+    def __unicode__(self, indentation = ''):
+        return self.__description__(indentation)
+    def __str__(self):
+        return str(self.__unicode__())
+
     # Physical -> Logical API
     # (methods that returns Logicals)
 
@@ -439,6 +446,9 @@ class Cutter(Physical):
 
     def _pathForSelf(self, extraPath = [], dynamic=False):
         return self._physicalParent()._pathForSelf(self._path(extraPath), dynamic)
+
+    def __unicode__(self, indentation = ''):
+        return self.__description__(indentation) + self._physicalParent().__unicode__(indentation + ' ')
 
     # Logical node API
 
@@ -653,6 +663,9 @@ class Container(ImplementingHandling):
             raise AssertionError(self, obj, extraPath)
         return self._pathForSelf(extraPath, dynamic)
 
+    def __unicode__(self, indentation = ''):
+        return self.__description__(indentation) + ''.join([child.__unicode__(indentation + ' ') for child in self._getChildren()])
+
     # Logical node API
 
     def _treeOp_handle(self, treeOp, **kw):
@@ -706,6 +719,9 @@ class AbstractRestrictor(ThinSingleChildContainer):
 
     def _ability(self):
         return self._abilityObject
+
+    def __description__(self, indentation):
+        return indentation + self.__class__.__name__ + ':' + unicode(self._ability()) + '\n'
 
 class Hide(AbstractRestrictor):
     """Hide restricts the set of methods cisible on another Physical
@@ -896,6 +912,9 @@ class Prefixer(ThinSingleChildContainer):
     def _remove(self, *arg, **kw):
         raise TypeError('Nodes can not be inserted in, nor removed from, a Prefixer')
     
+    def __description__(self, indentation):
+        return indentation + self.__class__.__name__ + ':' + '.'.join(self._prefix) + '\n'
+
     # Logical node API
 
     def _treeOp_handle(self, path, **kw):
