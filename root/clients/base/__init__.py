@@ -207,7 +207,7 @@ class Performer(Grimoire.Performer.Base):
                             if reupdate:
                                 node.invalidate()
                             if not node.updated:
-                                if debugDirCache: print "Reupdate", treeNode, prefixPath, subDepth
+                                if debugDirCache: print "Reupdate", treeNode, prefixPath, node.path, subDepth
                                 translatedPaths = []
                                 for (leaf, path) in Grimoire.Utils.SortedList(
                                         self.__._getpath(path=['introspection', 'dir'] + node.path

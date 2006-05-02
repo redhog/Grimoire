@@ -69,7 +69,7 @@ class Performer(Grimoire.Performer.Base):
                 lambda (leaf, objectPath, description, methodPath): (leaf, objectPath),
                 self._physicalGetpath(Grimoire.Types.TreeRoot)._treeOp(
                     [], 'related',
-                    depth=Grimoire.Performer.UnlimitedDepth,
+                    depth=Grimoire.Performer.MethodBaseDepth,
                     objectPath=path, objectDepth=depth))
         def _params(self, path):
             return Ps()

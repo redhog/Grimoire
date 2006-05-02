@@ -10,10 +10,9 @@ import operator, string, types, sys, Grimoire.Types, Grimoire.Types.Ability, Gri
 debugMethodNotImplementedHere = 0
 debugTreeOps = () # ('dir', 'related')
 
-if debugMethodNotImplementedHere: import traceback
 
-
-UnlimitedDepth = Grimoire.Utils.infinity
+UnlimitedDepth = Grimoire.Utils.InfinityClass(True)
+MethodBaseDepth = Grimoire.Utils.InfinityClass(True)
 
 def DirListFilter(prefix, depth, listing, chop=True, pathPos=1):
     """Filters a list of tuples. In each tuple, the first element must
@@ -476,10 +475,22 @@ class AbstractMethod(Implementing):
         return {'value': self._related(path, depth, objectPath, objectDepth)}
 
     # You may override these one in user classes if you whish to.
+
+    __related_hasobjects__ = True
     
     def _related_group(self, path, depth, objectPath, objectDepth):
         if not hasattr(self, '__related_group__'): return None
         return self.__related_group__
+
+    def _related_description(self, path, depth, objectPath, objectDepth):
+        if hasattr(self, '__related_description__'): return self.__related_description__
+        pathForSelf = self._pathForSelf()
+        while pathForSelf and pathForSelf[-1].startswith('$'):
+            del pathForSelf[-1]
+        return pathForSelf
+
+    def _related_objdir(self, path, depth):
+        return self._treeOp(path, 'dir', depth=depth)
 
     def _related(self, path, depth, objectPath, objectDepth):
         """This magic attempts to do "the right thing" for you. In
@@ -499,12 +510,12 @@ class AbstractMethod(Implementing):
         
         relatedGroup = self._related_group(path, depth, objectPath, objectDepth)
         if relatedGroup is None: return []
+        description = self._related_description(path, depth, objectPath, objectDepth)
         pathForSelf = self._pathForSelf()
         objPrefix = []
         while pathForSelf and pathForSelf[-1].startswith('$'):
             objPrefix[0:0] = [pathForSelf[-1]]
             del pathForSelf[-1]
-        description =  getattr(self, '__related_description__', pathForSelf)
         objPrefix, objPrefixLen, which = getPrefix(self,
                                                    objPrefix != [],
                                                    relatedGroup + objPrefix,
@@ -519,9 +530,19 @@ class AbstractMethod(Implementing):
             addPath = objPrefix[objectPathLen:]
         elif which == 1:
             subPath = objectPath[objPrefixLen:]
+        subObjDepth = objectDepth - max(0, (objPrefixLen - objectPathLen))
+        if subObjDepth <= 0:
+            if self.__related_hasobjects__:
+                return [(0, [], description, subPath)]
+            else:
+                subObjDepth = 0            
+        if depth is MethodBaseDepth:
+            objlist = self._related_objdir(subPath, subObjDepth)
+        else:
+            objlist = self._treeOp(subPath, 'dir', depth=subObjDepth)
         return DirListFilter(path, depth,
                              Grimoire.Utils.Map(lambda (leaf, path): (leaf, addPath + path, description, subPath + path),
-                                                self._treeOp(subPath, 'dir', depth=objectDepth - max(0, (objPrefixLen - objectPathLen)))),
+                                                objlist),
                              False, 3)
 
 
