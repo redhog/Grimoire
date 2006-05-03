@@ -8,6 +8,8 @@ class Performer(Grimoire.Performer.Base):
     class create_vncsession(Grimoire.Performer.SubMethod):
         __path__ = ['create', 'vncsession', '$processservername']
         __related_group__ = ['user']
+        def _related(self, *arg, **kw):
+            return Grimoire.Performer.SubMethod._related(self, *arg, **kw)
         def _call(self, path):
             pid, childstdin, childstdout, childstderr = self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.MethodBase,

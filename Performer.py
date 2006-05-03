@@ -8,7 +8,7 @@ import operator, string, types, sys, Grimoire.Types, Grimoire.Types.Ability, Gri
 
 
 debugMethodNotImplementedHere = 0
-debugTreeOps = ('dir', 'related')
+debugTreeOps = () #('dir', 'related')
 
 
 UnlimitedDepth = Grimoire.Utils.InfinityClass(True)
@@ -489,11 +489,11 @@ class AbstractMethod(Implementing):
     __related_hasobjects__ = True
     
     def _related_group(self, path, depth, objectPath, objectDepth):
-        if not hasattr(self, '__related_group__'): return None
-        return self.__related_group__
+        return getattr(self, '__related_group__', None)
 
     def _related_description(self, path, depth, objectPath, objectDepth):
-        if hasattr(self, '__related_description__'): return self.__related_description__
+        description = getattr(self, '__related_description__', None)
+        if description is not None: return description
         pathForSelf = self._pathForSelf()
         while pathForSelf and pathForSelf[-1].startswith('$'):
             del pathForSelf[-1]
@@ -543,9 +543,9 @@ class AbstractMethod(Implementing):
         subObjDepth = objectDepth - max(0, (objPrefixLen - objectPathLen))
         if subObjDepth <= 0:
             if self.__related_hasobjects__:
-                return [(0, [], description, subPath)]
+                return [(0, addPath, description, subPath)]
             else:
-                subObjDepth = 0            
+                subObjDepth = 0
         if depth is MethodBaseDepth:
             objlist = self._related_objdir(subPath, subObjDepth)
         else:
@@ -742,6 +742,11 @@ class Hide(AbstractRestrictor):
             if not self._abilityObject(path + pth, not leaf):
                 raise Grimoire.Utils.FilterOutError()
             return (leaf, pth)
+        # FIXME: Make it possible for prefixer to know what we are
+        # filtering, so that we don't have to descend into unused
+        # branches of the tree...
+        if not self._abilityObject(path, True):
+            return {'value':[]}
         res = ThinSingleChildContainer._treeOp_handle(self, path=path, **kw)
         res['value'] = Grimoire.Utils.Map(filterUnallowed, res['value'])
         return res
