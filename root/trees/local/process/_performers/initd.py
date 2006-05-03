@@ -22,11 +22,15 @@ class ChangeService(Grimoire.Performer.SubMethod):
                                                                       ['service'] + objPrefix,
                                                                       len(['service'] + objPrefix),
                                                                       [], True)
+        if len(objectPath) + objectDepth <= objPrefixLen:
+            result = [(0, objPrefix, pathForSelf, [])]
+        else:
+            result = Grimoire.Utils.Map(lambda (leaf, path): (leaf, objPrefix + path[1:], pathForSelf + path[:1], path),
+                                        self._treeOp([], 'dir', depth=Grimoire.Performer.UnlimitedDepth))
         return Grimoire.Performer.DirListFilter(
             path, depth,
             Grimoire.Performer.DirListFilter(objectPath, objectDepth,
-                                             Grimoire.Utils.Map(lambda (leaf, path): (leaf, objPrefix + path[1:], pathForSelf + path[:1], path),
-                                                                self._treeOp([], 'dir', depth=Grimoire.Performer.UnlimitedDepth))),
+                                             result),
             False, 3)
     def _params(self, path):
         return A(Ps([]),
@@ -39,7 +43,6 @@ class ChangeService(Grimoire.Performer.SubMethod):
 class Performer(Grimoire.Performer.Base):
     class list_services(Grimoire.Performer.SubMethod):
         __path__ = ['list', 'services', 'initd', '$processservername']
-        __related_group__ = ['service']
         def _call(self, path, depth = Grimoire.Performer.UnlimitedDepth):
             """This is a quick and dirty hack, ok?"""
             if depth == -1: depth = Grimoire.Performer.UnlimitedDepth

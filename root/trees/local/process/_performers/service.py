@@ -28,7 +28,6 @@ class ChangeService(Grimoire.Performer.SubMethod):
 class Performer(Grimoire.Performer.Base):
     class list_services(Grimoire.Performer.SubMethod):
         __path__ = ['list', 'services', 'running', '$processservername']
-        __related_group__ = ['service']
         def _call(self, path, depth = Grimoire.Performer.UnlimitedDepth, objlisting = False):
             if depth == -1: depth = Grimoire.Performer.UnlimitedDepth
             if len(path) > 2:
@@ -37,11 +36,14 @@ class Performer(Grimoire.Performer.Base):
                 result = [(0, ['on']),
                           (0, ['off'])]
             elif objlisting:
+                # We know that each service will either be on or
+                # off, so the object listing should allways
+                # contain all of them...
                 if len(path) == 2:
-                    result = [(0, path)]
+                    result = [(1, path)]
                 else:
                     dirlist = os.listdir("/etc/init.d")
-                    result = [(0, ['on', name]) for name in dirlist] + [(0, ['off', name]) for name in dirlist]
+                    result = [(1, ['on', name]) for name in dirlist] + [(1, ['off', name]) for name in dirlist]
             else:
                 if len(path) == 2:
                     filepath = os.path.join("/etc/init.d", path[1])
@@ -63,14 +65,9 @@ class Performer(Grimoire.Performer.Base):
                         except Exception, e:
                             pass
             return Grimoire.Performer.DirListFilter(path, depth, result)
-        def _related_objdir(self, path, depth):
-#             return self._callWithUnlockedTree(lambda: self._getpath(Grimoire.Types.CurrentNode,
-#                                                                     path = path)(depth, True))
-            return []
         def _dir(self, path, depth):
-#             self._callWithUnlockedTree(lambda: self._getpath(Grimoire.Types.CurrentNode,
-#                                                                     path = path)(depth))
-            return []
+             self._callWithUnlockedTree(lambda: self._getpath(Grimoire.Types.CurrentNode,
+                                                                     path = path)(depth))
         def _params(self, path):
             if path:
                 comment = Grimoire.Types.Formattable(
