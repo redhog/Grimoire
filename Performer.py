@@ -541,7 +541,7 @@ class AbstractMethod(Implementing):
         elif which == 1:
             subPath = objectPath[objPrefixLen:]
         subObjDepth = objectDepth - max(0, (objPrefixLen - objectPathLen))
-        if subObjDepth <= 0:
+        if subObjDepth < 0:
             if self.__related_hasobjects__:
                 return [(0, addPath, description, subPath)]
             else:
