@@ -1,0 +1,3 @@
+* Make directory listings work properly (check!)
+* Add directory back-end for /etc/sysconfig (cool hack-value)
+* Add my fixme-listing thingy as a tree
