@@ -121,9 +121,11 @@ class Performer(Grimoire.Performer.Base):
                 kws['sambaPwdMustChange'] = '2147483647'
                 kws['sambaAcctFlags'] = '[U          ]'
                 
-                # FIXME: Shouldn't we redo the create.user/accept.user so
-                # that defaults are read from draft-accounts under
-                # cn=defaults?
+                #### fixme ####
+                # description = """Shouldn't we redo the
+                # create.user/accept.user so that defaults are read
+                # from draft-accounts under cn=defaults?"""
+                #### end ####
                 kws['loginShell'] = '/bin/bash'
                 
                 root = Grimoire.Types.defaultLocalRoot

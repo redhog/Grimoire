@@ -8,9 +8,11 @@ def getLangs(directory):
     global langs
     if langs is None:
         f = os.popen('locale -a')
-        # FIXME: Yes, all Linuxes are broken, and the listing from
-        # locale -a, aswell as the file locale.alias _is_ in
-        # latin-1. Regardles of current locale and whatnot. Bah.
+        #### fixme ####
+        # description = """Yes, all Linuxes are broken, and the
+        # listing from locale -a, aswell as the file locale.alias _is_
+        # in latin-1. Regardles of current locale and whatnot. Bah."""
+        #### end ###
         locales = [line.strip().decode('latin-1') for line in f.xreadlines()]
         f.close()
 

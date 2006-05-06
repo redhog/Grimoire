@@ -742,9 +742,11 @@ class Hide(AbstractRestrictor):
             if not self._abilityObject(path + pth, not leaf):
                 raise Grimoire.Utils.FilterOutError()
             return (leaf, pth)
-        # FIXME: Make it possible for prefixer to know what we are
+        #### fixme ####
+        # description = """Make it possible for prefixer to know what we are
         # filtering, so that we don't have to descend into unused
-        # branches of the tree...
+        # branches of the tree..."""
+        #### end ####
         if not self._abilityObject(path, True):
             return {'value':[]}
         res = ThinSingleChildContainer._treeOp_handle(self, path=path, **kw)

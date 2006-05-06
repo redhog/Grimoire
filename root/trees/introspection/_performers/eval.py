@@ -46,9 +46,12 @@ class Performer(Grimoire.Performer.Base):
 
             def evaluate(type, value):
                 if type is Grimoire.Utils.Serialize.Types.Identifier and value == '_':
-                    # FIXME: This means that _.foo.bar._.fie will give
-                    # an error, that is, a single underscore can not
-                    # be used as a method path element name!
+                    #### fixme ####
+                    # description = """This means that _.foo.bar._.fie
+                    # will give an error, that is, a single underscore
+                    # can not be used as a method path element
+                    # name!"""
+                    #### end ####
                     return self._getpath(Grimoire.Types.TreeRoot)
                 elif type is Grimoire.Utils.Serialize.Types.Member:
                     (obj, member) = value

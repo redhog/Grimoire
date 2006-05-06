@@ -200,9 +200,11 @@ class List(object):
         if isPrefixOnly:
             if self.eval(path, 0, *arg, **kw) is Allow:
                 return Allow
-            # FIXME: Are we handling list-entries that ends in ''
-            # correctly? See the other if-branch and how it appends
-            # [''] to the path... Seems to work though...
+            #### fixme ####
+            # description = """Are we handling list-entries that ends
+            # in '' correctly? See the other if-branch and how it
+            # appends [''] to the path... Seems to work though..."""
+            #### end ####
             path = Simple(path)
             pos = self.abilities.pos((None, path))
             if pos >= len(self.abilities):

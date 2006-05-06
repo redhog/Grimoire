@@ -226,9 +226,11 @@ def subtypeCmp(x, y):
     elif isSubclass(x, y):
         return -1
     else:
-        # FIXME: What if x and y have a common ancestor, but inherits
-        # from other (non-common) classes too, and have those classes
-        # first in their inheritance lists?
+        #### fixme ####
+        # description="""What if x and y have a common ancestor, but
+        # inherits from other (non-common) classes too, and have those
+        # classes first in their inheritance lists?"""
+        #### end ####
         oldx = x # Not strictly needed...
         bx = bases(x, False)
         while bx and not isSubclass(y, x):

@@ -335,11 +335,13 @@ class Performer(Grimoire.Performer.Base):
                     self.composer = Composer
                     self.views = {}
 
-                    # FIXME: Introspection ends up in several copies
-                    # in the tree. This means that the dir treeOp will
-                    # list stuff under e.g. introspection.object
-                    # several times, which is a huge performance
-                    # hog...
+                    #### fixme ####
+                    # description = """Introspection ends up in
+                    # several copies in the tree. This means that the
+                    # dir treeOp will list stuff under e.g.
+                    # introspection.object several times, which is a
+                    # huge performance hog..."""
+                    #### end ####
                     self.__ = Grimoire.Performer.Composer(
                         Grimoire.Performer.Prefixer(
                             ['introspection'],

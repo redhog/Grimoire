@@ -129,8 +129,11 @@ static inline void CReader_Buffer_releaseInterpreter(CReader_Buffer *buffer)
 # endif
  }
 
-/* FIXME: While waiting on this lock, it would be much better if we
-   could have the global interpreter lock unlocked!!! */
+/* #### fixme ####
+description = """While waiting on this lock, it would be much better
+if we could have the global interpreter lock unlocked!!!"""
+#### end #### */
+
 static inline void CReader_Buffer_lock(CReader_Buffer *buffer)
  {
 # ifdef DEBUG_THREAD

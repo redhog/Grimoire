@@ -57,8 +57,10 @@ class ParamsType(Composable.Composable, Derived.StaticDerivedType):
             return 0
     
     def compileArgs(self, *arg, **kw):
-        """FIXME: Provided for backwards-compatibility, use
-        self.__call__ instead."""
+        """#### fixme ####
+        description = '''Provided for backwards-compatibility, use
+        self.__call__ instead.'''
+        #### end ####"""
         return self(*arg, **kw)
 
     def addDefaults(self, defaults, extendResticted = 1):
