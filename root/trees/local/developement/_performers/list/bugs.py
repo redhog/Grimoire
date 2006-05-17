@@ -7,7 +7,7 @@ class Performer(Grimoire.Performer.Base):
     class fixmedir(Grimoire.Performer.SubMethod):
         __path__ = ['fixmedir', '$fileservername']
         def _call(self, path, depth = Grimoire.Performer.UnlimitedDepth,
-                  showDepth = 5, fixmesAreMethods = True, fieldsAreMethods = True, itemsAreMethods = True, itemFieldsAreMethods = True):
+                  fixmesAreMethods = True, fieldsAreMethods = True, itemsAreMethods = True, itemFieldsAreMethods = True):
             fixmes = self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(['local', 'developement', 'fixmes'], cache=True))
 
@@ -63,23 +63,24 @@ class Performer(Grimoire.Performer.Base):
                     return listFixme(prefix, path[1:], fixmes[path[0]])
 
             return Grimoire.Performer.DirListFilter(
-                [], depth, Grimoire.Performer.DirListFilter([], showDepth, listFixmes([], path, fixmes.fixmes), chop=False))
+                [], depth, listFixmes([], path, fixmes.fixmes))
             
         def _dir(self, path, depth):
             return self._call(path, depth)
         def _params(self, path):
-            return A(Ps([('depth',
-                          A(types.IntType,
-                            "Listing depth")),
+            return A(Ps([('depth', A(types.IntType, "Listing depth")),
+                         ('fixmesAreMethods', A(types.BooleanType, 'Fixmes themselves are listed as methods')),
+                         ('fieldsAreMethods', A(types.BooleanType, 'Fixme fields are listed as methods')),
+                         ('itemsAreMethods', A(types.BooleanType, 'Items are listed as methods')),
+                         ('itemFieldsAreMethods', A(types.BooleanType, 'Item fields are listed as methods'))
                          ]),
                      Grimoire.Types.Formattable(
                          'List fixmes under %(path)s',
                          path=Grimoire.Types.GrimoirePath(path)))
 
-
-
     class fixmes(Grimoire.Performer.SubMethod):
         __path__ = ['fixmes', '$fileservername']
+        __related_group__ = ['code', 'fixmes']
         __dir_allowall__ = False
         def _call(self, path):
             fixmes = self._callWithUnlockedTree(
