@@ -1,4 +1,4 @@
-import Grimoire.Types, FormComposer, gtk, gobject, xml.sax.saxutils
+import Grimoire.Types, FormComposer, gtk, gobject, xml.sax.saxutils, types
 
 Composer = Grimoire.Types.Composer.Composer
 ComposeObjType = Grimoire.Types.ComposeObjType
@@ -43,6 +43,8 @@ class AnnotatedValueWidget(gtk.Widget):
         if cls is AnnotatedValueWidget:
             if Grimoire.Types.getValue(obj) is None:
                 returnCls = AnnotatedNoneWidget
+            elif Grimoire.Utils.isInstance(Grimoire.Types.getValue(obj), types.BaseStringType):
+                returnCls = AnnotatedStringWidget
             else:
                 returnCls = AnnotatedSomethingWidget
         return super(AnnotatedValueWidget, cls).__new__(returnCls, composer, obj)
@@ -52,6 +54,14 @@ class AnnotatedNoneWidget(AnnotatedValueWidget, StringWidget):
         super(AnnotatedNoneWidget, self).__init__(
             composer,
             Grimoire.Types.Formattable("%(comment)s.", comment = Grimoire.Types.getComment(obj)))
+            
+class AnnotatedStringWidget(AnnotatedValueWidget, StringWidget):
+    def __init__(self, composer, obj):
+        super(AnnotatedStringWidget, self).__init__(
+            composer,
+            Grimoire.Types.Formattable("%(comment)s: %(value)s",
+                                       comment = Grimoire.Types.getComment(obj),
+                                       value = Grimoire.Types.getValue(obj)))
             
 class AnnotatedSomethingWidget(AnnotatedValueWidget, gtk.Frame):
     def __init__(self, composer, obj):
