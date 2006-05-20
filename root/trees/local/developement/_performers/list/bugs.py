@@ -7,7 +7,8 @@ class Performer(Grimoire.Performer.Base):
     class fixmedir(Grimoire.Performer.SubMethod):
         __path__ = ['fixmedir', '$fileservername']
         def _call(self, path, depth = Grimoire.Performer.UnlimitedDepth,
-                  fixmesAreMethods = True, fieldsAreMethods = True, itemsAreMethods = True, itemFieldsAreMethods = True):
+                  fixmesAreMethods = False, fieldsAreMethods = False, itemsAreMethods = False, itemFieldsAreMethods = False,
+                  hideFields = ('name', 'location')):
             fixmes = self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(['local', 'developement', 'fixmes'], cache=True))
 
@@ -16,7 +17,7 @@ class Performer(Grimoire.Performer.Base):
                 if not path:
                     return [(1, prefix + [key])
                             for key in fields
-                            if key not in ('name', 'location')]
+                            if key not in hideFields]
                 elif len(path) == 1 and path[0] in fields:
                     return [(1, prefix)]
                 return []
@@ -66,7 +67,8 @@ class Performer(Grimoire.Performer.Base):
                 [], depth, listFixmes([], path, fixmes.fixmes))
             
         def _dir(self, path, depth):
-            return self._call(path, depth)
+            return self._call(path, depth,
+                              fixmesAreMethods = True, fieldsAreMethods = True, itemsAreMethods = True, itemFieldsAreMethods = True)
         def _params(self, path):
             return A(Ps([('depth', A(types.IntType, "Listing depth")),
                          ('fixmesAreMethods', A(types.BooleanType, 'Fixmes themselves are listed as methods')),
@@ -82,6 +84,7 @@ class Performer(Grimoire.Performer.Base):
         __path__ = ['fixmes', '$fileservername']
         __related_group__ = ['code', 'fixmes']
         __dir_allowall__ = False
+        hideFields = ('name', 'location')
         def _call(self, path):
             fixmes = self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(['local', 'developement', 'fixmes'], cache=True))
@@ -90,12 +93,12 @@ class Performer(Grimoire.Performer.Base):
                     *[A(value, key)
                       for key, value
                       in fixmes.fixmes[path[0]].fields.iteritems()
-                      if key not in ('name', 'location')] +
+                      if key not in self.hideFields] +
                      [A(Grimoire.Types.Lines(
                             *[A(value, key)
                               for key, value
                               in item.fields.iteritems()
-                              if key not in ('name', 'location')]),
+                              if key not in self.hideFields]),
                         Grimoire.Types.Formattable("%(file)s:%(line)s", file=file, line=line))
                       for (file, line), item
                       in fixmes.fixmes[path[0]].items.iteritems()])
@@ -105,7 +108,7 @@ class Performer(Grimoire.Performer.Base):
                         *[A(value, key)
                           for key, value
                           in fixmes.fixmes[path[0]].fields.iteritems()
-                          if key not in ('name', 'location')])
+                          if key not in self.hideFields])
                 elif len(path) == 3:
                     return fixmes.fixmes[path[0]].fields[path[2]]
             elif path[1] == 'items':
@@ -116,7 +119,7 @@ class Performer(Grimoire.Performer.Base):
                         *[A(value, key)
                           for key, value
                           in fixmes.fixmes[path[0]].items[(path[2], int(path[3]))].fields.iteritems()
-                          if key not in ('name', 'location')])
+                          if key not in self.hideFields])
                 elif len(path) == 5:
                     return fixmes.fixmes[path[0]].items[(path[2], int(path[3]))].fields[path[4]]
         def _dir(self, path, depth):
