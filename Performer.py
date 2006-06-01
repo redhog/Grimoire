@@ -539,6 +539,7 @@ class AbstractMethod(Implementing):
                                                      len(relatedGroup + objPrefix + path),
                                                      objectPath, True)
         if which == -1:
+            objectDepth -= max(0, len(pathPrefix) - len(objectPath))
             objectPath = pathPrefix
         objPrefix, objPrefixLen, which = getPrefix(self,
                                                    objPrefix != [],
