@@ -526,6 +526,20 @@ class AbstractMethod(Implementing):
         while pathForSelf and pathForSelf[-1].startswith('$'):
             objPrefix[0:0] = [pathForSelf[-1]]
             del pathForSelf[-1]
+        # Handle path
+        #### fixme ####
+        # name = 'Double getPrefix call in related methods'
+        # description = """Is there any way we can merge these two
+        # calls to getPrefix? As it is, we're expanding treevars
+        # twice, and that's a performance hit!"""
+        #### end ####
+        pathPrefix, pathPrefixLen, which = getPrefix(self,
+                                                     objPrefix != [],
+                                                     relatedGroup + objPrefix + path,
+                                                     len(relatedGroup + objPrefix + path),
+                                                     objectPath, True)
+        if which == -1:
+            objectPath = pathPrefix
         objPrefix, objPrefixLen, which = getPrefix(self,
                                                    objPrefix != [],
                                                    relatedGroup + objPrefix,
