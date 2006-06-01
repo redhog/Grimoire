@@ -1,0 +1,15 @@
+#! /bin/bash
+systemPath=/home/redhog/Projects
+[ "$1" ] && pth="$1" || pth=.
+if [ -d "$pth" ]; then
+ pth="$(cd "$pth"; pwd)"
+else
+ (
+  name="$(echo "$pth" | sed -e "s+.*/++g")"
+  pth="$(echo "$pth" | sed -e "s+/[^/]*$++g")"
+  [ "$pth" ] && cd "$pth"
+  pth="$(pwd)/$name"
+ )
+fi
+pth="$(echo "$pth" | sed -e "s+^$systemPath/++g" -e "s+\.+\\\\.+g" -e "s+/+.+g")"
+gnomoire "_.trees.local.backup('backup', 'backup').reset.file.backupserver.$pth.Restore"
