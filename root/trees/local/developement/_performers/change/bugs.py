@@ -8,9 +8,10 @@ class Performer(Grimoire.Performer.Base):
         __path__ = ['fixmes', '$fileservername']
         __related_group__ = ['code', 'fixmes']
         __dir_allowall__ = False
-        def _call(self, path):
+        def _call(self, path, *arg, **kw):
             fixmes = self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(['local', 'developement', 'fixmes'], cache=True))
+
         def _dir(self, path, depth):
             return self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.MethodBase, levels=1, path=['list', 'fixmedir', '$fileservername'] + path)(
@@ -18,10 +19,19 @@ class Performer(Grimoire.Performer.Base):
                     fixmesAreMethods = True, fieldsAreMethods = True,
                     hideFields = ()))
         def _params(self, path):
+            fixmes = self._callWithUnlockedTree(
+                lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(['local', 'developement', 'fixmes'], cache=True))
+            name=path[0]
+            fixme = fixmes.fixmes[name]
             if len(path) == 1:
-                return A(Ps(),
-                         Grimoire.Types.Formattable('Change the fixme %(name)s', name=path[0]))
+                comment = Grimoire.Types.Formattable('Change the fixme %(name)s', name=name)
+                fields = fixme.fields.iterkeys()
             elif len(path) == 3:
-                return A(Ps(),
-                         Grimoire.Types.Formattable('Change %(field)s of the fixme %(name)s', field=path[2], name=path[0]))
-            assert(false);
+                fields = [path[2]]
+                comment = Grimoire.Types.Formattable('Change %(field)s of the fixme %(name)s', field=path[2], name=name)
+            else:
+                assert(false)
+            return A(Ps([(field, A(Grimoire.Types.HintedType.derive(type(fixme.fields[field]), [fixme.fields[field]]),
+                                   field))
+                         for field in fields]),
+                     comment)
