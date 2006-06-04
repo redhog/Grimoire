@@ -1,6 +1,6 @@
 import Grimoire.Utils, Grimoire.Performer, Grimoire.Types, sys, string
 
-profileRespond = 'respondprof-'
+profileRespond = False # 'respondprof-'
 
 
 if profileRespond:

@@ -1,10 +1,11 @@
-import Grimoire.Performer, Grimoire.Types, Grimoire.Utils, os, re, ConfigParser
+import Grimoire.Performer, Grimoire.Types, Grimoire.Utils, os, re
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
 
 langs = None
 def getLangs(directory):
+    import ConfigParser
     global langs
     if langs is None:
         f = os.popen('locale -a')

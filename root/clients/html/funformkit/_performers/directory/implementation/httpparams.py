@@ -1,4 +1,4 @@
-import Grimoire.Performer, Grimoire.Types, Grimoire.Utils, base64
+import Grimoire.Performer, Grimoire.Types, Grimoire.Utils
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -81,6 +81,7 @@ class Performer(Grimoire.Performer.Base):
                 lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(
                    ['clients', 'html', 'webware', 'session']).request()._environ)
         def _call(self):
+            import base64
             environ = self._environ()
             auth = environ.get('HTTP_AUTHORIZATION', environ.get('HTTP_CGI_AUTHORIZATION'))
             if not auth.lower().startswith('basic'):
@@ -100,6 +101,7 @@ class Performer(Grimoire.Performer.Base):
                 lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(
                    ['clients', 'html', 'webware', 'session']).request()._environ)
         def _call(self):
+            import base64
             environ = self._environ()
             auth = environ.get('HTTP_AUTHORIZATION', environ.get('HTTP_CGI_AUTHORIZATION'))
             if not auth.lower().startswith('basic'):

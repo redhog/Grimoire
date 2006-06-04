@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
 profile = False # 'gnomoireprof'
-memprofile = True
+memprofile = False
 
 import gnomoire, Grimoire, Grimoire.Utils.Password, types, sys, os.path
 
@@ -420,7 +420,7 @@ class Performer(Grimoire.Performer.Base):
                      'This method returns a class nearly implementing a Gnome Grimoire client application.')
 
 if __name__ == '__main__':
-    import gnome
+    import gnome, _gnomoire, gtk
     program = gnome.program_init("Gnomoire", Grimoire.About.grimoireVersion,
                                  properties={gnome.PARAM_APP_PREFIX: Grimoire.__path__[0],
                                              gnome.PARAM_APP_DATADIR: _gnomoire.__path__[0]})
