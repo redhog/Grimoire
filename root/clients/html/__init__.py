@@ -11,6 +11,8 @@ debugTree = 0
 class Performer(Grimoire.Performer.Base):
     class html(Grimoire.Performer.Method):
         def _call(performer):
+            import Grimoire.root.clients.html._html.Composer
+            
             RenderableSession = performer._callWithUnlockedTree(
                 lambda: performer._getpath(Grimoire.Types.MethodBase).renderable())
             FormSession = performer._callWithUnlockedTree(
@@ -66,7 +68,7 @@ class Performer(Grimoire.Performer.Base):
                                        img('empty', '&nbsp;&nbsp;&nbsp;'))
 
 
-                    class Composer(Grimoire.Types.HtmlComposer):
+                    class Composer(Grimoire.root.clients.html._html.Composer.HtmlComposer):
                         methodBaseURI = '%s?select=%%(method)s' % enc(self.pageurl)
 
                     self.composer = Composer

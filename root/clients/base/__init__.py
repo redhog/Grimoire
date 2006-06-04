@@ -1,6 +1,4 @@
 import Grimoire, Grimoire.Performer, Grimoire.Types, Grimoire.Types.Ability, Grimoire.Utils
-import Grimoire.Utils.Serialize.Writer, Grimoire.Utils.Serialize.Types, Grimoire.Utils.Password
-import types, string, sys, traceback, StringIO
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -17,8 +15,8 @@ debugCalls = 0
 class Performer(Grimoire.Performer.Base):
     class base(Grimoire.Performer.Method):
         def _call(performer):
+            import sys
             class Session(object):
-
                 composer = Grimoire.Types.TextComposer
                 sessionPath = ['parameters', 'clients']
                 hide = Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Ignore, ['directory']),
@@ -521,6 +519,7 @@ class Performer(Grimoire.Performer.Base):
                     except:
                         result.error = sys.exc_info()[1]
                         if debugMethods:
+                            import traceback
                             traceback.print_exc()
                     if result.error is None:
                         result.result = self.handleResult(method, result.result)
@@ -591,6 +590,7 @@ class Performer(Grimoire.Performer.Base):
                             if node:
                                 print node.path, index, node.subNodes.__keys__
                             print numpath, depth, reupdate, treeNode
+                            import traceback
                             traceback.print_exc()
                             raise e
 
@@ -602,6 +602,8 @@ class Performer(Grimoire.Performer.Base):
 
     class form(Grimoire.Performer.Method):
         def _call(performer):
+            import Grimoire.Utils.Serialize.Writer, Grimoire.Utils.Serialize.Types, Grimoire.Utils.Password
+            import StringIO
             Session = performer._getpath(Grimoire.Types.MethodBase).base()
             class FormSession(Session):
                 class TreeView(Session.TreeView):

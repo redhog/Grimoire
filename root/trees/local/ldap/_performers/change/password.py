@@ -1,11 +1,11 @@
 import Grimoire.Utils, Grimoire.Utils.Password, Grimoire.Performer, Grimoire.Types
-import string, ldap, base64, types
 
 class Performer(Grimoire.Performer.Base):
     class password(Grimoire.Performer.SubMethod):
         __path__ = ['password', '$ldapservername']
         __related_group__ = ['user']
         def _call(self, path, newpwd):
+            import string, ldap
             newpwd = Grimoire.Utils.encode(newpwd, 'ascii')
             path = Grimoire.Utils.Reverse(path)
             conn = self._callWithUnlockedTree(
@@ -28,6 +28,7 @@ class Performer(Grimoire.Performer.Base):
                                       )(depth,
                                         '(& (objectClass=posixAccount) (objectClass=sambaSamAccount))', addType='ou', endType='uid'))
         def _params(self, path):
+            import base64
             return Grimoire.Types.AnnotatedValue(
                 Grimoire.Types.ParamsType.derive(
                     [('newpwd',

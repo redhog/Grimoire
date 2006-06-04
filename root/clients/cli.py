@@ -4,7 +4,7 @@ if __name__ == '__main__':
     import Grimoire, sys
     sys.exit(Grimoire._.clients.cli(sys.argv[1:]))
 else:
-    import Grimoire.Performer, Grimoire.Utils, Grimoire.Types, string, sys, types, traceback
+    import Grimoire.Performer, Grimoire.Utils, Grimoire.Types, string, sys, types
 
     class Performer(Grimoire.Performer.Base):
         class cli(Grimoire.Performer.Method):
@@ -26,6 +26,7 @@ else:
                 try:
                     result = CliSession((expressions and expressions[0]) or None)
                 except Exception:
+                    import traceback
                     traceback.print_exc()
                     return 1
 

@@ -1,4 +1,4 @@
-import Grimoire.Performer, Grimoire.Utils, Grimoire.Utils.Gettext, Grimoire.Types, os, os.path, imp, string, sys, types, traceback
+import Grimoire.Performer, Grimoire.Utils, Grimoire.Utils.Gettext, Grimoire.Types, os, os.path, string, sys, types
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -7,24 +7,6 @@ Ps = Grimoire.Types.ParamsType.derive
 debugExceptions = 0
 raiseExceptions = 0
 
-class ErrorDialog(Grimoire.Performer.SubMethod):
-    def __init__(self, type, error, trace):
-        Grimoire.Performer.SubMethod.__init__(self)
-        self._type = type
-        self._error = error
-        self._trace = trace
-    def _call(self, path, *arg, **kw):
-        raise Exception(
-            Grimoire.Types.Lines(
-                Grimoire.Types.Formattable('An error occured while %(when)s: %(error)s',
-                                           when = ['loading the file',
-                                                   'instanciating the Performer class'][self._type],
-                                           error = self._error),
-                *self._trace))
-    def _dir(self, path, depth):
-        return [(1, []), (1, ['error'])]
-    def _params(self, path):
-        return Grimoire.Types.ParamsType.derive()
 
 # FIXME: Include translations of domains that are not Performers, too
 
@@ -32,6 +14,25 @@ class ErrorDialog(Grimoire.Performer.SubMethod):
 class Performer(Grimoire.Performer.Base):
     class load(Grimoire.Performer.Method):
         def _call(self, modName, raiseexception=raiseExceptions):
+            class ErrorDialog(Grimoire.Performer.SubMethod):
+                def __init__(self, type, error, trace):
+                    Grimoire.Performer.SubMethod.__init__(self)
+                    self._type = type
+                    self._error = error
+                    self._trace = trace
+                def _call(self, path, *arg, **kw):
+                    raise Exception(
+                        Grimoire.Types.Lines(
+                            Grimoire.Types.Formattable('An error occured while %(when)s: %(error)s',
+                                                       when = ['loading the file',
+                                                               'instanciating the Performer class'][self._type],
+                                                       error = self._error),
+                            *self._trace))
+                def _dir(self, path, depth):
+                    return [(1, []), (1, ['error'])]
+                def _params(self, path):
+                    return Grimoire.Types.ParamsType.derive()
+
             def translationsOfModule(module):
                 if not hasattr(module, '__file__'):
                     return None
@@ -61,7 +62,9 @@ class Performer(Grimoire.Performer.Base):
                             try:
                                 performer = performerClass()
                             except:
-                                if debugExceptions: traceback.print_exc()
+                                import traceback
+                                if debugExceptions:
+                                    traceback.print_exc()
                                 if raiseexception:
                                     raise sys.exc_type, sys.exc_value, sys.exc_traceback
                                 type = 1
@@ -118,6 +121,7 @@ class Performer(Grimoire.Performer.Base):
                     try:
                         Grimoire.Performer.Logical(tree).introspection.eval(expr)
                     except Exception, e:
+                        import traceback
                         e.trace = traceback.extract_tb(sys.exc_info()[2])
                         errors.append(e)
                 if errors:

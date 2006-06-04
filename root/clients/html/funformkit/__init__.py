@@ -9,7 +9,7 @@ Ps = Grimoire.Types.ParamsType.derive
 class Performer(Grimoire.Performer.Base):
     class funformkit(Grimoire.Performer.Method):
         def _call(performer):
-            import FunFormKit.Field, FunFormKit.Form, traceback
+            import FunFormKit.Field, FunFormKit.Form
 
             def argValues2Selections(argvalues, composer, optional = False):
                 """Transforms a list of allowed values (from a ValuedType) into a
@@ -61,6 +61,7 @@ class Performer(Grimoire.Performer.Base):
                         return None
                     except Exception, e:
                         if debugTypes:
+                            import traceback
                             print Grimoire.Utils.objInfo(e)
                             traceback.print_exc()
                         if not self.required and (not value or not value.strip()):

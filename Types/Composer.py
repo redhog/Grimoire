@@ -1,5 +1,4 @@
-import types, re, string, Grimoire.Utils, Composable, Representation, Path, About, Introspection, urllib, xml.sax.saxutils
-
+import types, re, string, Grimoire.Utils, Composable, Representation, Path, About, Introspection
 
 class ComposeType(object):
     class __metaclass__(types.TypeType):
@@ -330,62 +329,3 @@ License: %(licenseURL)s
             if obj.convertType:
                 lines.append(Grimoire.Types.AnnotatedValue(obj.convertType, "Values will be converted to the following types"))
             return composer(Grimoire.Types.Lines(*lines))
-
-class HtmlNoEscape(types.UnicodeType): pass
-class HtmlParagraph(types.DictType): pass
-
-class HtmlComposer(TextComposer):
-
-    methodBaseURI = None # URI pattern for GrimoireReference expansion. Example: "http://example.com/grimoire?sess=4711&callMethod=%(method)s&foo=32"
-
-    class ComposePythonObject(TextComposer.ComposePythonObject):
-        def compose(cls, composer, obj):
-            return xml.sax.saxutils.escape(TextComposer.ComposePythonObject.compose(composer, obj))
-
-    class ComposeObject(TextComposer.ComposeObject):
-        def compose(cls, composer, obj):
-            return '&lt;' + composer(type(obj)) + ' at ' + str(id(obj)) + '&gt;'
-
-    class ComposeHtmlNoEscape(TextComposer.ComposeString):
-        type = HtmlNoEscape
-
-    class ComposeString(TextComposer.ComposeString):
-        def compose(cls, composer, obj):
-            return xml.sax.saxutils.escape(TextComposer.ComposeString.compose(composer, obj))
-
-    class ComposeLines(TextComposer.ComposeLines):
-        def getDelimiter(cls, composer, obj): return HtmlNoEscape('<br/>')
-
-    class ComposeParagraph(TextComposer.ComposeGenericMapping):
-        type = HtmlParagraph
-        format = HtmlNoEscape('<p>%(paragraph)s</p>')
-
-    class ComposeParagraphs(TextComposer.ComposeParagraphs):
-        type = Composable.Paragraphs
-        def getList(cls, composer, obj):
-            return [HtmlParagraph(paragraph=paragraph)
-                    for paragraph in TextComposer.ComposeBlock.getList(composer, obj)]
-
-    class ComposeTitledURILink(TextComposer.ComposeGenericMapping):
-        type = Composable.TitledURILink
-        format = HtmlNoEscape('<a href="%(value)s">%(comment)s</a>')
-
-    class ComposeGrimoireReference(TextComposer.ComposeGrimoireReference):
-        def compose(cls, composer, obj):
-            if composer.methodBaseURI is None:
-                raise TypeError("Unable to render GrimoirePaths without a medthod base URI")
-            return composer.methodBaseURI % {
-                'method': urllib.quote_plus(Grimoire.Utils.encode(
-                    "." +  TextComposer.ComposeGrimoireReference.compose(composer, obj)))}
-
-    class ComposeCopyrightChange(TextComposer.ComposeCopyrightChange):
-        format = HtmlNoEscape('%(type)s (c) %(year)s by %(name)s &lt;<a href="mailto:%(email)s">%(email)s</a>&gt;')
-
-    class ComposeAboutItem(TextComposer.ComposeAboutItem):
-        format = HtmlNoEscape("""%(name)s<br/>
-<p>
- Version: %(versionname)s<br/>
- %(copychanges)s<br/>
- License: %(licenseURL)s
-</p>
-%(licenseText)s""")
