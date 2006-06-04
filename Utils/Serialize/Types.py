@@ -1,4 +1,4 @@
-import Grimoire.Utils, string, sys, traceback
+import Grimoire.Utils, string, sys
 
 class Extension(Grimoire.Utils.Wrapper):
     def __init__(self, type, value):
@@ -19,6 +19,7 @@ class UnserializableError(TypeError):
 
 class RaiseException(object):
     def __init__(self, exc_type = None, exc_value = None, exc_traceback = None):
+        import traceback
         t, v, tr = sys.exc_info()
         self.exc_type = exc_type or t
         self.exc_value = exc_value or v

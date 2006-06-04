@@ -1,4 +1,4 @@
-import Grimoire.Utils, Types, string, types, re, sys, traceback
+import Grimoire.Utils, Types, string, types, re, sys
 
 debugExceptions = 0
 
@@ -91,5 +91,6 @@ def contract(obj, extension = None):
             t, v, tr = sys.exc_info()
             raise t, v, tr
         if debugExceptions:
+            import traceback
             traceback.print_exc()
         return contract(extension(obj), extension)

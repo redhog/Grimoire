@@ -1,4 +1,4 @@
-import Grimoire.Utils, Types, string, types, unicodedata, sys, traceback, StringIO
+import Grimoire.Utils, Types, string, types, unicodedata, sys, StringIO
 
 debugRead = 0
 debugInput = 0

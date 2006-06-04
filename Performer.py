@@ -4,7 +4,7 @@ classes. External access to the methods of the user-class is
 controlled by abilities, as specified in the ability-module.
 """
 
-import operator, string, types, sys, Grimoire.Types, Grimoire.Types.Ability, Grimoire.Utils, Grimoire.Utils.RPC, traceback
+import operator, string, types, sys, Grimoire.Types, Grimoire.Types.Ability, Grimoire.Utils, Grimoire.Utils.RPC
 
 
 debugMethodNotImplementedHere = 0
@@ -290,6 +290,7 @@ class Physical(Performer):
         **kw) on a node in the logical tree, specified by path.
         """
         if treeOp in debugTreeOps:
+            import traceback
             tr = traceback.extract_stack()[:-1]
             if tr[-1][1] == 151:
                 tr = tr[:-1]
@@ -304,7 +305,10 @@ class Physical(Performer):
         try:
             return self._treeOp_recurse(path=path, treeOp=treeOp, wholePath=path, **kw)['value']
         except Grimoire.Types.MethodNotImplementedHere:
-            if debugMethodNotImplementedHere: print "MethodNotImplementedHere:", self, path; traceback.print_exc()
+            if debugMethodNotImplementedHere:
+                import traceback
+                print "MethodNotImplementedHere:", self, path;
+                traceback.print_exc()
             raise AttributeError(self._physicalRoot(), self._pathForSelf(path, True))
 
     def _treeOp_recurse(self, path, treeOp, **kw):

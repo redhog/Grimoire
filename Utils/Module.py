@@ -1,5 +1,5 @@
 from Grimoire.Utils.Types import Iter
-import types, os, sys, string, traceback
+import types, os, sys, string
 
 debugExceptions = 0
 raiseExceptions = 0
@@ -43,6 +43,7 @@ class ModuleTree:
             try:
                 self.module = loadModule(modName)
             except:
+                import traceback
                 if debugExceptions: traceback.print_exc()
                 self.error = sys.exc_value
                 self.trace = traceback.format_exception(sys.exc_type, sys.exc_value, sys.exc_traceback)
