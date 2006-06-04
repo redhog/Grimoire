@@ -1,4 +1,4 @@
-import Grimoire.Performer, Grimoire.Types, types, Fixme
+import Grimoire.Performer, Grimoire.Types, types
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -6,6 +6,7 @@ Ps = Grimoire.Types.ParamsType.derive
 class Performer(Grimoire.Performer.Base):
     class unprotected_developement(Grimoire.Performer.Method):
         def _call(self):
+            import Fixme
             directory = self._callWithUnlockedTree(lambda: self._getpath(Grimoire.Types.TreeRoot).directory.new())
             setParam = directory.directory.set.parameters
             getParam = directory.directory.get.parameters

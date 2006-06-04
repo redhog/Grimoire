@@ -1,4 +1,4 @@
-import Grimoire.Utils, Grimoire.Performer, Grimoire.Types, WebKit.Page, sys, string
+import Grimoire.Utils, Grimoire.Performer, Grimoire.Types, sys, string
 
 profileRespond = 'respondprof-'
 
@@ -9,6 +9,8 @@ if profileRespond:
 class Performer(Grimoire.Performer.Base):
     class webware(Grimoire.Performer.Method):
         def _call(performer):
+            import WebKit.Page
+            
             FormServlet = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase)())
 
             class FormPage(WebKit.Page.Page, FormServlet):

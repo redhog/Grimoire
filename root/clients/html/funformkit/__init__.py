@@ -1,6 +1,4 @@
 import Grimoire.Performer, Grimoire.Types, Grimoire.Utils, types, sys
-import FunFormKit.Field, FunFormKit.Form, traceback
-
 
 debugTypes = 0
 debugMethods = 0
@@ -8,27 +6,11 @@ debugMethods = 0
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
 
-class VerifyField(FunFormKit.Field.VerifyField):
-    """Bugfix for FunFormKit.Field.VerifyField."""
-    def __init__(self, name, fieldClass,
-                 fieldArgs1=None, fieldKW1=None,
-                 fieldArgs2=None, fieldKW2=None,
-                 **kw):
-        fieldArgs1 = fieldArgs1 or ()
-        fieldKW1 = fieldKW1 or {}
-        fieldArgs2 = fieldArgs2 or ()
-        fieldKW2 = fieldKW2 or {}
-        formValidators = list(kw.setdefault('formValidators', []))
-        formValidators.append(FunFormKit.Field.Validator.FieldsMatch([name, 'verify']))
-        print formValidators
-        kw['formValidators'] = formValidators
-        password = fieldClass(name, *fieldArgs1, **fieldKW1)
-        verify = fieldClass('verify', *fieldArgs2, **fieldKW2)
-        FunFormKit.Field.CompoundField.__init__(self, name, [password, verify], **kw)
-
 class Performer(Grimoire.Performer.Base):
     class funformkit(Grimoire.Performer.Method):
         def _call(performer):
+            import FunFormKit.Field, FunFormKit.Form, traceback
+
             def argValues2Selections(argvalues, composer, optional = False):
                 """Transforms a list of allowed values (from a ValuedType) into a
                 "selection" list suitable for FunFormKit.Field.SelectField, i.e. a
@@ -39,6 +21,24 @@ class Performer(Grimoire.Performer.Base):
                 if optional:
                     res.insert(0, (-1, composer('*No value specified*')))
                 return res
+
+            class VerifyField(FunFormKit.Field.VerifyField):
+                """Bugfix for FunFormKit.Field.VerifyField."""
+                def __init__(self, name, fieldClass,
+                             fieldArgs1=None, fieldKW1=None,
+                             fieldArgs2=None, fieldKW2=None,
+                             **kw):
+                    fieldArgs1 = fieldArgs1 or ()
+                    fieldKW1 = fieldKW1 or {}
+                    fieldArgs2 = fieldArgs2 or ()
+                    fieldKW2 = fieldKW2 or {}
+                    formValidators = list(kw.setdefault('formValidators', []))
+                    formValidators.append(FunFormKit.Field.Validator.FieldsMatch([name, 'verify']))
+                    print formValidators
+                    kw['formValidators'] = formValidators
+                    password = fieldClass(name, *fieldArgs1, **fieldKW1)
+                    verify = fieldClass('verify', *fieldArgs2, **fieldKW2)
+                    FunFormKit.Field.CompoundField.__init__(self, name, [password, verify], **kw)
 
             def PasswordVerifyField(name, **kw):
                 return VerifyField(name, FunFormKit.Field.PasswordField, **kw)

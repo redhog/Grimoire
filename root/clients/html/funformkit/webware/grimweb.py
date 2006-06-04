@@ -1,4 +1,4 @@
-import Grimoire.Performer, Grimoire.Types, Grimoire.Utils, string, types, sys, traceback
+import Grimoire.Performer, Grimoire.Types, Grimoire.Utils, string, types, sys
 
 debugParams = 1
 

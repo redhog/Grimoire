@@ -1,4 +1,4 @@
-import Grimoire.Performer, Grimoire.Types, Grimoire.root.trees.local.sql._Ability, types, string, pg
+import Grimoire.Performer, Grimoire.Types, types, string
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -7,6 +7,7 @@ Ps = Grimoire.Types.ParamsType.derive
 class Performer(Grimoire.Performer.Base):
     class sql(Grimoire.Performer.Method):
         def _call(self, userName, password, server = None, database = None, adminname = None, adminpwd = None):
+            import Grimoire.root.trees.local.sql._Ability, pg
             directory = self._callWithUnlockedTree(self._getpath(Grimoire.Types.TreeRoot).directory.new)
             setParam = directory.directory.set.parameters
             getParam = directory.directory.get.parameters

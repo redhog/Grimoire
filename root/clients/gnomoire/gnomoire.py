@@ -1,8 +1,9 @@
 #! /usr/bin/python
 
 profile = False # 'gnomoireprof'
+memprofile = True
 
-import gnomoire, _gnomoire.Composer, Grimoire, Grimoire.Utils.Password, gobject, gnome, gtk, gtk.glade, types, sys, os.path
+import gnomoire, Grimoire, Grimoire.Utils.Password, types, sys, os.path
 
 if profile:
     import hotshot
@@ -14,6 +15,8 @@ class Performer(Grimoire.Performer.Base):
     class gnomoire(Grimoire.Performer.Method):
         __path__ = []
         def _call(performer):
+            import _gnomoire.Composer, gobject, gnome, gtk, gtk.glade
+            
             NumpathSession = Grimoire._.clients.numpath()
             FormSession = Grimoire._.clients.form()
             class Session(FormSession, NumpathSession):
@@ -417,6 +420,7 @@ class Performer(Grimoire.Performer.Base):
                      'This method returns a class nearly implementing a Gnome Grimoire client application.')
 
 if __name__ == '__main__':
+    import gnome
     program = gnome.program_init("Gnomoire", Grimoire.About.grimoireVersion,
                                  properties={gnome.PARAM_APP_PREFIX: Grimoire.__path__[0],
                                              gnome.PARAM_APP_DATADIR: _gnomoire.__path__[0]})
@@ -460,5 +464,11 @@ if __name__ == '__main__':
             p.runcall(gtk.main)
         finally:
             p.close()
+    elif memprofile:
+        import code
+        from sizer import scanner
+        objs = scanner.Objects()
+        from sizer import annotate, formatting, operations, graph
+        code.interact(local = {'objs': objs, 'scanner': scanner, 'annotate': annotate, 'formatting': formatting, 'operations': operations, 'graph': graph})
     else:
         gtk.main()

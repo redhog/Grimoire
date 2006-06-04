@@ -122,6 +122,7 @@ def treeOp_combine_add(self, fns, **kw):
 
 
 class Performer(Grimoire.Utils.RPC.ServerObject):
+    __slots__ = []
     def __add__(self, other):
         if Grimoire.Utils.isInstance(other, Performer):
             return Composer(Physical(self), Physical(other))
@@ -401,6 +402,7 @@ class Implementing(AbstractImplementing):
 
 
 class ImplementingHandling(AbstractImplementing, Handling):
+    __slots__ = []
     def _treeOp_handle(self, treeOp, **kw):
         return getattr(self, "_treeOp_impl_" +  treeOp,
                        self._treeOp_impl)(treeOp=treeOp, **kw)
@@ -708,6 +710,7 @@ class SingleChildContainer(Container):
         return self._child._remove(*arg, **kw)
 
 class ThinSingleChildContainer(SingleChildContainer):
+    __slots__ = []
     def _treeOp_handle(self, **kw):
         return self._child._treeOp_recurse(**kw)
 
@@ -1050,6 +1053,7 @@ class Base(Composer):
     foo = Foo()
     foo.fie.naja.hehe(...)
     """
+    __slots__ = []
     _hide = []
     def __init__(self):
         ImplementingHandling.__init__(self)
