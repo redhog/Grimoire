@@ -116,9 +116,10 @@ class Performer(Grimoire.Performer.Base):
         def _dir(self, path, depth):
             return self._call(path, depth)
         def _params(self, path):
-            return A(Ps([('what',
-                          A(Grimoire.Types.BitfieldType.derive(types.IntType, modeNumbers),
-                            "What to list")),
+            return A(Ps([('depth',
+                          Grimoire.Types.AnnotatedValue(
+                              types.IntType,
+                              "Only return entries this far down in the tree (-1 means infinity)")),
                          ]),
                      Grimoire.Types.Formattable(
                          'List files and directories entries under %(path)s',

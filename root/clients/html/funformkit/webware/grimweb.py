@@ -50,7 +50,10 @@ class Performer(Grimoire.Performer.Base):
                         for key, value in fields.iteritems():
                             if key not in ('expand', 'expandPath', 'collapse', 'select'):
                                 continue
-                            method = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase, 3).urlname.name2method(value))
+                            if value is None or value == 'default':
+                                method = None
+                            else:
+                                method = tuple(value.decode().split('.')[1:])
                             if method is None:
                                 method = sess.views[()].children[('tree',)].children[('methods',)].defaultMethod()
                                 method = method and tuple(method)
@@ -65,7 +68,10 @@ class Performer(Grimoire.Performer.Base):
                                     sess.views[()].send.gotoPath(method)
 
                     if submitted:
-                        sess.views[()].children[('selection',)].handleCall(args = data)
+                        print data
+                        sess.views[()].children[('selection',)].handleCall(
+                            args = Grimoire.Types.getValue(sess.views[()].children[('selection',)].params
+                                                           )(kws = data, checkTypes = 0, falseAsAbsent = 1))
                
                 def writeStyleSheet(self):
                     sess = self.grimoireSession()

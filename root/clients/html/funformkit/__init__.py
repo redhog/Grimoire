@@ -226,6 +226,7 @@ class Performer(Grimoire.Performer.Base):
                                         method2name(self.method),
                                         Grimoire.Types.getValue(self.params),
                                         self.getComposer())
+                                    self.session.server._formDefinitions[method2name(self.method)] = form
                                     result.append(
                                         self.session.server.renderableForm(formDefinition=form,
                                                                            defaults=defaults
