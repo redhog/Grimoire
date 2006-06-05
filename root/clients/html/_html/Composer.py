@@ -1,4 +1,4 @@
-Import Grimoire.Types, types, xml.sax.saxutils, urllib
+import Grimoire.Types, types, xml.sax.saxutils, urllib
 
 class HtmlNoEscape(types.UnicodeType): pass
 class HtmlParagraph(types.DictType): pass
@@ -30,13 +30,13 @@ class HtmlComposer(Grimoire.Types.TextComposer):
         format = HtmlNoEscape('<p>%(paragraph)s</p>')
 
     class ComposeParagraphs(Grimoire.Types.TextComposer.ComposeParagraphs):
-        type = Composable.Paragraphs
+        type = Grimoire.Types.Composable.Paragraphs
         def getList(cls, composer, obj):
             return [HtmlParagraph(paragraph=paragraph)
                     for paragraph in Grimoire.Types.TextComposer.ComposeBlock.getList(composer, obj)]
 
     class ComposeTitledURILink(Grimoire.Types.TextComposer.ComposeGenericMapping):
-        type = Composable.TitledURILink
+        type = Grimoire.Types.Composable.TitledURILink
         format = HtmlNoEscape('<a href="%(value)s">%(comment)s</a>')
 
     class ComposeGrimoireReference(Grimoire.Types.TextComposer.ComposeGrimoireReference):
