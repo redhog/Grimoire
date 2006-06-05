@@ -12,4 +12,4 @@ else
  )
 fi
 pth="$(echo "$pth" | sed -e "s+^$systemPath/++g" -e "s+\.+\\\\.+g" -e "s+/+.+g")"
-gnomoire "_.trees.local.backup('backup', 'backup').reset.file.backupserver.$pth.Restore"
+gnomoire "_.trees.local.backup('backup', 'backup').reset.file.backupserver.$pth"

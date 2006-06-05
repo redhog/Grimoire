@@ -8,22 +8,20 @@ class Performer(Grimoire.Performer.Base):
         __related_group__ = ['file']
         __path__ = ['file', '$backupservername']
         __dir_allowall__ = False        
-        def _call(self, path, name = None):
+        def _call(self, path, date, name = None):
             systemRootPath = Grimoire.Types.defaultLocalRoot + self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(
                     ['local', 'backup', 'path', 'system'], []))
             backupRootPath = Grimoire.Types.defaultLocalRoot + self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(
                     ['local', 'backup', 'path', 'backup'], []))
-            restoreTime = path[-1]
-            path = path[:-2] # path[-2] is the string 'Restore'...
             dstpath = path
             if name is not None:
                 if dstpath:
                     dstpath = dstpath[:-1]
                 dstpath = dstpath + [name]
             out, err = Grimoire.Utils.system('rdiff-backup', ['rdiff-backup',
-                                                              '-r', restoreTime,
+                                                              '-r', date,
                                                               unicode(backupRootPath + path),
                                                               unicode(systemRootPath + dstpath)
                                                               ], onlyOkStatus = True)
@@ -34,11 +32,17 @@ class Performer(Grimoire.Performer.Base):
                 lambda: self._getpath(Grimoire.Types.MethodBase, 1,
                                       ['list', 'files', '$backupservername'] + path)(depth))
         def _params(self, path):
-            return A(Ps([('name',
+            versions = self._callWithUnlockedTree(
+                lambda: self._getpath(Grimoire.Types.MethodBase, 1,
+                                      ['list', 'versions', '$backupservername'] + path)())
+            return A(Ps([('date',
+                          A(Grimoire.Types.RestrictedType.derive(types.UnicodeType,
+                                                                 versions),
+                            'Restore file/directory to the state it was in at')),
+                         ('name',
                           A(types.UnicodeType, 'Save restored copy under this name')),
                          ],
-                        0),
+                        1),
                      Grimoire.Types.Formattable(
-                         'Restore %(destination)s to the state it was in at %(time)s',
-                         destination=Grimoire.Types.defaultLocalRoot + path[:-2],
-                         time=path[-1]))
+                         'Restore %(destination)s',
+                         destination=Grimoire.Types.defaultLocalRoot + path))

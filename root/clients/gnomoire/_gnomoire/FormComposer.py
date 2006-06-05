@@ -130,18 +130,20 @@ class CommentedValuesModel(gtk.GenericTreeModel):
         return None
 
 class CommentedValuesTypeWidget(gtk.ComboBox):
-    def __init__(self, *arg, **kw):
+    def __init__(self, values, composer, optional = False):
         super(CommentedValuesTypeWidget, self).__init__(
-            CommentedValuesModel(*arg, **kw))
+            CommentedValuesModel(values, composer, optional))
         cell = gtk.CellRendererText()
         self.pack_start(cell, True)
         self.add_attribute(cell, 'text', 0)
+        self.values = values
+        self.optional = optional
 
 class RestrictedTypeWidget(CommentedValuesTypeWidget):
     def __init__(self, composer, obj):
         super(RestrictedTypeWidget, self).__init__(obj.getValues(), composer, composer.required)
     def get_value(self):
-        if optional and self.get_active() == 0:
+        if self.optional and self.get_active() == 0:
             raise ValueError
         return Grimoire.Types.getValue(self.values[self.get_active()])
 
