@@ -15,7 +15,7 @@ class Performer(Grimoire.Performer.Base):
         def _dir(self, path, depth):
             # Nyahehehe! This creates an infinite tree!
             if not path and not depth:
-                return [(0, [])]
+                return [(False, []), (True, [])]
             return self._call(path, depth)
         def _params(self, path):
             return A(Ps([('depth',
@@ -105,8 +105,6 @@ class Performer(Grimoire.Performer.Base):
             return self._physicalGetpath(Grimoire.Types.TreeRoot)._treeOp(prefix, 'params')
         __dir_allowall__ = False
         def _dir(self, path, depth):
-            if not path and not depth:
-                return [(0, [])]
             return self._getpath(Grimoire.Types.MethodBase, path=['dir'] + path)(depth)
         def _params(self, path):
             return A(Ps(),
@@ -118,8 +116,6 @@ class Performer(Grimoire.Performer.Base):
         def _call(self, prefix):
             return (1, []) in self._physicalGetpath(Grimoire.Types.TreeRoot)._treeOp(prefix, 'dir', depth=0)
         def _dir(self, path, depth):
-            if not path and not depth:
-                return [(0, [])]
             return self._getpath(Grimoire.Types.MethodBase, path=['dir'] + path)(depth)
         def _params(self, path):
             return A(Ps(),

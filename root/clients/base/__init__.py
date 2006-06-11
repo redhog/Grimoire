@@ -739,8 +739,7 @@ class Performer(Grimoire.Performer.Base):
                             method = self.session._.introspection.methodOfExpression(location, True)
                         except Exception: # We've got a complex expression...
                             method = None
-
-                        if method:
+                        if method is not None:
                             self.select(method)
                         else:
                             self.eval(location)
