@@ -141,7 +141,7 @@ class GenericParamsType(Derived.GenericStaticDerivedType):
         """
         if Grimoire.Utils.isInstance(args, GenericParamsType):
             extraArgs = args.extraArgs
-            kws = extraArgs.kws
+            kws = args.kws
             args = args.args
         paramsType = type(self)
         self.args = []
@@ -162,7 +162,7 @@ class GenericParamsType(Derived.GenericStaticDerivedType):
             if name in paramsType.argdict:
                 t = paramsType.argdict[name]
             else:
-                t = paramsType.selfkwtype
+                t = paramsType.reskwtype
             t = Composable.getValue(t)
             if not t:
                 raise TypeError('Unknown keyword argument ' + name)

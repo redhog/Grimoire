@@ -22,8 +22,8 @@ class Performer(Grimoire.Performer.Base):
             cmd = 'cd /tmp;' + \
                   'sed ' + string.join(['-e "s+{\\\\[}%s{\\\\]}+%s+g"' % (key, Grimoire.Utils.encode(value[0], 'latin-1'))
                                         for key, value in attributes.items() + [('date', [time.strftime('%x')])]], ' ') + \
-                  " < '%s' > 'agreement.tex';" % agreement +
-                  'latex /tmp/agreement.tex; dvips agreement.dvi;' +
+                  " < '%s' > 'agreement.tex';" % agreement + \
+                  'latex /tmp/agreement.tex; dvips agreement.dvi;' + \
                   'lp %s agreement.ps' % ((printer and '-d ' + printer) or '')
 
             res = os.system(cmd)

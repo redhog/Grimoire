@@ -33,3 +33,13 @@ set(['theme', 'pictures', 'pattern'], 'grime.%(name)s.gif')
 # set(['theme', 'form', 'colour', 'link'], '#000000')
 # set(['theme', 'form', 'colour', 'vlink'], '#000000')
 # set(['theme', 'form', 'box', 'colour'], '#aea081')
+
+# Tree configuration
+# Any config that can go into
+# Config.d/parameters/clients/_settings/__init__.py can go here. In
+# addition, you can use the command below to get seamless integration
+# between the webware UI client and some website that uses LDAP for
+# authentication using HTTP AUTH. You must enable passing of the
+# HTTP_AUTHORIZATION variable to the webware script in the webserver
+# for this to work, however.
+# set(['tree'], '_.trees.remote.dirt.example\.com().trees.local.ldap(_.directory.get.parameters(["clients", "html", "auth", "username"]), _.directory.get.parameters(["clients", "html", "auth", "password"]))')

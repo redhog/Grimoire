@@ -60,7 +60,7 @@ class Performer(Grimoire.Performer.Base):
                 res.setDaemon(daemonic)
                 res.start()
             return A(res, description)
-        def _params(self, path):
+        def _params(self):
             return A(Ps([('description', A(types.StringType, 'Description of the connection')),
                          ('sock', A(socket.socket,
                                    'Underlaying transport socket')),
@@ -111,7 +111,7 @@ class Performer(Grimoire.Performer.Base):
         def _params(self, path):
             ps = Grimoire.Types.getValue(
                 self._getpath(Grimoire.Types.TreeRoot,
-                              path=['introspection', 'params'] + self._physicalGetpath(levels=-1, path = ['bound', 'dirt'])._pathForSelf()
+                              path=['introspection', 'params'] + self._physicalGetpath(levels=1, path = ['bound', 'dirt'])._pathForSelf()
                               )())
             return A(Ps([('protocolName', A(types.StringType, 'Name of protocol (used to look up default port)'))] + ps.arglist,
                         1 + ps.required, ps.resargstype, ps.reskwtype, ps.convertType),
@@ -146,7 +146,7 @@ class Performer(Grimoire.Performer.Base):
         def _params(self, path):
             ps = Grimoire.Types.getValue(
                 self._getpath(Grimoire.Types.TreeRoot,
-                              path=['introspection', 'params'] + self._physicalGetpath(Grimoire.Types.MethodBase, -1, ['socket', 'dirt'])._pathForSelf()
+                              path=['introspection', 'params'] + self._physicalGetpath(Grimoire.Types.MethodBase, 0, ['socket', 'dirt'])._pathForSelf()
                               )())
             return A(Ps(ps.arglist[2:], ps.required - 2, ps.resargstype, ps.reskwtype, ps.convertType),
                      'Serves an object to the outside world using DIRT over ssl')
