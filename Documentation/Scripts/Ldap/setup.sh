@@ -228,13 +228,17 @@ EOF
 if [ -e "/etc/init.d/ldap" ]; then
  skeleton_ldap_start="/etc/init.d/ldap start"
  skeleton_ldap_stop="/etc/init.d/ldap stop"
+elif [ -e "/etc/init.d/slapd" ]; then
+ skeleton_ldap_start="/etc/init.d/ldap start"
+ skeleton_ldap_stop="/etc/init.d/ldap stop"
 fi
 readWithDefault skeleton_ldap_start "Command to start the LDAP server" "$skeleton_ldap_start"
 readWithDefault skeleton_ldap_stop "Command to stop the LDAP server" "$skeleton_ldap_stop"
 
 [ -e "/etc/openldap" ] && skeleton_ldap_configdir="/etc/openldap"
-[ -e "/var/lib/ldap" ] && skeleton_ldap_dbdir="/var/lib/ldap"
+[ -e "/etc/ldap" ] && skeleton_ldap_configdir="/etc/ldap"
 readWithDefault skeleton_ldap_configdir "LDAP server configuration directory" "$skeleton_ldap_configdir"
+[ -e "/var/lib/ldap" ] && skeleton_ldap_dbdir="/var/lib/ldap"
 readWithDefault skeleton_ldap_dbdir "LDAP database directory" "$skeleton_ldap_dbdir"
 
 if [ -e "/etc/init.d/grimoire" ]; then
@@ -244,14 +248,12 @@ fi
 readWithDefault skeleton_grimoire_start "Command to start the Grimoire server" "$skeleton_grimoire_start" 
 readWithDefault skeleton_grimoire_stop "Command to stop the Grimoire server" "$skeleton_grimoire_stop" 
 
-if [ -e "/etc/init.d/httpd" ]; then
- skeleton_httpd_restart="/etc/init.d/httpd restart"
-fi
+[ -e "/etc/init.d/httpd" ] && skeleton_httpd_restart="/etc/init.d/httpd restart"
+[ -e "/etc/init.d/apache2" ] && skeleton_httpd_restart="/etc/init.d/apache2 restart"
+[ -e "/etc/init.d/apache" ] && skeleton_httpd_restart="/etc/init.d/apache restart"
 readWithDefault skeleton_httpd_restart "Command to restart the web-server" "$skeleton_httpd_restart" 
 
-if [ -e "/etc/init.d/webkit" ]; then
- skeleton_webkit_restart="/etc/init.d/webkit restart"
-fi
+[ -e "/etc/init.d/webkit" ] && skeleton_webkit_restart="/etc/init.d/webkit restart"
 readWithDefault skeleton_webkit_restart "Command to restart the WebWare application-server" "$skeleton_webkit_restart" 
 
 

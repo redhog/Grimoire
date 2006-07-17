@@ -46,14 +46,14 @@ echo "Copying files..."
 
 tla inventory -s -f |
  while read file; do
-  cp "$file" "=dist/Grimoire-$VERSION/$file"
+  cp -d "$file" "=dist/Grimoire-$VERSION/$file"
  done
 
 mkdir -p "=dist/Grimoire-$VERSION/{arch}"
 ls "{arch}" |
  grep -v "++pristine-trees" |
  while read file; do
-  cp -a "{arch}/$file" "=dist/Grimoire-$VERSION/{arch}/$file"
+  cp -a -d "{arch}/$file" "=dist/Grimoire-$VERSION/{arch}/$file"
 done
 
 echo "Making spec-file..."
