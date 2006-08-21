@@ -3,12 +3,24 @@ import Grimoire.Performer, Grimoire.Types, Grimoire.Utils, string, ldap, types
 debugListings = 0
 
 class Performer(Grimoire.Performer.Base):
+    #### fixme ####
+    # description = """This is probably the worst cruft in all of
+    # Grimoire - it's only here because LDAP stores paths
+    # _with_types_, like
+    # mail=nana@hehe,ou=foo,dc=bar,cn=gazonk,dc=org, not just
+    # nana@hehe,foo,bar,gazonk,org, which is what we'd like to show
+    # the user. The solution is of course to allow AnnotatedValues in
+    # paths, but that would require quite some hacking on the GUI
+    # code, and probably other places aswell, and would probably be
+    # slow as hell. So till that is fixed, we're left with this bloody
+    # magic."""
+    #### end ####
     class ldapentries(Grimoire.Performer.SubMethod):
         __related_group__ = ['ldapentry']
         __path__ = ['ldapentries', '$ldapservername']
         def _call(self, path, depth = Grimoire.Performer.UnlimitedDepth,
-                  filter = None, pathfilter = '(| (ou=*) (o=*))',
-                  convertToDirList = True, stripTypes = True, lowerCaseify = True, addType = '', endType = '',
+                  filter = "(objectClass=*)", pathfilter = '(| (ou=*) (o=*))',
+                  convertToDirList = True, stripTypes = True, lowerCaseify = True, addType = '', beginType = '', endType = '',
                   convertToLinks = False, linksReferer = None, linksBase = None):
             subDepth = depth
             if subDepth == -1:
@@ -16,23 +28,26 @@ class Performer(Grimoire.Performer.Base):
             if subDepth < 0:
                 return []
             elif subDepth < 1:
-                scope = ldap.SCOPE_BASE
+                scopes = [ldap.SCOPE_BASE]
             elif subDepth < 2:
-                scope = ldap.SCOPE_ONELEVEL
+                scopes = [ldap.SCOPE_BASE, ldap.SCOPE_ONELEVEL]
             else:
-                scope = ldap.SCOPE_SUBTREE
+                scopes = [ldap.SCOPE_SUBTREE]
             if addType:
-                if (endType):
-                    alternativePath = [ addType + '=' + part for part in path[:-1]] + [ endType + '=' + path[-1]]
-                path = [addType + '=' + part for part in path]
-            subPrefix = path
+                if endType:
+                    if beginType:
+                        alternativePath = [beginType + '=' + path[0]] + [addType + '=' + part for part in path[1:-1]] + [endType + '=' + path[-1]]
+                    else:
+                        alternativePath = [addType + '=' + part for part in path[:-1]] + [endType + '=' + path[-1]]
+                if beginType:
+                    path = [beginType + '=' + path[0]] + [addType + '=' + part for part in path[1:]]
+                else:
+                    path = [addType + '=' + part for part in path]
             conn = self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(['local', 'ldap', 'admin', 'conn'], cache=True))
-            pathLen = len(string.join(path + [conn.realm], ','))
-            baseDn = string.join(Grimoire.Utils.Reverse(subPrefix) + [conn.realm], ',')
             if linksReferer: linksReferer = Grimoire.Performer.Physical(linksReferer)
             if linksBase: linksBase = Grimoire.Performer.Physical(linksBase)
-            def mangleDn(dn, leaf):
+            def mangleDn(dn, pathLen, leaf):
                 if lowerCaseify:
                     dn = dn.lower()
                 reslen = len(dn) - pathLen
@@ -56,45 +71,20 @@ class Performer(Grimoire.Performer.Base):
                 elif convertToLinks:
                     return Grimoire.Types.TitledURILink(linksReferer._reference(linksBase._getpath(path=dn)),
                                                         Grimoire.Types.GrimoirePath(dn))
-            res = []
-            args = {'base': baseDn, 'scope': scope, 'attrlist': ['dn']}
-            if filter:
-                args['filterstr'] = filter
-            if debugListings:
-                print "LIST.LDAPENTRIES:", path, depth, args
-            id = conn.search(**args)
-            try:
-                res += Grimoire.Utils.Map(lambda entry: mangleDn(entry[0], 1),
-                                          conn.result(id)[1])[:]
-            except ldap.NO_SUCH_OBJECT:
-                if (endType):
-                    # Make a new try with an alternative endtype
-                    baseDn = string.join(Grimoire.Utils.Reverse(alternativePath) + [conn.realm], ',')
-                    res = []
-                    args = {'base': baseDn, 'scope': scope, 'attrlist': ['dn']}
-                    if filter:
-                        args['filterstr'] = filter
-                    if debugListings:
-                        print "LIST.LDAPENTRIES:", path, depth, args
-                    id = conn.search(**args)
-                    try:
-                        res += Grimoire.Utils.Map(lambda entry: mangleDn(entry[0], 1),
-                                          conn.result(id)[1])[:]
-                    except ldap.NO_SUCH_OBJECT:
-                        # Still no object: give up.
-                        pass
-            if (    filter
+            baseDn = string.join(Grimoire.Utils.Reverse(path) + [conn.realm], ',')        
+            alternativeDn = string.join(Grimoire.Utils.Reverse(alternativePath) + [conn.realm], ',')
+            searches = ([({'scope': scope, 'filterstr': filter, 'attrlist': ['dn'], 'base': baseDn}, len(baseDn), 1) for scope in scopes] +
+                        [({'scope': scope, 'filterstr': filter, 'attrlist': ['dn'], 'base': alternativeDn}, len(alternativeDn), 1) for scope in scopes])
+            if (    filter != "(objectClass=*)"
                 and convertToDirList
                 and (   scope == ldap.SCOPE_BASE
                      or scope == ldap.SCOPE_ONELEVEL)):
-                if debugListings:
-                    print "LIST.LDAPENTRIES: filter, convertToDirList", pathfilter
-                del args['filterstr']
-                if pathfilter:
-                    args['filterstr'] = pathfilter
+                searches += [({'scope': scope, 'filterstr': pathfilter, 'attrlist': ['dn'], 'base': baseDn}, len(baseDn), 0) for scope in scopes]
+            res = []
+            for args, pathLen, leaf in searches:
                 id = conn.search(**args)
                 try:
-                    res += Grimoire.Utils.Map(lambda entry: mangleDn(entry[0], 0),
+                    res += Grimoire.Utils.Map(lambda entry: mangleDn(entry[0], pathLen, leaf),
                                               conn.result(id)[1])[:]
                 except ldap.NO_SUCH_OBJECT:
                     pass
@@ -136,6 +126,14 @@ class Performer(Grimoire.Performer.Base):
                       Grimoire.Types.AnnotatedValue(
                           types.StringType,
                           "Add this type to items in path (empty means items are typed already)")),
+                     ('beginType',
+                      Grimoire.Types.AnnotatedValue(
+                          types.StringType,
+                          "Add this type to the first item in path (empty means same as addType)")),
+                     ('endType',
+                      Grimoire.Types.AnnotatedValue(
+                          types.StringType,
+                          "Add this type to items (the final element of a path) (empty means same as addType)")),
                      ],
                     0),
                 Grimoire.Types.Formattable(
