@@ -33,6 +33,7 @@ class Performer(Grimoire.Performer.Base):
                 scopes = [ldap.SCOPE_BASE, ldap.SCOPE_ONELEVEL]
             else:
                 scopes = [ldap.SCOPE_SUBTREE]
+            alternativePath = None
             if addType:
                 if endType:
                     if beginType:
@@ -72,9 +73,10 @@ class Performer(Grimoire.Performer.Base):
                     return Grimoire.Types.TitledURILink(linksReferer._reference(linksBase._getpath(path=dn)),
                                                         Grimoire.Types.GrimoirePath(dn))
             baseDn = string.join(Grimoire.Utils.Reverse(path) + [conn.realm], ',')        
-            alternativeDn = string.join(Grimoire.Utils.Reverse(alternativePath) + [conn.realm], ',')
-            searches = ([({'scope': scope, 'filterstr': filter, 'attrlist': ['dn'], 'base': baseDn}, len(baseDn), 1) for scope in scopes] +
-                        [({'scope': scope, 'filterstr': filter, 'attrlist': ['dn'], 'base': alternativeDn}, len(alternativeDn), 1) for scope in scopes])
+            searches = [({'scope': scope, 'filterstr': filter, 'attrlist': ['dn'], 'base': baseDn}, len(baseDn), 1) for scope in scopes]
+            if alternativePath is not None:
+                alternativeDn = string.join(Grimoire.Utils.Reverse(alternativePath) + [conn.realm], ',')
+                searches += [({'scope': scope, 'filterstr': filter, 'attrlist': ['dn'], 'base': alternativeDn}, len(alternativeDn), 1) for scope in scopes]
             if (    filter != "(objectClass=*)"
                 and convertToDirList
                 and (   scope == ldap.SCOPE_BASE
