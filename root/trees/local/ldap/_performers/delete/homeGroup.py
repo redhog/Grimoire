@@ -5,7 +5,7 @@ Ps = Grimoire.Types.ParamsType.derive
 
 class Performer(Grimoire.Performer.Base):
     class homeGroup(Grimoire.Performer.SubMethod):
-        __path__ = ['homeGroup', '$ldapservername']
+        __path__ = ['home group', '$ldapservername']
         __related_group__ = ['home group']
         def _call(self, path):
             return A(
