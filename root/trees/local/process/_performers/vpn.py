@@ -34,7 +34,7 @@ class Performer(Grimoire.Performer.Base):
                     [(1, [item])
                      for item
                      in chapSecrets.items.iterkeys()])
-            return chapSecrets.items.iterkeys()
+            return chapSecrets.items
 
         def _dir(self, path, depth):
             return self._call(path, depth)
