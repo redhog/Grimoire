@@ -1,44 +1,21 @@
 import Grimoire, types, csv
+from Grimoire.root.trees.local.process._performers._chap import ChapSecrets
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
-
-# Format
-# [client,                  server,  secret,  IP addresses]
-# ['ryan@uanywhere.com.au', 'pptpd', 'xyzzy', '192.168.1.2']
-
-class ChapSecrets(object):
-    fieldnames = ['client', 'server', 'secret', 'ip']
-    def __init__(self, path = '/etc/ppp/chap-secrets'):
-        self.path = path
-        self.items = {}
-        for line in csv.DictReader(open(path, 'r'),
-                                   delimiter=' ',
-                                   fieldnames = self.fieldnames):
-            if not line['client'] or line['client'] == '#': continue
-            if line['server'] not in self.items: self.items[line['server']] = {}
-            self.items[line['server']][line['client']] = line
-    
-    def save(self, path = None):
-        path = path or self.path
-        f = csv.DictWriter(open(path, 'w'), delimiter=' ', fieldnames = self.fieldnames)
-        for perserver in self.items.itervalues():
-            for item in perserver.itervalues():
-                f.writerow(item)
 
 class Performer(Grimoire.Performer.Base):
     class list_vpn_accounts(Grimoire.Performer.SubMethod):
         __path__ = ['list', 'vpn', 'accounts', '$processservername']
         __related_group__ = ['user']
         def _call(self, path, depth, convertToDirList = True):
-            chapSecrets = ChapSecrets()
             if convertToDirList:
                 return Grimoire.Performer.DirListFilter(
                     path, depth,
                     [(1, [item])
                      for item
-                     in chapSecrets.items['pptpd'].iterkeys()])
-            return chapSecrets.items
+                     in ChapSecrets.chapSecrets.items['pptpd'].iterkeys()])
+            return ChapSecrets.chapSecrets.items
 
         def _dir(self, path, depth):
             return self._call(path, depth)
@@ -56,9 +33,8 @@ class Performer(Grimoire.Performer.Base):
         __path__ = ['create', 'vpn', 'account', '$processservername']
         __related_group__ = ['group']
         def _call(self, client, secret, ip = ''):
-            chapSecrets = ChapSecrets()
-            chapSecrets.items['pptpd'][client] = {'server': 'pptpd', 'client': client, 'secret': secret, 'ip': ip}
-            chapSecrets.save()
+            ChapSecrets.chapSecrets.items['pptpd'][client] = {'server': 'pptpd', 'client': client, 'secret': secret, 'ip': ip}
+            ChapSecrets.chapSecrets.save()
             return A(None,
                      'Account successfully added')
         
@@ -75,9 +51,8 @@ class Performer(Grimoire.Performer.Base):
         __path__ = ['delete', 'vpn', 'account', '$processservername']
         __related_group__ = ['user']
         def _call(self, path):
-            chapSecrets = ChapSecrets()
-            del chapSecrets.items['pptpd'][path[0]]
-            chapSecrets.save()
+            del ChapSecrets.chapSecrets.items['pptpd'][path[0]]
+            ChapSecrets.chapSecrets.save()
             return A(None,
                      'Account successfully deleted')
             
@@ -95,10 +70,9 @@ class Performer(Grimoire.Performer.Base):
         __path__ = ['change', 'vpn', 'account', '$processservername']
         __related_group__ = ['user']
         def _call(self, path, secret, ip = ''):
-            chapSecrets = ChapSecrets()
-            chapSecrets.items['pptpd'][path[0]]['secret'] = secret
-            chapSecrets.items['pptpd'][path[0]]['ip'] = ip
-            chapSecrets.save()
+            ChapSecrets.chapSecrets.items['pptpd'][path[0]]['secret'] = secret
+            ChapSecrets.chapSecrets.items['pptpd'][path[0]]['ip'] = ip
+            ChapSecrets.chapSecrets.save()
             return A(None,
                      'Account successfully saved')
             
@@ -109,8 +83,7 @@ class Performer(Grimoire.Performer.Base):
                                       )(depth))
 
         def _params(self, path):
-            chapSecrets = ChapSecrets()
-            item = chapSecrets.items['pptpd'][path[0]]
+            item = ChapSecrets.chapSecrets.items['pptpd'][path[0]]
             return A(Ps([('secret', A(Grimoire.Types.HintedType.derive(Grimoire.Types.NewPasswordType,
                                                                        [item['secret']]),
                                       'Passphrase')),
