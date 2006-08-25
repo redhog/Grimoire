@@ -52,7 +52,11 @@ class Performer(Grimoire.Performer.Base):
     class create_adsl_peer(Grimoire.Performer.Method):
         __path__ = ['create', 'adsl', 'peer', '$processservername']
         __related_group__ = ['adsl', 'peer']
-        def _call(self, name, client):
+        def _call(self, name, client, secret, ip):
+            if '*' not in ChapSecrets.chapSecrets.items:
+                ChapSecrets.chapSecrets.items['*'] = {}
+            ChapSecrets.chapSecrets.items['*'][client] = {'server': '*', 'client': client, 'secret': secret, 'ip': ip}
+            ChapSecrets.chapSecrets.save()
             Peers.peers.peers[name] = Peers.Peer(os.path.join(Peers.peers.path, name), True)
             Peers.peers.peers[name].properties['user'] = client
             Peers.peers.peers[name].save()
@@ -63,13 +67,22 @@ class Performer(Grimoire.Performer.Base):
             return A(Ps([('name', A(Grimoire.Types.NonemptyStringType,
                                     'Name of peer')),
                          ('client', A(Grimoire.Types.NonemptyStringType,
-                                      'Client address (username@host)'))]),
+                                      'Client address (username@host)')),
+                         ('secret', A(Grimoire.Types.NewPasswordType,
+                                      'Passphrase')),
+                         ('ip', A(types.StringType,
+                                  'IP address of remote machine'))]),
                      'Add an ADSL peer')
         
     class delete_adsl_peer(Grimoire.Performer.SubMethod):
         __path__ = ['delete', 'adsl', 'peer', '$processservername']
         __related_group__ = ['adsl', 'peer']
         def _call(self, path):
+            if (    'user' in Peers.peers.peers[path[0]].properties
+                and '*' in ChapSecrets.chapSecrets.items
+                and Peers.peers.peers[path[0]].properties['user'] in ChapSecrets.chapSecrets.items['*']):
+                del ChapSecrets.chapSecrets.items['*'][Peers.peers.peers[path[0]].properties['user']]
+                ChapSecrets.chapSecrets.save()
             del Peers.peers.peers[path[0]]
             Peers.peers.save()
             return A(None,
@@ -89,12 +102,17 @@ class Performer(Grimoire.Performer.Base):
         __path__ = ['change', 'adsl', 'peer', 'properties', '$processservername']
         __related_group__ = ['adsl', 'peer']
         def _call(self, path, **arg):
-            for key, value in Peers.peers.peers[path[0]].properties.items():
-                if value is None:
-                    if not arg[key]:
-                        del Peers.peers.peers[path[0]].properties[key]
-                else:
-                    Peers.peers.peers[path[0]].properties[key] = arg[key]
+            if '*' not in ChapSecrets.chapSecrets.items:
+                ChapSecrets.chapSecrets.items['*'] = {}
+            if arg['user'] in ChapSecrets.chapSecrets.items['*']:
+                ChapSecrets.chapSecrets.items['*'][arg['user']]['secret'] = arg['secret']
+                ChapSecrets.chapSecrets.items['*'][arg['user']]['ip'] = arg['ip']
+            else:
+                ChapSecrets.chapSecrets.items['*'][arg['user']] = {'server': '*', 'client': arg['user'], 'secret': arg['secret'], 'ip': arg['ip']}
+            ChapSecrets.chapSecrets.save()
+            del arg['secret']
+            del arg['ip']
+            Peers.peers.peers[path[0]].properties.update(arg)
             Peers.peers.peers[path[0]].save()
             return A(None,
                      'Peer successfully updated')
@@ -106,16 +124,18 @@ class Performer(Grimoire.Performer.Base):
                                       )(depth))
 
         def _params(self, path):
-            arglist = []
+            arglist = [('user', A(Grimoire.Types.NonemptyStringType,
+                                  'User (username@host)')),
+                       ('secret', A(Grimoire.Types.NewPasswordType,
+                                    'Passphrase')),
+                       ('ip', A(types.StringType,
+                                'IP address of remote machine'))]
             for key, value in Peers.peers.peers[path[0]].properties.iteritems():
-                if value is None:
-                    arglist.append((key,
-                                    A(Grimoire.Types.HintedType.derive(types.BooleanType, [True]),
-                                      key)))
-                else:
+                if value is not None:
                     arglist.append((key,
                                     A(Grimoire.Types.HintedType.derive(types.StringType,
-                                                                       [value]))))
+                                                                       [value]),
+                                      key)))
             return A(Ps(arglist),
                      Grimoire.Types.Formattable('Change ADSL peer %(name)s',
                                                 name = path[0]))

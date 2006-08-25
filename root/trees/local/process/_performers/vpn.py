@@ -21,7 +21,7 @@ class Performer(Grimoire.Performer.Base):
                     [(1, [item])
                      for item
                      in ChapSecrets.chapSecrets.items['pptpd'].iterkeys()])
-            return ChapSecrets.chapSecrets.items
+            return ChapSecrets.chapSecrets.items['pptpd']
 
         def _dir(self, path, depth):
             return self._call(path, depth)
