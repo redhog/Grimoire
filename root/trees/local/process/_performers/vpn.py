@@ -1,3 +1,9 @@
+#### fixme ####
+# description = """Integrate this code with ppp.py /
+# change.ppp.account etc - this is really duplicate code because I'm
+# lazy ATM."""
+#### end ####
+
 import Grimoire, types, csv
 from Grimoire.root.trees.local.process._performers._ppp import ChapSecrets
 
