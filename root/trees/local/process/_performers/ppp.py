@@ -5,16 +5,17 @@ A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
 
 class Performer(Grimoire.Performer.Base):
-    class list_vpn_accounts(Grimoire.Performer.SubMethod):
-        __path__ = ['list', 'vpn', 'accounts', '$processservername']
+    class list_ppp_accounts(Grimoire.Performer.SubMethod):
+        __path__ = ['list', 'ppp', 'accounts', '$processservername']
         __related_group__ = ['user']
         def _call(self, path, depth, convertToDirList = True):
             if convertToDirList:
+                items = []
+                for server, byserver in ChapSecrets.chapSecrets.items.iteritems():
+                    for client in byserver.iterkeys():
+                        items.append((1, [server, client]))
                 return Grimoire.Performer.DirListFilter(
-                    path, depth,
-                    [(1, [item])
-                     for item
-                     in ChapSecrets.chapSecrets.items['pptpd'].iterkeys()])
+                    path, depth, items)
             return ChapSecrets.chapSecrets.items
 
         def _dir(self, path, depth):
@@ -27,31 +28,35 @@ class Performer(Grimoire.Performer.Base):
                          ('convertToDirList',
                           A(Grimoire.Types.BooleanType,
                             "Convert entry listing to a Grimoire directory listing")),]),
-                     'List vpn accounts')
+                     'List ppp accounts')
 
-    class create_vpn_account(Grimoire.Performer.Method):
-        __path__ = ['create', 'vpn', 'account', '$processservername']
+    class create_ppp_account(Grimoire.Performer.Method):
+        __path__ = ['create', 'ppp', 'account', '$processservername']
         __related_group__ = ['group']
-        def _call(self, client, secret, ip = ''):
-            ChapSecrets.chapSecrets.items['pptpd'][client] = {'server': 'pptpd', 'client': client, 'secret': secret, 'ip': ip}
+        def _call(self, server, client, secret, ip = ''):
+            if server not in ChapSecrets.chapSecrets.items:
+                ChapSecrets.chapSecrets.items[server] = {}
+            ChapSecrets.chapSecrets.items[server][client] = {'server': server, 'client': client, 'secret': secret, 'ip': ip}
             ChapSecrets.chapSecrets.save()
             return A(None,
                      'Account successfully added')
         
         def _params(self):
-            return A(Ps([('client', A(Grimoire.Types.NonemptyStringType,
+            return A(Ps([('server', A(Grimoire.Types.NonemptyStringType,
+                                      'Server name')),
+                         ('client', A(Grimoire.Types.NonemptyStringType,
                                       'Client address (username@host)')),
                          ('secret', A(Grimoire.Types.NewPasswordType,
                                       'Passphrase')),
                          ('ip', A(types.StringType,
                                   'IP address of remote machine'))]),
-                     'Add a VPN account')
+                     'Add a PPP account')
         
-    class delete_vpn_account(Grimoire.Performer.SubMethod):
-        __path__ = ['delete', 'vpn', 'account', '$processservername']
+    class delete_ppp_account(Grimoire.Performer.SubMethod):
+        __path__ = ['delete', 'ppp', 'account', '$processservername']
         __related_group__ = ['user']
         def _call(self, path):
-            del ChapSecrets.chapSecrets.items['pptpd'][path[0]]
+            del ChapSecrets.chapSecrets.items[path[0]][path[1]]
             ChapSecrets.chapSecrets.save()
             return A(None,
                      'Account successfully deleted')
@@ -59,19 +64,19 @@ class Performer(Grimoire.Performer.Base):
         def _dir(self, path, depth):
             return self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.MethodBase,
-                                      path = ['list', 'vpn', 'accounts', '$processservername'] + path
+                                      path = ['list', 'ppp', 'accounts', '$processservername'] + path
                                       )(depth))
 
         def _params(self, path):
             return A(Ps([]),
-                     'Delete VPN account')
+                     'Delete PPP account')
 
-    class change_vpn_account(Grimoire.Performer.SubMethod):
-        __path__ = ['change', 'vpn', 'account', '$processservername']
+    class change_ppp_account(Grimoire.Performer.SubMethod):
+        __path__ = ['change', 'ppp', 'account', '$processservername']
         __related_group__ = ['user']
         def _call(self, path, secret, ip = ''):
-            ChapSecrets.chapSecrets.items['pptpd'][path[0]]['secret'] = secret
-            ChapSecrets.chapSecrets.items['pptpd'][path[0]]['ip'] = ip
+            ChapSecrets.chapSecrets.items[path[0]][path[1]]['secret'] = secret
+            ChapSecrets.chapSecrets.items[path[0]][path[1]]['ip'] = ip
             ChapSecrets.chapSecrets.save()
             return A(None,
                      'Account successfully saved')
@@ -79,16 +84,16 @@ class Performer(Grimoire.Performer.Base):
         def _dir(self, path, depth):
             return self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.MethodBase,
-                                      path = ['list', 'vpn', 'accounts', '$processservername'] + path
+                                      path = ['list', 'ppp', 'accounts', '$processservername'] + path
                                       )(depth))
 
         def _params(self, path):
-            item = ChapSecrets.chapSecrets.items['pptpd'][path[0]]
+            item = ChapSecrets.chapSecrets.items[path[0]][path[1]]
             return A(Ps([('secret', A(Grimoire.Types.HintedType.derive(Grimoire.Types.NewPasswordType,
                                                                        [item['secret']]),
                                       'Passphrase')),
                          ('ip', A(Grimoire.Types.HintedType.derive(types.StringType,
                                                                    [item['ip']]),
                                   'IP address of remote machine'))]),
-                     Grimoire.Types.Formattable('Change VPN account %(client)s',
+                     Grimoire.Types.Formattable('Change PPP account %(client)s',
                                                client = path[0]))
