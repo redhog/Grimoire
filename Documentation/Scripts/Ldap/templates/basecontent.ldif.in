@@ -8,8 +8,9 @@ objectClass: organization
 o: skeleton(ldap_realm_dnsname)
 dc: skeleton(ldap_realm_naming)
 
-dn: cn=sambaDomain,skeleton(ldap_realm)
+dn: sambaDomainName=skeleton(samba_domain),skeleton(ldap_realm)
 objectClass: grimoireSambaDomain
+objectClass: grimoireLowestAvailIDNumbers
 objectClass: sambaDomain
 cn: sambaDomain
 sambaDomainName: skeleton(samba_domain)
@@ -20,14 +21,6 @@ sambaAlgorithmicRidBase: 1000
 # of the above sambaSID, a dash (-) and (uidNumber * 2) + sambaAlgorithmicRidBase
 # The sambaSID attribute for groups is to be set to the concatenation
 # of the above sambaSID, a dash (-) and (gidNumber * 2) + sambaAlgorithmicRidBase + 1
-
-# UIDs and GIDs start at 1024 to prevent clashes with machine-local
-# accounts (root, postfix, cron, etc). On top of this, some UIDs and
-# GIDs are used for some standard groups and users for Grimoire
-# defined below.
-dn: cn=maxId,skeleton(ldap_realm)
-objectClass: grimoireLowestAvailIDNumbers
-cn: maxId
 gidNumber: 1030
 uidNumber: 1026
 

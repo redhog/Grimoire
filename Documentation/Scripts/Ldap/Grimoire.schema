@@ -21,10 +21,10 @@
 # attributes/classes with the rest of the Grimoire OID space.
 #
 
-objectclass ( 1.3.6.1.4.1.15304.1.2 NAME 'grimoireLowestAvailIDNumbers' SUP top STRUCTURAL
+objectclass ( 1.3.6.1.4.1.15304.1.2 NAME 'grimoireLowestAvailIDNumbers' SUP top AUXILIARY
         DESC 'Counter of used UID and GID numbers. The numbers written to this object are the lowest available numbers.'
-        MUST ( cn $ uidNumber $ gidNumber )
-        MAY ( description ) )
+        MUST ( uidNumber $ gidNumber )
+        MAY ( cn $ description ) )
 
 attributetype ( 1.3.6.1.4.1.15304.1.3.1 NAME 'grimoireSwedishIDNumber'
 	DESC 'The social security number / identification number of Swedish citizens'
