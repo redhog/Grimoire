@@ -1,8 +1,10 @@
 import Grimoire, Grimoire.Utils, types, csv, os.path
 from Grimoire.root.trees.local.process._performers._ppp import Peers
+from Grimoire.root.trees.local.process._performers._ppp import ChapSecrets
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
+H = Grimoire.Types.HintedType.derive
 
 class Performer(Grimoire.Performer.Base):
     class list_adsl_peers(Grimoire.Performer.SubMethod):
@@ -124,17 +126,26 @@ class Performer(Grimoire.Performer.Base):
                                       )(depth))
 
         def _params(self, path):
-            arglist = [('user', A(Grimoire.Types.NonemptyStringType,
+            secret = ''
+            ip = ''
+            user = ''
+            if (    'user' in Peers.peers.peers[path[0]].properties
+                and '*' in ChapSecrets.chapSecrets.items
+                and Peers.peers.peers[path[0]].properties['user'] in ChapSecrets.chapSecrets.items['*']):
+                user = Peers.peers.peers[path[0]].properties['user']
+                secret = ChapSecrets.chapSecrets.items['*'][user]['secret']
+                ip = ChapSecrets.chapSecrets.items['*'][user]['ip']
+            arglist = [('user', A(H(Grimoire.Types.NonemptyStringType, [user]),
                                   'User (username@host)')),
-                       ('secret', A(Grimoire.Types.NewPasswordType,
+                       ('secret', A(H(Grimoire.Types.NewPasswordType, [secret]),
                                     'Passphrase')),
-                       ('ip', A(types.StringType,
+                       ('ip', A(H(types.StringType, [ip]),
                                 'IP address of remote machine'))]
             for key, value in Peers.peers.peers[path[0]].properties.iteritems():
                 if value is not None:
                     arglist.append((key,
-                                    A(Grimoire.Types.HintedType.derive(types.StringType,
-                                                                       [value]),
+                                    A(H(types.StringType,
+                                        [value]),
                                       key)))
             return A(Ps(arglist),
                      Grimoire.Types.Formattable('Change ADSL peer %(name)s',
