@@ -11,7 +11,7 @@ class Performer(Grimoire.Performer.Base):
         __path__ = ['list', 'adsl', 'peers', '$processservername']
         __related_group__ = ['adsl', 'peer']
         def _call(self, path, depth, convertToDirList = True, onlyEnabled = False, onlyDisabled = False):
-            if onlyEnabled or onlyDisabled :
+            if onlyEnabled or onlyDisabled or not convertToDirList:
                 enabledProviders = set()
                 out, err = Grimoire.Utils.system("ps", ("ps", "-o", "pid,cmd", "axw"), onlyOkStatus = True)
                 # Output format is
@@ -37,6 +37,7 @@ class Performer(Grimoire.Performer.Base):
                 peerdict = {}
                 for key in peers:
                     peerdict[key] = Peers.peers.peers[key]
+                    peerdict[key].enabled = key in enabledProviders
                 return peerdict
 
         def _dir(self, path, depth):
