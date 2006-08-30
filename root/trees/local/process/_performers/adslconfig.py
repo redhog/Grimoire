@@ -2,6 +2,8 @@ import Grimoire, Grimoire.Utils, types, csv, os.path
 from Grimoire.root.trees.local.process._performers._ppp import Peers
 from Grimoire.root.trees.local.process._performers._ppp import ChapSecrets
 
+pls = os.path.join(os.path.split(__file__)[0], '_ppp/pls')
+
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
 H = Grimoire.Types.HintedType.derive
@@ -12,22 +14,29 @@ class Performer(Grimoire.Performer.Base):
         __related_group__ = ['adsl', 'peer']
         def _call(self, path, depth, convertToDirList = True, onlyEnabled = False, onlyDisabled = False):
             if onlyEnabled or onlyDisabled or not convertToDirList:
-                enabledProviders = set()
-                out, err = Grimoire.Utils.system("ps", ("ps", "-o", "pid,cmd", "axw"), onlyOkStatus = True)
+                enabledProviders = {}
+                out, err = Grimoire.Utils.system(pls, (pls,), onlyOkStatus = True)
                 # Output format is
-                # 7668 /usr/sbin/pppd call dsl-provider
-                # and we're basicly doing
-                # ps -o pid,cmd axw | grep "pppd[ ]call" | sed -e "s+^.*call \(.*\)$+\1+g"
+                #
+                # pid   if   local ip     remote ip      netmask         peer-name
+                # 28464 ppp1 192.168.10.1 192.168.10.221 255.255.255.255 dsl-provider
+
                 for line in out.split('\n'):
-                    if 'pppd call' in line:
-                        enabledProviders.add(line.split(' call ')[1])
+                    line = line.split(',')
+                    if len(line) < 6: continue
+                    enabledProviders[line[5]] = {'pid': line[0],
+                                                 'if':  line[1],
+                                                 'local': line[2],
+                                                 'remote': line[3],
+                                                 'netmask': line[4]
+                                                 }
 
             if onlyEnabled:
-                peers = enabledProviders
+                peers = set(enabledProviders.iterkeys())
             else:
                 peers = set(Peers.peers.peers.iterkeys())
                 if onlyDisabled:
-                    peers = peers - enabledProviders
+                    peers = peers - set(enabledProviders.iterkeys())
 
             if convertToDirList:
                 return Grimoire.Performer.DirListFilter(
@@ -37,7 +46,9 @@ class Performer(Grimoire.Performer.Base):
                 peerdict = {}
                 for key in peers:
                     peerdict[key] = Peers.peers.peers[key]
-                    peerdict[key].enabled = key in enabledProviders
+                    peerdict[key].connection = None
+                    if key in enabledProviders:
+                        peerdict[key].connection = enabledProviders[key]
                 return peerdict
 
         def _dir(self, path, depth):
