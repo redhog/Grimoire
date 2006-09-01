@@ -43,7 +43,7 @@ cn: people
 sambaGroupType: 2
 gidNumber: 1024
 sambaSID: S-1-5-21-skeleton(samba_sid)-3049
-owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+owner: uid=superadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 
 # Abilities control access to methods, and are combined from all
 # objects along a user's DN and all groups he/she is a member of.
@@ -96,18 +96,18 @@ grimoireClientMaildirPath: skeleton(maildir_client_path)
 # trees, printer trees etc) here. One expression per attribute value.
 skeleton(grimoire_initcommands)
 
-dn: ou=Administrators,ou=People,skeleton(ldap_realm)
+dn: ou=administrators,ou=People,skeleton(ldap_realm)
 objectClass: grimoireGroup
 objectClass: posixGroup
 objectClass: sambaGroupMapping
-ou: Administrators
+ou: administrators
 cn: administrators.people
 sambaGroupType: 2
 gidNumber: 1025
 sambaSID: S-1-5-21-skeleton(samba_sid)-3051
-owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+owner: uid=superadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 
-dn: cn=security,ou=Administrators,ou=People,skeleton(ldap_realm)
+dn: cn=security,ou=administrators,ou=People,skeleton(ldap_realm)
 objectClass: grimoireAbilityList
 cn: security
 # Admins are semi-gods and have all usual rights, but are not allowed
@@ -131,11 +131,11 @@ grimoireAbilityAllow: .disable
 grimoireAbilityAllow: .enable
 grimoireAbilityAllow: .reset
 
-dn: cn=defaults,ou=Administrators,ou=People,skeleton(ldap_realm)
+dn: cn=defaults,ou=administrators,ou=People,skeleton(ldap_realm)
 objectClass: grimoireDefaults
 cn: defaults
 
-dn: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+dn: uid=superadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 objectClass: grimoirePerson
 objectClass: grimoireAccount
 objectClass: posixAccount
@@ -152,18 +152,19 @@ preferredLanguage: skeleton(language)
 loginShell: /bin/bash
 uidNumber: 1024
 gidNumber: 1025
+sambaLogonScript: administrators.people.bat
 sambaAcctFlags: [U          ]
 sambaSID: S-1-5-21-skeleton(samba_sid)-3048
 sambaPrimaryGroupSID: S-1-5-21-skeleton(samba_sid)-3051
-owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+owner: uid=superadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 
-dn: cn=security,uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+dn: cn=security,uid=superadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 objectClass: grimoireAbilityList
 cn: security
 # Superadmin is god and have _all_ rights.
 grimoireAbilityAllow: .
 
-dn: uid=demoadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+dn: uid=demoadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 objectClass: grimoirePerson
 objectClass: grimoireAccount
 objectClass: posixAccount
@@ -180,10 +181,11 @@ preferredLanguage: skeleton(language)
 loginShell: /bin/bash
 uidNumber: 1025
 gidNumber: 1025
+sambaLogonScript: administrators.people.bat
 sambaAcctFlags: [U          ]
 sambaSID: S-1-5-21-skeleton(samba_sid)-3048
 sambaPrimaryGroupSID: S-1-5-21-skeleton(samba_sid)-3051
-owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+owner: uid=superadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 
 
 dn: ou=Groups,skeleton(ldap_realm)
@@ -195,7 +197,7 @@ cn: groups
 sambaGroupType: 2
 gidNumber: 1026
 sambaSID: S-1-5-21-skeleton(samba_sid)-3053
-owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+owner: uid=superadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 
 
 # Defaults are set on group- and user- entries, and are overridden by
@@ -213,7 +215,7 @@ grimoireHomedirPath: skeleton(group_homedir_path)
 # clients)
 grimoireClientHomedirPath: skeleton(group_homedir_client_path)
 
-dn: ou=Administrators,ou=groups,skeleton(ldap_realm)
+dn: ou=administrators,ou=groups,skeleton(ldap_realm)
 objectClass: grimoireGroup
 objectClass: posixGroup
 objectClass: sambaGroupMapping
@@ -222,7 +224,7 @@ cn: administrators.groups
 sambaGroupType: 2
 gidNumber: 1027
 sambaSID: S-1-5-21-skeleton(samba_sid)-3055
-owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+owner: uid=superadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 
 # These two are special to Samba, and has a "non-grimoireish" CN.
 dn: ou=Domain Admins,ou=Groups,skeleton(ldap_realm)
@@ -232,7 +234,7 @@ objectClass: sambaGroupMapping
 gidNumber: 1030
 cn: Domain Admins
 ou: Domain Admins
-owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+owner: uid=superadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 memberUid: root
 memberUid: superadmin
 description: Netbios Domain Administrators
@@ -247,7 +249,7 @@ objectClass: sambaGroupMapping
 gidNumber: 1031
 cn: Domain Users
 ou: Domain Users
-owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+owner: uid=superadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 description: Netbios Domain Users
 sambaSID: S-1-5-21-skeleton(samba_sid)-3063
 sambaGroupType: 2
@@ -277,7 +279,7 @@ dn: ou=People,ou=Drafts,skeleton(ldap_realm)
 objectClass: organizationalUnit
 ou: People
 
-dn: ou=Administrators,ou=People,ou=Drafts,skeleton(ldap_realm)
+dn: ou=administrators,ou=People,ou=Drafts,skeleton(ldap_realm)
 objectClass: organizationalUnit
 ou: Administrators
 
@@ -291,7 +293,7 @@ cn: machines
 sambaGroupType: 2
 gidNumber: 1028
 sambaSID: S-1-5-21-skeleton(samba_sid)-3057
-owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+owner: uid=superadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 
 dn: ou=Servers,ou=Machines,skeleton(ldap_realm)
 objectClass: GrimoireGroup
@@ -302,7 +304,7 @@ cn: servers.machines
 sambaGroupType: 2
 gidNumber: 1029
 sambaSID: S-1-5-21-skeleton(samba_sid)-3059
-owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+owner: uid=superadmin,ou=administrators,ou=People,skeleton(ldap_realm)
 
 
 dn: ou=Domains,skeleton(ldap_realm)

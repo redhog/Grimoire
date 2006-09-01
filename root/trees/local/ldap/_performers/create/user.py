@@ -117,6 +117,7 @@ class Performer(Grimoire.Performer.Base):
                 # and the current date plus say one year or whatever,
                 # respectively... Hm, are they perheaps days from epoch in
                 # hex? Seconds from epoch? Seconds from Windows' epoch?
+                kws['sambaLogonScript'] = str(Grimoire.Types.UNIXGroup(['people'] + groupPath)) + '.bat'
                 kws['sambaPwdLastSet'] = '1075893534'
                 kws['sambaPwdMustChange'] = '2147483647'
                 kws['sambaAcctFlags'] = '[U          ]'
@@ -154,8 +155,8 @@ class Performer(Grimoire.Performer.Base):
                 
                 # Create a Samba SID: <domain sid>-<user rid>
                 # Search for the domain sid in the LDAP database
-                sambaSID = conn.result(conn.search(string.join(['cn=sambaDomain', conn.realm], ','),
-                                                   ldap.SCOPE_BASE, attrlist=['sambaSID']))[1][0][1]['sambaSID'][0]
+                sambaSID = conn.result(conn.search(conn.realm, ldap.SCOPE_SUBTREE, filterstr='objectClass=sambaDomain',
+                                                   attrlist=['sambaSID']))[1][0][1]['sambaSID'][0]
                 sambaUserRID = (uidNumber * 2) + 1000
                 kws['sambaSID'] = "%s-%s" %(sambaSID, sambaUserRID)
 
