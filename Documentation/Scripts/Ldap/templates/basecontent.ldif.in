@@ -21,7 +21,7 @@ sambaAlgorithmicRidBase: 1000
 # of the above sambaSID, a dash (-) and (uidNumber * 2) + sambaAlgorithmicRidBase
 # The sambaSID attribute for groups is to be set to the concatenation
 # of the above sambaSID, a dash (-) and (gidNumber * 2) + sambaAlgorithmicRidBase + 1
-gidNumber: 1030
+gidNumber: 1032
 uidNumber: 1026
 
 # Ldap admin account
@@ -222,6 +222,35 @@ sambaGroupType: 2
 gidNumber: 1027
 sambaSID: S-1-5-21-skeleton(samba_sid)-3055
 owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+
+# These two are special to Samba, and has a "non-grimoireish" CN.
+dn: ou=Domain Admins,ou=Groups,skeleton(ldap_realm)
+objectClass: posixGroup
+objectClass: grimoireGroup
+objectClass: sambaGroupMapping
+gidNumber: 1030
+cn: Domain Admins
+ou: Domain Admins
+owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+memberUid: root
+memberUid: superadmin
+description: Netbios Domain Administrators
+sambaSID: S-1-5-21-skeleton(samba_sid)-3061
+sambaGroupType: 2
+displayName: Domain Admins
+
+dn: ou=Domain Users,ou=Groups,skeleton(ldap_realm)
+objectClass: posixGroup
+objectClass: grimoireGroup
+objectClass: sambaGroupMapping
+gidNumber: 1031
+cn: Domain Users
+ou: Domain Users
+owner: uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm)
+description: Netbios Domain Users
+sambaSID: S-1-5-21-skeleton(samba_sid)-3063
+sambaGroupType: 2
+displayName: Domain Users
 
 
 # There are no methods to create drafts at the momemt, but for
