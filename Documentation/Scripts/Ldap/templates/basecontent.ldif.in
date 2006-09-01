@@ -12,6 +12,7 @@ dn: sambaDomainName=skeleton(samba_domain),skeleton(ldap_realm)
 objectClass: grimoireSambaDomain
 objectClass: grimoireLowestAvailIDNumbers
 objectClass: sambaDomain
+objectClass: sambaUnixIdPool
 cn: sambaDomain
 sambaDomainName: skeleton(samba_domain)
 sambaSID: S-1-5-21-skeleton(samba_sid)
