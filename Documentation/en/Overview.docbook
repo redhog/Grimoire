@@ -14,7 +14,7 @@
 
   <corpauthor>
    <mediaobject>
-    <caption><ulink url="http://www.takeit.se/">AB TakeIT</ulink></caption>
+    <caption><ulink url="http://www.takeit.se/">AB TakeIT</ulink>, <ulink url="http://www.uanywhere.com.au/">uAnywhere</ulink></caption>
     <imageobject>
       <imagedata fileref="../Pictures/Logos/Orm.eps" format="EPS" width="300pt" scalefit="1"/>
     </imageobject>
@@ -22,7 +22,7 @@
      <imagedata fileref="../Pictures/Logos/Orm.png" format="PNG" width="300pt" scalefit="1"/>
     </imageobject>
     <textobject>
-     <phrase>AB TakeIT</phrase>
+     <phrase>AB TakeIT, uAnywhere</phrase>
     </textobject>
    </mediaobject>
   </corpauthor>
@@ -30,12 +30,12 @@
   <author>
    <firstname>Egil</firstname>
    <surname>Möller</surname>
-   <email>redhog@takeit.se</email>
+   <email>redhog@redhog.org</email>
   </author>
 
   <copyright>
-   <year>2004-2005</year>
-   <holder role="mailto:redhog@takeit.se">Egil Möller</holder>
+   <year>2004-2006</year>
+   <holder role="mailto:redhog@redhog.org">Egil Möller</holder>
   </copyright>
 
   <legalnotice>
@@ -394,6 +394,126 @@ Grimoire/root/clients/html/funformkit/webware/_grimwebcontext</filename>.
 
     </orderedlist>
    </para>
+  </section>
+
+  <section
+  id="installation-existing-system"><title>Converting an existing system</title>
+
+  <highlights>This chapter describes how to install Grimoire on an
+  existing system that already uses LDAP as its user
+  database.</highlights>
+
+   <para>To install Grimoire on an existing system already using LDAP,
+   start by taking a full database backup to LDIF. Then remove the
+   database and follow the normal Grimoire installation instructions.
+   When done installing Grimoire, edit a copy of your LDIF database
+   backup accordning to the instructions below and load it into your
+   new LDAP database.</para>
+
+   <section
+   id="installation-existing-system-convert"><title>Converting user entries</title>
+
+    <para>It is sometimes required to change the UID of certain users
+    not to clash with the default Grimoire users with those UIDs. This
+    could very well be accomplished by removing those Grimoire default
+    users and making sure some other users has the cn=security entries
+    of those users, so that they will be able to perform any Grimoire
+    action.</para>
+
+    <para>Groups has to be identified as either home groups or
+    non-home-groups. E.g. at a school, home groups might be 'staff',
+    'administrators' and 'students', while non-home-groups might be
+    'webmail', 'year9', 'senior_students'. Basicly this involves
+    identifying groups that people never change between and groups that
+    people are entering and exiting depending on time, behaviour,
+    requirements etc.</para>
+
+    <para>All non-home-groups are moved under
+    ou=groups,dc=mycompany,dc=com so e.g. year9 is
+    ou=year9,ou=groups,dc=mycompany,dc=com (note how ou, not cn is
+    included in the dn)</para>
+
+    <para>All non-home-groups have their cn changed to be the path to
+    the group, e.g. year9.groups (if year9 would have a sub-group, say
+    ou=spring,ou=year9,ou=groups,dc=mycompany,dc=com, that one would
+    have the cn spring.year9.groups).</para>
+
+    <para>All home-groups are moved under ou=people,dc=mycompany,dc=com
+    so e.g. students is
+    ou=students,ou=people,dc=mycompany,dc=com</para>
+
+    <para>Same thing with cn change for home-groups, except their name
+    ends with "people", not "groups".</para>
+
+    <para>All users in a home-group, say students, had their
+    ldapentries moved from e.g.
+    uid=imastudent,ou=users,dc=mycompany,dc=com to
+    uid=imastudent,ou=studebts,ou=people,dc=mycompany,dc=com</para>
+
+    <para>All users have their homeDirectory changed to
+    /home/people/$HOMEGROUP/group.users/$USERNAME. This is to allow for
+    /home/groups group home-directories, and to allow for
+    sub-home-groups.</para>
+
+    <para>All groups are changed to have the following objectClass:es:
+    posixGroup, grimoireGroup, sambaGroupMapping</para>
+
+    <para>All users are changed to have the following objectClass:es:
+    grimoirePerson, sambaSamAccount, grimoireAccount,
+    CourierMailAccount, posixAccount, inetOrgPerson, shadowAccount</para>
+
+    <para>All machines are changed to have the following
+    objectClass:es: posixAccount, grimoireMachine, device,
+    sambaSamAccount</para>
+
+    <para>Note that these objectClasses might require extra attributes
+    from what you currently have on your objects, e.g. mailbox and
+    owner.</para>
+
+    <para>owner should generally be set to the dn of say superadmin or
+    some other powerfull user. For users and machines, this is only
+    documentation, for groups it affects who is allowed to do certain
+    things with the group from within Grimoire.</para>
+
+    <para>mailbox should be the same as homeDirectory, but start with
+    say /mail or something instead of /home/people. This obviously has
+    to correspond to your Grimoire configuration.</para>
+
+    <para>Since windows groups must have the right name, these groups
+    shall NOT have their path as cn, e.g. "Domain admins" might be
+    ou=Domain admins,ou=groups,dc=mycompany,dc=com but will
+    nevertheless have cn set to just "Domain admins", not "Domain
+    admins.groups". This only has one glitch - the Grimoire UIs will
+    show the group name as "Domain admins.groups" even though this is
+    not the real group name - Grimorie uses the DN, not the cn to make
+    up a path to the group, which is only later used to recreate the
+    group name in the UI.</para>
+
+   </section>
+
+   <section
+   id="installation-existing-system-problems"><title>Possible/likly problems</title>
+
+    <para>When converting a system to use Grimoire, group names are
+    changed. This means that any configuration for third-party
+    applications referencing groups by names have to be changed to use
+    the new names. Examples of this problem includes Samba and PAM
+    access rights.</para>
+
+    <para>When converting a system to use Grimoire, home directories
+    are moved. This means that any configuration for third-party
+    applications referencing home directories by explicit paths
+    (rather than ~username) have to be changed to use the new names.
+    Examples of this problem includes Samba share definitions other
+    than the implicit home directory share and mozilla
+    profiles.</para>
+
+    <para>If the UID has been changed for any user, make sure to chown
+    the home-directory and any other files owned by the user to the
+    new UID, or the user will not be able to access his/her
+    files.</para>
+
+   </section>
   </section>
  </section>
 
