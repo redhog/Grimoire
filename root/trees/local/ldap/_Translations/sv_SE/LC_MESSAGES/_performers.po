@@ -1662,7 +1662,7 @@ msgstr ""
 
 #
 #: root/trees/local/ldap/_performers/create/group.py:25
-msgid "cn=sambaDomain"
+msgid "cn=sambaDomainName"
 msgstr ""
 
 #

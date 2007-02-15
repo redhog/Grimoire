@@ -7,7 +7,7 @@ class Performer(Grimoire.Performer.Base):
     class methodOfExpression(Grimoire.Performer.Method):
         def _call(self, expr, simpleExpressionOnly = False):
             if Grimoire.Utils.isInstance(expr, types.BaseStringType):
-                expr = Grimoire.Utils.Serialize.Reader.read(Grimoire.Utils.Serialize.Reader.Buffer(expr))
+                expr = Grimoire.Utils.Serialize.Reader.read(Grimoire.Utils.Serialize.Reader.Buffer(str(expr))) # FIXME: Bufer should really do the conversion to utf-8 by itself!
             res = []
             while (Grimoire.Utils.isInstance(expr, Grimoire.Utils.Serialize.Types.Extension)
                    and expr.value[0] is not Grimoire.Utils.Serialize.Types.Identifier):
