@@ -1,0 +1,25 @@
+apt-get install xsltproc m2crypto python2.4-ldap apache2-threaded-dev
+
+# Install webkit
+wget http://switch.dl.sourceforge.net/sourceforge/webware/Webware-0.9.2.tar.gz
+tar -xvzf Webware-0.9.2.tar.gz
+rm Webware-0.9.2.tar.gz
+mv Webware-0.9.2 /usr/lib/WebWare
+cd /usr/lib/WebWare
+./install.py
+bin/MakeAppWorkDir.py /var/www/WebWare
+cd WebKit/Adapters/mod_webkit2
+sed -e "s+/usr/sbin/apxs+$(which apxs2)+g" < Makefile > Makefile.new; mv Makefile.new  Makefile
+make
+make install
+cp apache.conf  /etc/apache2/mods-available/webkit.conf
+cd /etc/apache2/mods-enabled/
+ln -s ../mods-available/webkit.conf
+cd /etc/init.d/
+ln -s /var/www/WebWare/webkit
+
+# Install FunFormKit
+cd /usr/lib/python2.4/site-packages/
+wget http://mesh.dl.sourceforge.net/sourceforge/funformkit/FunFormKit-0.4.1.tar.gz
+tar -xvzf FunFormKit-0.4.1.tar.gz
+rm FunFormKit-0.4.1.tar.gz
