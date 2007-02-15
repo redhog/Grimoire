@@ -22,9 +22,8 @@ class Performer(Grimoire.Performer.Base):
             gid = Grimoire.Utils.encode(gidNumber, 'ascii')
 
             # Get the samba base SID from LDAP
-            id = conn.search(string.join(['cn=sambaDomain'] + [conn.realm], ','),
-                              ldap.SCOPE_BASE, attrlist=['sambaSID'])
-            sambaDomainSID = conn.result(id)[1][0][1]['sambaSID'][0]
+	    sambaDomainSID = conn.result(conn.search(conn.realm, ldap.SCOPE_SUBTREE, filterstr='objectClass=sambaDomain',
+                                                     attrlist=['sambaSID']))[1][0][1]['sambaSID'][0]
             sambaGroupRID = (gidNumber * 2) + 1001
             sambaSID = "%s-%s" %(sambaDomainSID, sambaGroupRID)
 
