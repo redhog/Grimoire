@@ -70,6 +70,10 @@ class Performer(Grimoire.Performer.Base):
                               )(name, gid,
                                 HOME = unicode(Grimoire.Types.defaultLocalRoot + grimoireClientHomedirPath + path + [name] + ['group.contents']))
 
+                self._getpath(Grimoire.Types.MethodBase,
+                              path=['maildir', 'group'] + grimoireHomedirPath + path
+                              )(name, gid)
+
                 def allow(subject, *paths):
                     self._getpath(Grimoire.Types.MethodBase, path=['ability', 'dn', '$ldapservername'] + subject)(
                         Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Allow, path)

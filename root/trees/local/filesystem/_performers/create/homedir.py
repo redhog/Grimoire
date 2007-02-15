@@ -155,7 +155,7 @@ class Performer(Grimoire.Performer.Base):
     class maildir_homegroup(Grimoire.Performer.SubMethod):
         __related_group__ = ['directory']
         __path__ = ['maildir', 'homegroup', '$fileservername']
-        def _call(self, path, name, gid = None):
+        def _call(self, path, name, gid = None, **variables):
             def unlocked():
                 self._getpath(Grimoire.Types.MethodBase, path=['directory'] + ['$fileservername'] + path
                               )(name, uid=0, gid=0)
@@ -185,4 +185,30 @@ class Performer(Grimoire.Performer.Base):
                     1),
                 Grimoire.Types.Formattable(
                     'Create a new mailgroup-directory in %(group)s',
+                    group=Grimoire.Types.LocalPath(path)))
+
+    class maildir_group(Grimoire.Performer.SubMethod):
+        __related_group__ = ['directory']
+        __path__ = ['maildir', 'group', '$fileservername']
+        def _call(self, path, name, gid = None, **variables):
+            return Grimoire.Types.AnnotatedValue(
+                None,
+                'Successfully created group directory')
+
+        def _dir(self, path, depth):
+            return []
+        def _params(self, path):
+            return Grimoire.Types.AnnotatedValue(
+                Grimoire.Types.ParamsType.derive(
+                    [('name',
+                      Grimoire.Types.AnnotatedValue(
+                          types.UnicodeType,
+                          "Name of copy to create")),
+                     ('gid',
+                      Grimoire.Types.AnnotatedValue(types.IntType,
+                                                    'Numerical group ID')),
+                     ],
+                    1),
+                Grimoire.Types.Formattable(
+                    'Create a new group-directory in %(group)s',
                     group=Grimoire.Types.LocalPath(path)))
