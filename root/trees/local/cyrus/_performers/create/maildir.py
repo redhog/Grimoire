@@ -70,7 +70,7 @@ class Performer(Grimoire.Performer.Base):
             conn = self._getpath(Grimoire.Types.TreeRoot
                                  ).directory.get.parameters([ 'local', 'cyrus', 'conn'], cache=True)
             
-            conn.cm('shared', m.sep.join(path + [name]))
+            conn.cm('shared', conn.sep.join(path + [name]))
 
             return Grimoire.Types.AnnotatedValue(
                 None,

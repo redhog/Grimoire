@@ -59,6 +59,7 @@ class Performer(Grimoire.Performer.Base):
                                        path=['directory', 'get', 'ldap', 'ou=groups'] + ['ou=' + item for item in path])
                 grimoireHomedirPath = values(['cn=defaults', 'grimoireHomedirPath'], 'home.groups', False)[0].split('.')
                 grimoireClientHomedirPath = values(['cn=defaults', 'grimoireClientHomedirPath'], 'home.groups', False)[0].split('.')
+                maildirPath = values(['cn=defaults', 'grimoireMaildirPath'])[0].split('.')
 
                 res = self._getpath(Grimoire.Types.MethodBase,
                                     path=['abstract group', '$ldapservername', 'groups'] + path
@@ -71,7 +72,7 @@ class Performer(Grimoire.Performer.Base):
                                 HOME = unicode(Grimoire.Types.defaultLocalRoot + grimoireClientHomedirPath + path + [name] + ['group.contents']))
 
                 self._getpath(Grimoire.Types.MethodBase,
-                              path=['maildir', 'group'] + grimoireHomedirPath + path
+                              path=['maildir', 'group'] + maildirPath + path
                               )(name, gid)
 
                 def allow(subject, *paths):
