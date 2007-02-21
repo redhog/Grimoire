@@ -1,4 +1,4 @@
-import Grimoire.Performer, Grimoire.Types, types, cyruslib
+import Grimoire.Performer, Grimoire.Types, types, cyruslib, managesieve
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
