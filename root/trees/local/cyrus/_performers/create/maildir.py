@@ -27,7 +27,8 @@ class Performer(Grimoire.Performer.Base):
             sieveconn.putscript('kolab-deliver.siv', """
             
 require "fileinto";
-if header :contains ["X-Kolab-Scheduling-Message"] ["FALSE"] {
+if anyof(not header :contains ["X-Kolab-Scheduling-Message"] [""],
+             header :contains ["X-Kolab-Scheduling-Message"] ["FALSE"]) {
  fileinto "INBOX/Inbox";
 }
 
