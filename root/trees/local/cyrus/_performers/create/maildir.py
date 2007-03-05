@@ -99,12 +99,13 @@ if anyof(not header :contains ["X-Kolab-Scheduling-Message"] [""],
 
             #### fixme ####
             # description = """Change this to only allow the group
-            # itself access as soon as we have working ptloader
-            # (libnss support) in cyrus!"""
+            # owner da access!"""
             #### end ####
             
-            conn.sam('shared', conn.sep.join(path + [name]), 'anyone', 'lrswipcda')
-
+            conn.sam('shared',
+                     conn.sep.join(path + [name]),
+                     'group:' + Grimoire.Utils.encode(Grimoire.Types.UNIXGroup(path + [name]), 'utf-8'),
+                     'lrswipcda')
 
             return Grimoire.Types.AnnotatedValue(
                 None,
