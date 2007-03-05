@@ -20,17 +20,12 @@ class Performer(Grimoire.Performer.Base):
                                        path=['directory', 'get', 'ldap'] + revDnList)
 
                 maildirPath = values(['cn=defaults', 'grimoireMaildirPath'])[0].split('.')
-
-                # Group owner attribute contains a DN, and we only want a username
-                owner = Grimoire.Types.DN(values(['owner'])[0])[-1].split('=',2)[1]
-
-                maildirPath = values(['cn=defaults', 'grimoireMaildirPath'])[0].split('.')
-
-                self._getpath(Grimoire.Types.MethodBase, 2,
-                              ['enable', 'cyrus maildir', 'group'] + maildirPath + ['groups'] + path[:-1]
-                              )(path[-1], owner)
                 
-                return A(None, "Shared Cyrus mail folder enabled for group")
+                self._getpath(Grimoire.Types.MethodBase, 2,
+                              ['disable', 'cyrus maildir', 'group'] + maildirPath + ['groups'] + path[:-1]
+                              )(path[-1])
+                
+                return A(None, "Shared Cyrus mail folder disabled for group")
             return self._callWithUnlockedTree(unlocked, path)
         
         __dir_allowall__ = False
@@ -41,5 +36,5 @@ class Performer(Grimoire.Performer.Base):
                                       )(depth, 'objectClass=grimoireGroup', addType='ou'))
         def _params(self, path):
             return A(Ps([]),
-                     Grimoire.Types.Formattable("Enable a shared Cyrus mail folder the group %(group)s",
+                     Grimoire.Types.Formattable("Disable the shared Cyrus mail folder the group %(group)s",
                                                 group=Grimoire.Types.UNIXGroup(path)))

@@ -4,7 +4,7 @@ class Performer(Grimoire.Performer.Base):
     class group(Grimoire.Performer.SubMethod):
         __related_group__ = ['directory']
         __path__ = ['group', '$cyrusservername']
-        def _call(self, path, name, owner):
+        def _call(self, path, name):
             conn = self._getpath(Grimoire.Types.TreeRoot
                                  ).directory.get.parameters([ 'local', 'cyrus', 'conn'], cache=True)
 
@@ -15,23 +15,12 @@ class Performer(Grimoire.Performer.Base):
             conn.cm('shared', mailbox)
             if not conn.sam('shared',
                             mailbox,
-                            'anyone',
-                            ''):
-                raise Exception('Unable to set anyone ACL on group mail folder: shared/%s lrswipc' % mailbox)
-            if not conn.sam('shared',
-                            mailbox,
                             'group:' + group,
-                            'lrswipc'):
+                            ''):
                 raise Exception('Unable to set group ACL on group mail folder: shared/%s group:%s lrswipc' % (mailbox, group))
-            if not conn.sam('shared',
-                            mailbox,
-                            owner,
-                            'lrswipcda'):
-                raise Exception('Unable to set owner ACL on group mail folder')
-
             return Grimoire.Types.AnnotatedValue(
                 None,
-                'Successfully created group maildir')
+                'Successfully disabled group maildir')
 
         def _dir(self, path, depth):
             return [(1, 'foo')]
@@ -43,12 +32,8 @@ class Performer(Grimoire.Performer.Base):
                       Grimoire.Types.AnnotatedValue(
                           types.UnicodeType,
                           "Name of group")),
-                     ('owner',
-                      Grimoire.Types.AnnotatedValue(
-                          types.UnicodeType,
-                          "Username of group owner")),
                      ],
-                    2),
+                    1),
                 Grimoire.Types.Formattable(
-                    'Enable a shared IMAP directory for the group %(group)s',
+                    'Disabled the shared IMAP directory for the group %(group)s',
                     group=Grimoire.Types.LocalPath(path)))
