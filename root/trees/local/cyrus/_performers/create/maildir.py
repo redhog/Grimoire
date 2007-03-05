@@ -101,12 +101,14 @@ if anyof(not header :contains ["X-Kolab-Scheduling-Message"] [""],
             # description = """Change this to only allow the group
             # owner da access!"""
             #### end ####
-            
-            conn.sam('shared',
-                     conn.sep.join(path + [name]),
-                     'group:' + Grimoire.Utils.encode(Grimoire.Types.UNIXGroup(path + [name]), 'utf-8'),
-                     'lrswipcda')
 
+            if not conn.sam('shared',
+                            conn.sep.join(path + [name]),
+                            'group:' + Grimoire.Utils.encode(Grimoire.Types.UNIXGroup(['groups'] + path + [name]),
+                                                             'utf-8'),
+                            'lrswipcda'):
+                raise Exception('Unable to set ACLs on group mailfolder')
+            
             return Grimoire.Types.AnnotatedValue(
                 None,
                 'Successfully created group maildir')
