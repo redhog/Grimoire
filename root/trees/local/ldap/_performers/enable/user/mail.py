@@ -5,7 +5,7 @@ Ps = Grimoire.Types.ParamsType.derive
 
 class Performer(Grimoire.Performer.Base):
     class user(Grimoire.Performer.SubMethod):
-        __path__ = ['cyrus mail account', '$ldapservername']
+        __path__ = ['cyrus mail folder', '$ldapservername']
         __related_group__ = ['user']
         def _call(self, path):
             def unlocked(path):
@@ -22,13 +22,13 @@ class Performer(Grimoire.Performer.Base):
                 values = self._getpath(Grimoire.Types.TreeRoot,
                                        path=['directory', 'get', 'ldap'] + revGroupDnList)
 
-                homedirPath = values(['cn=defaults', 'grimoireHomedirPath'])[0].split('.')
+                maildirPath = values(['cn=defaults', 'grimoireMaildirPath'])[0].split('.')
 
                 self._getpath(Grimoire.Types.MethodBase, 2,
-                              ['enable', 'cyrus maildir', 'user'] + homedirPath + groupPath
+                              ['enable', 'cyrus maildir', 'user'] + maildirPath + groupPath
                               )(user)
                 
-                return A(None, "Cyrus mail enabled for user")
+                return A(None, "Cyrus mail folder enabled for user")
             return self._callWithUnlockedTree(unlocked, path)
         
         __dir_allowall__ = False                     
@@ -40,5 +40,5 @@ class Performer(Grimoire.Performer.Base):
         
         def _params(self, path):
             return A(Ps([]),
-                     Grimoire.Types.Formattable("Enable a Cyrus mail account for the user %(username)s",
+                     Grimoire.Types.Formattable("Enable a Cyrus mail folder for the user %(username)s",
                                                 username=path[-1]))
