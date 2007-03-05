@@ -132,8 +132,10 @@ class Performer(Grimoire.Performer.Base):
                 root = Grimoire.Types.defaultLocalRoot
                 clientHomedirPath = values(['cn=defaults', 'grimoireClientHomedirPath'], 'home.people', False)[0].split('.')
                 clientMaildirPath = values(['cn=defaults', 'grimoireClientMaildirPath'], 'home.mail', False)[0].split('.')
-                kws['homeDirectory'] = Grimoire.Utils.encode(root + clientHomedirPath + groupPath + ['group.users', user], 'ascii')
-                kws['mailbox'] = Grimoire.Utils.encode(root + clientMaildirPath + groupPath + ['group.users', user], 'ascii') + os.sep
+                kws['homeDirectory'] = Grimoire.Utils.encode(
+                    root + clientHomedirPath + groupPath + ['group.users', user], 'ascii')
+                kws['mailbox'] = Grimoire.Utils.encode(
+                    root + clientMaildirPath + groupPath + ['group.users', user], 'ascii') + os.sep
                 
                 kws['mail'] = kws['uid'] + '@' + values(['cn=defaults', 'grimoireMailDomain'])[0]
                 if 'grimoireSecondaryUid' in kws:
@@ -160,39 +162,11 @@ class Performer(Grimoire.Performer.Base):
                 sambaUserRID = (uidNumber * 2) + 1000
                 kws['sambaSID'] = "%s-%s" %(sambaSID, sambaUserRID)
 
-                homedirPath = values(['cn=defaults', 'grimoireHomedirPath'])[0].split('.')
-                maildirPath = values(['cn=defaults', 'grimoireMaildirPath'])[0].split('.')
                 conn.add_s(dn, kws.items())
 
-                # Create a home directory
-                self._getpath(Grimoire.Types.MethodBase,
-                              path=['homedir', 'user'] + homedirPath + groupPath
-                              )(user,
-                                homeGroup = unicode(Grimoire.Types.UNIXGroup(['people'] + groupPath)),
-                                uid = int(kws['uidNumber']),
-                                gid = int(kws['gidNumber']),
-                                USER=user,
-                                HOME=kws['homeDirectory'],
-                                MAIL=kws['mailbox'])
-
-                # Get an owner account for the mail files
-                maildirowner = self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(
-                    ['local', 'ldap', 'create', 'maildir', 'ownerAccount'],
-                    None, 0)
-
-                # Get uid/gid on mailserver for that account, or
-                # uid/gid of created user if no account was specified
-                mdo_uid = int(kws['uidNumber'])
-                mdo_gid = int(kws['gidNumber'])
-                if maildirowner:
-                    (mdo_name, mdo_passwd, mdo_uid, mdo_gid, mdo_gecos, mdo_dir, mdo_shell) = \
-                               self._getpath(Grimoire.Types.TreeRoot,
-                                             path=['directory', 'get', 'userinfo'] + maildirPath
-                                             )([maildirowner])
-                # Create directory, owned by said uid/gid
-                self._getpath(Grimoire.Types.MethodBase,
-                              path=['maildir', 'user'] + maildirPath + groupPath
-                              )(user, mdo_uid, mdo_gid)
+                for service in ('homedir', 'login', 'cyrus mail folder'):
+                    self._getpath(Grimoire.Types.MethodBase, 1,
+                                  ['enable', 'user', service, '$ldapservername'] + path)()
 
                 return A(None,
                          'Successfully added user account')
