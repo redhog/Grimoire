@@ -8,13 +8,12 @@ class Performer(Grimoire.Performer.Base):
             conn = self._getpath(Grimoire.Types.TreeRoot
                                  ).directory.get.parameters([ 'local', 'cyrus', 'conn'], cache=True)
             
-            conn.cm('user', name)
             if not conn.sam('user',
                             name,
                             name,
-                            'lrswipcda'):
-                raise Exception('Unable to set ACL on mail folder: user/%s' % name)
-
+                            ''):
+                raise Exception('Unable to set ACL onmail folder: user/%s' % name)
+            
             return Grimoire.Types.AnnotatedValue(
                 None,
                 'Successfully created maildir')
@@ -32,5 +31,5 @@ class Performer(Grimoire.Performer.Base):
                      ],
                     1),
                 Grimoire.Types.Formattable(
-                    'Enable an IMAP directory for a user in the group %(group)s',
+                    'Disable the IMAP directory for a user in the group %(group)s',
                     group=Grimoire.Types.LocalPath(path)))
