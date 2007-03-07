@@ -243,6 +243,7 @@ class GtkFormComposer(Grimoire.Types.Composer.Composer):
         type = Grimoire.Types.GenericHintedType
         def compose(cls, composer, obj):
             class Composer(composer):
+                __name__ = 'Hinted' + composer.__name__
                 defaultValues = obj.getValues()
             return Composer(obj.parentType)
 
@@ -255,6 +256,7 @@ class GtkFormComposer(Grimoire.Types.Composer.Composer):
         type = Grimoire.Types.AnyType
         def compose(cls, composer, obj):
             class Composer(composer):
+                __name__ = 'Any' + composer.__name__
                 defaultValues = map(repr, composer.defaultValues)
             return Composer(types.StringType)
 

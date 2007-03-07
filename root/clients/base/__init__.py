@@ -158,7 +158,9 @@ class Performer(Grimoire.Performer.Base):
                         self._ = Grimoire.Performer.Logical(self.__)
 
                     def getComposer(self, *arg, **kw):
-                        class Composer(self.session.getComposer(*arg, **kw)):
+                        composer = self.session.getComposer(*arg, **kw)
+                        class Composer(composer):
+                            __name__ = 'TreeView' + composer.__name__
                             view = self
                         return Composer
 
@@ -329,6 +331,7 @@ class Performer(Grimoire.Performer.Base):
                     self = object.__new__(cls)
 
                     class Composer(self.composer):
+                        __name__ = 'Session' + self.composer.__name__
                         session = self
                     self.composer = Composer
                     self.views = {}
@@ -495,6 +498,7 @@ class Performer(Grimoire.Performer.Base):
                 def getComposer(self, path = (), *arg, **kw):
                     trtbl = self.getTranslationTable(path, *arg, **kw)
                     class Composer(self.composer):
+                        __name__ = 'Session' + self.composer.__name__
                         def translationTable(self, *arg, **kw):
                             return trtbl(*arg, **kw)
                         translationTable = classmethod(translationTable)
@@ -657,7 +661,9 @@ class Performer(Grimoire.Performer.Base):
 
                     def getComposer(self, path = None, *arg, **kw):
                         if path is None: path = self.method
-                        class Composer(self.session.getComposer(path or (), *arg, **kw)):
+                        composer = self.session.getComposer(path or (), *arg, **kw)
+                        class Composer(composer):
+                            __name__ = 'GenericSelection' + composer.__name__
                             selection = self
                         return Composer
 

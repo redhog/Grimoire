@@ -206,6 +206,14 @@ class Performer(Grimoire.Performer.Base):
                         composer = self.getComposer()
                         result = Grimoire.Types.Paragraphs()
                         if self.result and not self.result.error:
+                            import pdb, sys
+                            try:
+                                x = composer(Grimoire.Types.getValue(self.result.result))
+                                print x
+                            except:
+                                sys.last_traceback = sys.exc_info()[2]
+                                pdb.pm()
+
                             result.append(composer(Grimoire.Types.getComment(self.result.result)))
                             result.append(composer(Grimoire.Types.getValue(self.result.result)))
                         else:
@@ -261,10 +269,11 @@ class Performer(Grimoire.Performer.Base):
                             directory]
 
                 def connectGrimoire(self, extraTrees = [], **kw):
-                    sess = self.Session(extraTrees = extraTrees + self.extraTrees(), server = self, **kw)
+                    sess = Grimoire.Types.getValue(
+                        self.Session(extraTrees = extraTrees + self.extraTrees(), server = self, **kw))
                     sess.addView((), sess.ClientView)
                     sess.fields = None
-                    self.session().setValue('GrimoireSession', Grimoire.Types.getValue(sess))
+                    self.session().setValue('GrimoireSession', sess)
                     return sess
 
                 def disconnectGrimoire(self):

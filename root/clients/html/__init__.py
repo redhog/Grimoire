@@ -69,6 +69,7 @@ class Performer(Grimoire.Performer.Base):
 
 
                     class Composer(Grimoire.root.clients.html._html.Composer.HtmlComposer):
+                        __name__ = 'Session' + Grimoire.root.clients.html._html.Composer.HtmlComposer.__name__
                         methodBaseURI = '%s?select=%%(method)s' % enc(self.pageurl)
 
                     self.composer = Composer

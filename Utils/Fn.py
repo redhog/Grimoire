@@ -25,40 +25,19 @@ class cachingFunctionCacheValue: pass
 
 def cachingFunctionCacheGet(fn, *args, **kws):
     node = cachingFunctionCache
-    
-    try:
-        node = node[fn]
-    except:
-        newNode = TypesMaps.AnyWeakKeyMap()
-        node[fn] = newNode
-        node = newNode
 
-    for nodeKey in args:
+    kwitems = kws.items()
+    kwitems.sort(lambda a, b: cmp(a[0], b[0]))
+
+    nodePath = [fn] + list(args) + [cachingFunctionCacheKwsDelimiter] + kwitems
+
+    for nodeKey in nodePath:
         try:
             node = node[nodeKey]
         except:
             newNode = TypesMaps.AnyWeakKeyMap()
             node[nodeKey] = newNode
             node = newNode
-
-    try:
-        node = node[cachingFunctionCacheKwsDelimiter]
-    except:
-        newNode = TypesMaps.AnyWeakKeyMap()
-        node[cachingFunctionCacheKwsDelimiter] = newNode
-        node = newNode
-
-    if kws:
-        keys = kws.keys()
-        keys.sort()
-        for key in keys:
-            nodeKey = kws[key]
-            try:
-                node = node[nodeKey]
-            except:
-                newNode = TypesMaps.AnyWeakKeyMap()
-                node[nodeKey] = newNode
-                node = newNode
 
     try:
         result = node[cachingFunctionCacheValue]
@@ -74,5 +53,6 @@ def cachingFunctionCacheGet(fn, *args, **kws):
 
 def cachingFunction(fn):
     def cachingFunction(*arg, **kw):
+        #return fn(*arg, **kw)
         return cachingFunctionCacheGet(fn, *arg, **kw)
     return cachingFunction

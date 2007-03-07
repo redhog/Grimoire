@@ -182,7 +182,12 @@ class TextComposer(GenericComposer):
 
     class ComposeRepresentationSequence(ComposeSequence):
         type = Representation.RepresentationSequence
-        def getDelimiter(cls, composer, obj): return obj.delimiter
+        def getDelimiter(cls, composer, obj):
+#            print "COMPOSE"
+#            print "    CLS", cls.__name__
+#            print "    COMPOSER", composer.__name__
+#            print "    OBJ", type(obj).__name__
+            return obj.delimiter
 
     class ComposeReverseSequence(ComposeSequence):
         type = None
