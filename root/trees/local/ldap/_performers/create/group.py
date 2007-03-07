@@ -69,12 +69,12 @@ class Performer(Grimoire.Performer.Base):
                 allow(Grimoire.Utils.Reverse(
                           self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(
                               ['local', 'ldap', 'user', 'dn']).split(',')),
-                      ['change', 'ability', 'allow', 'groups'] + path,
-                      ['change', 'ability', 'cancel', 'allow', 'groups'] + path,
-                      ['change', 'group', 'add member'] + path,
-                      ['change', 'group', 'remove member'] + path,
-                      ['create', 'group'] + path,
-                      ['delete', 'group'] + path)
+                      ['change', 'ability', 'allow', 'groups'] + path + [''],
+                      ['change', 'ability', 'cancel', 'allow', 'groups'] + path + [''],
+                      ['change', 'group', 'add member'] + path + [''],
+                      ['change', 'group', 'remove member'] + path + [''],
+                      ['create', 'group'] + path + [''],
+                      ['delete', 'group'] + path + [''])
                 allow(['ou=' + item for item in ['groups'] + path + [name]],
                       ['create', 'group'] + path + [name, ''])
                 return res
