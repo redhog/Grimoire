@@ -76,7 +76,7 @@ class Performer(Grimoire.Performer.Base):
                       ['create', 'group'] + path,
                       ['delete', 'group'] + path)
                 allow(['ou=' + item for item in ['groups'] + path + [name]],
-                      ['create', 'group'] + path + [''])
+                      ['create', 'group'] + path + [name, ''])
                 return res
             return self._callWithUnlockedTree(unlocked)
 
