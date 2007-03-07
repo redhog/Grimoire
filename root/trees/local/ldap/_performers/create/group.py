@@ -113,7 +113,7 @@ class Performer(Grimoire.Performer.Base):
         def _dir(self, path, depth):
             return self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.MethodBase, 1,
-                                      ['list', 'ldapentries', '$ldapservername', 'Groups'] + path
+                                      ['list', 'ldapentries', '$ldapservername', 'People'] + path
                                       )(depth, 'ou=*', addType='ou'))
         def _params(self, path):
             return A(Ps([('name', A(Grimoire.Types.UsernameType,

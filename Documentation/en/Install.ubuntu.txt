@@ -83,3 +83,5 @@ cd Generated_configuration_files/$(hostname -f)
 ./setup.sh
 sed -e "s+/WebWare/GrimWeb+/WKMod/GrimWeb+g" < /etc/Grimoire/Config.d/parameters/clients/html/_settings/__init__.py > /etc/Grimoire/Config.d/parameters/clients/html/_settings/__init__.py.new; mv /etc/Grimoire/Config.d/parameters/clients/html/_settings/__init__.py.new /etc/Grimoire/Config.d/parameters/clients/html/_settings/__init__.py
 echo "set(['tree'], '_.trees.local.login(\"the $(hostname -f)\", _.trees.local.ldap)')" >> /etc/Grimoire/Config.d/parameters/clients/_settings/__init__.py
+sed -e "s+\(.fileservername.*\)\])+\1, 'filesystem'])+g"  < /etc/Grimoire/Config.d/parameters/_settings/local/filesystem.py > /etc/Grimoire/Config.d/parameters/_settings/local/filesystem.py.new; mv /etc/Grimoire/Config.d/parameters/_settings/local/filesystem.py.new /etc/Grimoire/Config.d/parameters/_settings/local/filesystem.py
+ldapmodify  -x -W -D cn=admin,dc=freegroup-dev,dc=freecode,dc=no -f ~/FreeGroup/Config/defaults.ldif
