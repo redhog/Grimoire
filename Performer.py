@@ -772,7 +772,8 @@ class Hide(AbstractRestrictor):
         if not self._abilityObject(path, True):
             return {'value':[]}
         res = ThinSingleChildContainer._treeOp_handle(self, path=path, **kw)
-        res['value'] = Grimoire.Utils.Map(filterUnallowed, res['value'])
+        if not self._unlockedTree() or kw.get('filter', False):
+            res['value'] = Grimoire.Utils.Map(filterUnallowed, res['value'])
         return res
 
 class Restrictor(Hide):

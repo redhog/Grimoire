@@ -55,26 +55,12 @@ class Performer(Grimoire.Performer.Base):
         def _call(self, path, name):
             name = unicode(name)
             def unlocked():
-                values = self._getpath(Grimoire.Types.TreeRoot,
-                                       path=['directory', 'get', 'ldap', 'ou=groups'] + ['ou=' + item for item in path])
-                grimoireHomedirPath = values(['cn=defaults', 'grimoireHomedirPath'], 'home.groups', False)[0].split('.')
-                grimoireClientHomedirPath = values(['cn=defaults', 'grimoireClientHomedirPath'], 'home.groups', False)[0].split('.')
-                maildirPath = values(['cn=defaults', 'grimoireMaildirPath'])[0].split('.')
-
                 res = self._getpath(Grimoire.Types.MethodBase,
                                     path=['abstract group', '$ldapservername', 'groups'] + path
                                     )(name)
-                gid = Grimoire.Types.getValue(res)
-
-                self._getpath(Grimoire.Types.MethodBase,
-                              path=['homedir', 'group'] + grimoireHomedirPath + path
-                              )(name, gid,
-                                HOME = unicode(Grimoire.Types.defaultLocalRoot + grimoireClientHomedirPath + path + [name] + ['group.contents']))
-
-                self._getpath(Grimoire.Types.MethodBase,
-                              path=['maildir', 'group'] + maildirPath + path
-                              )(name, gid)
-
+                for service in ('homedir', 'cyrus shared mail folder'):
+                    self._getpath(Grimoire.Types.MethodBase, 1,
+                                  ['enable', 'group', service, '$ldapservername'] + path + [name])()
                 def allow(subject, *paths):
                     self._getpath(Grimoire.Types.MethodBase, path=['ability', 'dn', '$ldapservername'] + subject)(
                         Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Allow, path)
@@ -113,24 +99,13 @@ class Performer(Grimoire.Performer.Base):
         def _call(self, path, name):
             name = unicode(name)
             def unlocked():
-                values = self._getpath(Grimoire.Types.TreeRoot,
-                                       path=['directory', 'get', 'ldap', 'ou=people'] + ['ou=' + item for item in path])
-                grimoireHomedirPath = values(['cn=defaults', 'grimoireHomedirPath'], 'home.groups', False)[0].split('.')
-                grimoireClientHomedirPath = values(['cn=defaults', 'grimoireClientHomedirPath'], 'home.groups', False)[0].split('.')
-
                 res = self._getpath(Grimoire.Types.MethodBase,
                                     path=['abstract group', '$ldapservername', 'people'] + path
                                     )(name)
-                gid = Grimoire.Types.getValue(res)
 
-                self._getpath(Grimoire.Types.MethodBase,
-                              path=['homedir', 'homegroup'] + grimoireHomedirPath + path
-                              )(name, gid,
-                                HOME = unicode(Grimoire.Types.defaultLocalRoot + grimoireClientHomedirPath + path + [name] + ['group.contents']))
-
-                self._getpath(Grimoire.Types.MethodBase,
-                              path=['maildir', 'homegroup'] + grimoireHomedirPath + path
-                              )(name, gid)
+                for service in ('homedir',):
+                    self._getpath(Grimoire.Types.MethodBase, 1,
+                                  ['enable', 'home group', service, '$ldapservername'] + path + [name])()
 
                 return res
             return self._callWithUnlockedTree(unlocked)
