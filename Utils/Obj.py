@@ -265,6 +265,7 @@ def hashAny(obj):
 
 def hashAnyNonHashable(obj):
     if isinstance(obj, types.ListType):
+        # FIXME: We could be smarter here and include hash(type(obj)) in some way...
         res = 3430009 # 3430009 == hash(()) + 1
         for v in obj:
             res += hashAny(v)

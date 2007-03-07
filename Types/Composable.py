@@ -15,7 +15,9 @@ class Composable(object):
     def __str__(self):
         return str(unicode(self))
 
-class Mapping(Grimoire.Utils.ImmutableMapping, Composable): pass
+class Mapping(Grimoire.Utils.ImmutableMapping, Composable):
+    def __cmp__(self, other):
+        return Composable.__cmp__(self, other)
 
 class Formattable(Mapping):
     """Defines a string made up of several separate parts merged
@@ -39,6 +41,20 @@ class Formattable(Mapping):
         return collectItems.items
 
 class Sequence(types.ListType, Composable):
+    def __eq__(self, other):
+	return type(self) is type(other) and super(Sequence, self).__eq__(other)
+    def __ne__(self, other):
+	return type(self) != type(other) or super(Sequence, self).__ne__(other)
+    def __ge__(self, other):
+	return type(self) is type(other) and super(Sequence, self).__ge__(other)
+    def __gt__(self, other):
+	return type(self) is type(other) and super(Sequence, self).__gt__(other)
+    def __le__(self, other):
+	return type(self) is type(other) and super(Sequence, self).__le__(other)
+    def __lt__(self, other):
+	return type(self) is type(other) and super(Sequence, self).__lt__(other)
+    def __cmp__(self, other):
+        return cmp(type(self), type(other)) or super(Sequence, self).__cmp__(other)
     def __getslice__(self, *arg, **kw):
         return type(self)(super(Sequence, self).__getslice__(*arg, **kw))
     def __add__(self, *arg):
