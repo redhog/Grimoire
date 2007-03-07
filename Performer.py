@@ -761,9 +761,12 @@ class Hide(AbstractRestrictor):
 
     def _treeOp_handle_dir(self, path, **kw):
         def filterUnallowed((leaf, pth)):
-            if not self._abilityObject(path + pth, not leaf):
-                raise Grimoire.Utils.FilterOutError()
-            return (leaf, pth)
+            if self._abilityObject(path + pth):
+                return (leaf, pth)
+            if self._abilityObject(path + pth, True):
+                return (0, pth)
+            raise Grimoire.Utils.FilterOutError()
+            
         #### fixme ####
         # description = """Make it possible for prefixer to know what we are
         # filtering, so that we don't have to descend into unused
