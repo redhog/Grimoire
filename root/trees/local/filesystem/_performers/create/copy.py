@@ -161,7 +161,7 @@ class Performer(Grimoire.Performer.Base):
                     ['local', 'filesystem', 'basepath'], []))
             dstPath = root + path
             srcPath = None
-            for prefixPath in Grimoire.Utils.Prefixes(dstPath['relative']):
+            for prefixPath in Grimoire.Utils.Prefixes(list(dstPath['relative'])):
                 prefixPath = root + prefixPath + skel
                 if os.access(unicode(prefixPath), os.F_OK):
                     srcPath = prefixPath
@@ -171,7 +171,7 @@ class Performer(Grimoire.Performer.Base):
             return self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.MethodBase, path=['var replace copy'] + ['$fileservername'] + path
                                       )(name,
-                                        srcPath['relative'],
+                                        list(srcPath['relative']),
                                         uid = uid,
                                         gid = gid,
                                         **variables))
