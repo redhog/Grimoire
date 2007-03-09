@@ -542,10 +542,10 @@ class AbstractMethod(Implementing):
                                                    objPrefix != [],
                                                    relatedGroup + objPrefix + path,
                                                    len(relatedGroup + objPrefix + path),
-                                                   objectPath, True)
+                                                   objectPath, True)        
         objectPathLen = len(objectPath)
         addPath = []
-        subPath = path
+        subPath = list(path)
         if which == None:
             return []
         elif which == -1:
@@ -990,7 +990,8 @@ class Prefixer(ThinSingleChildContainer):
                                                     depth=depth - max(0, (ownprefixlen - pathlen)),
                                                     objectPath=objectPath, objectDepth=objectDepth, **kw)
         res['value'] = Grimoire.Utils.Map(
-            lambda (leaf, objectPath, description, methodPath): (leaf, objectPath, description, ownprefix[pathlen:] + methodPath),
+            lambda (leaf, objectPath, description, methodPath):
+                (leaf, objectPath, description, ownprefix[pathlen:] + methodPath),
             res['value'])
         return res
 
