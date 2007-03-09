@@ -1,7 +1,7 @@
 import Grimoire.Utils, Grimoire.Performer, Grimoire.Types, sys, string
 
 profileRespond = False # 'respondprof-'
-
+debugExceptionsWithPdb = True
 
 if profileRespond:
     import hotshot
@@ -44,6 +44,10 @@ class Performer(Grimoire.Performer.Base):
                             self.parseCommand()
                             WebKit.Page.Page.respond(self, trans)
                         except Exception, e:
+                            if debugExceptionsWithPdb:
+                                import sys, pdb
+                                sys.last_traceback = sys.exc_info()[2]
+                                pdb.pm()
                             import traceback
                             traceback.print_exc()
 

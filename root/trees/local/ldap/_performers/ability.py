@@ -86,7 +86,8 @@ class UserMethod:
                 self._getpath(Grimoire.Types.MethodBase,
                               path=['list', 'ldapentries', '$ldapservername', 'ou=people'] + path)(
                     depth + 1,
-                    'objectClass=posixAccount'))
+                    'objectClass=posixAccount',
+                    addType='ou', endType='uid'))
 UM = UserMethod
 
 class GroupMethod:
@@ -103,7 +104,8 @@ class GroupMethod:
             lambda:
                 self._getpath(Grimoire.Types.MethodBase, path=['list', 'ldapentries', '$ldapservername'] + path)(
                     depth,
-                    'ou=*'))
+                    'ou=*',
+                    addType='ou'))
 GM = GroupMethod
 
 abilityLock = thread.allocate_lock()
