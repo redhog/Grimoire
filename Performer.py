@@ -522,8 +522,7 @@ class AbstractMethod(Implementing):
         The description is either self.__related_description__ or if
         not set, the path to this method or sub method, with any
         terminating treevars removed.
-        """
-        
+        """        
         relatedGroup = self._related_group(path, depth, objectPath, objectDepth)
         if relatedGroup is None: return []
         description = self._related_description(path, depth, objectPath, objectDepth)
@@ -539,28 +538,20 @@ class AbstractMethod(Implementing):
         # calls to getPrefix? As it is, we're expanding treevars
         # twice, and that's a performance hit!"""
         #### end ####
-        pathPrefix, pathPrefixLen, which = getPrefix(self,
-                                                     objPrefix != [],
-                                                     relatedGroup + objPrefix + path,
-                                                     len(relatedGroup + objPrefix + path),
-                                                     objectPath, True)
-        if which == -1:
-            objectDepth -= max(0, len(pathPrefix) - len(objectPath))
-            objectPath = pathPrefix
         objPrefix, objPrefixLen, which = getPrefix(self,
                                                    objPrefix != [],
-                                                   relatedGroup + objPrefix,
-                                                   len(relatedGroup + objPrefix),
+                                                   relatedGroup + objPrefix + path,
+                                                   len(relatedGroup + objPrefix + path),
                                                    objectPath, True)
         objectPathLen = len(objectPath)
         addPath = []
-        subPath = []
+        subPath = path
         if which == None:
             return []
         elif which == -1:
-            addPath = objPrefix[objectPathLen:]
+            addPath += objPrefix[objectPathLen:]
         elif which == 1:
-            subPath = objectPath[objPrefixLen:]
+            subPath += objectPath[objPrefixLen:]
         subObjDepth = objectDepth - max(0, (objPrefixLen - objectPathLen))
         if subObjDepth < 0:
             if self.__related_hasobjects__:
@@ -572,7 +563,8 @@ class AbstractMethod(Implementing):
         else:
             objlist = self._treeOp(subPath, 'dir', depth=subObjDepth)
         return DirListFilter(path, depth,
-                             Grimoire.Utils.Map(lambda (leaf, path): (leaf, addPath + path, description, subPath + path),
+                             Grimoire.Utils.Map(lambda (leaf, method):
+                                                    (leaf, addPath + method, description, subPath + method),
                                                 objlist),
                              False, 3)
 

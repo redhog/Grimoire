@@ -40,12 +40,15 @@ class Performer(Grimoire.Performer.Base):
                     depth=Grimoire.Performer.UnlimitedDepth,
                     objectPath=path, objectDepth=depth))
         def _params(self, path):
-            return A(Ps([('method',
-                          A(Grimoire.Types.GrimoirePath,
-                            'Method(s) to limit search to')),
-                         ('depth',
+            return A(Ps([('depth',
                           A(types.IntType,
                             'Search depth (-1 means unlimited)')),
+                         ('method',
+                          A(Grimoire.Types.GrimoirePath,
+                            'Method(s) to limit search to')),
+                         ('methodDepth',
+                          A(types.IntType,
+                            'Limit search to methods this far from the specified one (-1 means unlimited)')),
                          ],
                         0),
                      'List methods on an object or objects for a method')
