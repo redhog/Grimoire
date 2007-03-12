@@ -309,8 +309,13 @@ class Performer(Grimoire.Performer.Base):
                     return super(MethodView, self).remove([], node, **kw)
 
                 def rowActivated(self, treeView, path, viewColumn):
-                    self.selectionChanged(self.updateDirCacheNumPath(path[1:],
-                                                                     treeNode = self.model.rootNode))
+                    try:
+                        self.selectionChanged(self.updateDirCacheNumPath(path[1:],
+                                                                         treeNode = self.model.rootNode))
+                    except:
+                        import sys, pdb
+                        sys.last_traceback = sys.exc_info()[2]
+                        pdb.pm()
 
                 def rowSelected(self, treeView):
                     self.hoverChanged(self.updateDirCacheNumPath(treeView.get_cursor()[0][1:],

@@ -17,7 +17,7 @@ class Composable(object):
 
 class Mapping(Grimoire.Utils.ImmutableMapping, Composable):
     def __cmp__(self, other):
-        return Composable.__cmp__(self, other)
+        return cmp(type(self), type(other)) or super(Mapping, self).__cmp__(other)
 
 class Formattable(Mapping):
     """Defines a string made up of several separate parts merged
