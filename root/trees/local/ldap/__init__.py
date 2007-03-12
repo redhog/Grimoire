@@ -1,4 +1,4 @@
-import Grimoire.Types.Ability, Grimoire.Performer, Grimoire.Types
+import Grimoire.Types.Ability, Grimoire.Performer, Grimoire.Types, types
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive

@@ -771,6 +771,24 @@ class Hide(AbstractRestrictor):
             res['value'] = Grimoire.Utils.Map(filterUnallowed, res['value'])
         return res
 
+    def _treeOp_handle_related(self, path, **kw):
+        def filterUnallowed((leaf, objectPath, description, methodPath)):
+            if self._abilityObject(path + methodPath):
+                return (leaf, objectPath, description, methodPath)
+            raise Grimoire.Utils.FilterOutError()
+            
+        #### fixme ####
+        # description = """Make it possible for prefixer to know what we are
+        # filtering, so that we don't have to descend into unused
+        # branches of the tree..."""
+        #### end ####
+        if not self._abilityObject(path, True):
+            return {'value':[]}
+        res = ThinSingleChildContainer._treeOp_handle(self, path=path, **kw)
+        if not self._unlockedTree() or kw.get('filter', False):
+            res['value'] = Grimoire.Utils.Map(filterUnallowed, res['value'])
+        return res
+
 class Restrictor(Hide):
     """A Restrictor restricts the set of methods available on another
     Physical by means of an Ability-object, as defined in the Ability
