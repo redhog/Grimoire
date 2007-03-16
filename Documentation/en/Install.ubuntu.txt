@@ -1,3 +1,5 @@
+DEPEND = "https://files.freecode.no/shared/Div4/Div4b-products/FreeGroup/Div4c"
+
 # Build
 apt-get install build-essential apache2-threaded-dev python2.4-dev
 
@@ -42,9 +44,9 @@ cd /usr/lib/python2.4/site-packages/
 #wget http://www.cdf.toronto.edu/~agenkin/downloads/sambapasswords.py
 #wget http://oss.netfarm.it/download/cyruslib.py
 
-wget https://files.freecode.no/shared/Div4/Div4b-products/FreeGroup/Div4c/Dependencies/sambapasswords.py 
-wget https://files.freecode.no/shared/Div4/Div4b-products/FreeGroup/Div4c/Dependencies/cyruslib.py 
-wget https://files.freecode.no/shared/Div4/Div4b-products/FreeGroup/Div4c/Dependencies/managesieve.py 
+wget $DEPEND/Dependencies/sambapasswords.py 
+wget $DEPEND/Dependencies/cyruslib.py 
+wget $DEPEND/Dependencies/managesieve.py 
 
 
 # Install and secure OpenLDAP
@@ -85,3 +87,27 @@ sed -e "s+/WebWare/GrimWeb+/WKMod/GrimWeb+g" < /etc/Grimoire/Config.d/parameters
 echo "set(['tree'], '_.trees.local.login(\"the $(hostname -f)\", _.trees.local.ldap)')" >> /etc/Grimoire/Config.d/parameters/clients/_settings/__init__.py
 sed -e "s+\(.fileservername.*\)\])+\1, 'filesystem'])+g"  < /etc/Grimoire/Config.d/parameters/_settings/local/filesystem.py > /etc/Grimoire/Config.d/parameters/_settings/local/filesystem.py.new; mv /etc/Grimoire/Config.d/parameters/_settings/local/filesystem.py.new /etc/Grimoire/Config.d/parameters/_settings/local/filesystem.py
 ldapmodify  -x -W -D cn=admin,dc=freegroup-dev,dc=freecode,dc=no -f ~/FreeGroup/Config/defaults.ldif
+
+
+
+
+# Install MoinMoin
+
+apt-get install python2.4-moinmoin libapache2-mod-python2.4 python2.4-gdchart2 python2.4-xml
+cd /etc/apache2/mods-available
+wget $DEPEND/Config/moinmoin.conf
+cd ../mods-enabled
+ln -s ../mods-available/moinmoin.conf
+
+mkdir /var/lib/wiki
+cp -r /usr/share/moin/data /usr/share/moin/underlay /var/lib/wiki
+chown -R www-data: /var/lib/wiki
+chown -R www-data: /usr/share/moin/data
+chown -R www-data: /usr/share/moin/underlay
+
+cd /etc/moin
+wget $DEPEND/Config/farmconfig.py
+ln -s farmconfig.py wikiconfig.py
+wget $DEPEND/Config/wiki.py
+
+# Configure log-in
