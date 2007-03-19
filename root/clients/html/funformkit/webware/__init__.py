@@ -44,12 +44,13 @@ class Performer(Grimoire.Performer.Base):
                             self.parseCommand()
                             WebKit.Page.Page.respond(self, trans)
                         except Exception, e:
+                            import traceback
+                            traceback.print_exc()
+
                             if debugExceptionsWithPdb:
                                 import sys, pdb
                                 sys.last_traceback = sys.exc_info()[2]
                                 pdb.pm()
-                            import traceback
-                            traceback.print_exc()
 
                             self.reconnectGrimoire()
                             self.response().reset()
