@@ -9,6 +9,10 @@ if ! [ -e "$savefile" ]; then
 fi
 source "$savefile"
 
+if [ -f /etc/debian_version ]; then
+ linux_dist_ext=.debian
+fi
+
 echo -n "Removing old files..."
 rm -rf "$genfiles"
 echo "done."
@@ -28,7 +32,7 @@ done
 ldapgenfiles="$genfiles/$skeleton_ldap_servername"
 mkdir -p "$ldapgenfiles/$skeleton_ldap_configdir"
 m4 templates/functions.in templates/basecontent.ldif.in > "$ldapgenfiles/basecontent.ldif"
-m4 templates/functions.in templates/slapd.conf.in > "$ldapgenfiles/$skeleton_ldap_configdir/slapd.conf"
+m4 templates/functions.in templates/slapd.conf.in${linux_dist_ext} > "$ldapgenfiles/$skeleton_ldap_configdir/slapd.conf"
 chown ldap:ldap "$ldapgenfiles/$skeleton_ldap_configdir/slapd.conf"
 m4 templates/functions.in templates/ldap.conf.in > "$ldapgenfiles/$skeleton_ldap_configdir/ldap.conf"
 chmod ugo+r "$ldapgenfiles/$skeleton_ldap_configdir/ldap.conf"
@@ -46,11 +50,18 @@ m4 templates/functions.in templates/ldap.py.in > "$grimldapgenfiles/$settings/lo
 
 # Filesystem machines
 export skeleton_servertype=""
-for skeleton_servertype in home group_home mail; do
- typegenfiles="$genfiles/$(ref skeleton_grimoire_${skeleton_servertype}_servername)"
- mkdir -p "$typegenfiles/$settings/local"
- m4 templates/functions.in templates/filesystem.py.in > "$typegenfiles/$settings/local/filesystem.py"
+for skeleton_servertype in home group_home courier_mail; do
+ if [ "$(ref skeleton_grimoire_${skeleton_servertype}_servername)" ]; then
+  typegenfiles="$genfiles/$(ref skeleton_grimoire_${skeleton_servertype}_servername)"
+  mkdir -p "$typegenfiles/$settings/local"
+  m4 templates/functions.in templates/filesystem.py.in > "$typegenfiles/$settings/local/filesystem.py"
+ fi
 done
+
+# Cyrus machine
+cyrusgenfiles="$genfiles/$(ref skeleton_grimoire_cyrus_mail_servername)"
+mkdir -p "$cyrusgenfiles/$settings/local"
+m4 templates/functions.in templates/cyrus.py.in > "$cyrusgenfiles/$settings/local/cyrus.py"
 
 # Grimweb machine
 grimwebgenfiles="$genfiles/$skeleton_grimoire_grimweb_servername"

@@ -41,12 +41,14 @@ fi
 
 
 #### Server layout
-export skeleton_roles="ldap grimoire_ldap grimoire_home grimoire_group_home grimoire_mail grimoire_grimweb grimoire_printers"
+export skeleton_roles="ldap cyrus_mail grimoire_ldap grimoire_home grimoire_group_home grimoire_courier_mail grimoire_cyrus_mail grimoire_grimweb grimoire_printers"
 export skeleton_ldap_description="OpenLDAP database server"
-export skeleton_grimoire_ldap_description="Gimoire LDAP tree server"
+export skeleton_cyrus_mail_description="Cyrus IMAPd mail server"
+export skeleton_grimoire_ldap_description="Grimoire LDAP tree server (Main Grimoire tree server)"
 export skeleton_grimoire_home_description="Grimoire Filesystem tree server for home directories"
 export skeleton_grimoire_group_home_description="Grimoire Filesystem tree server for group home directories"
-export skeleton_grimoire_mail_description="Grimoire Filesystem tree server for mail directories"
+export skeleton_grimoire_courier_mail_description="Grimoire Filesystem tree server integration with the Curier IMAP server"
+export skeleton_grimoire_cyrus_mail_description="Grimoire Cyrus tree server for integration with the Cyrus IMAPd server"
 export skeleton_grimoire_grimweb_description="Web UI server (Webware server)"
 export skeleton_grimoire_printers_description="CUPS printer server and Grimoire print controller server"
 
@@ -211,7 +213,7 @@ export skeleton_group_homedir_client_path="$(echo "$skeleton_group_homedir_clien
 
 readWithDefault skeleton_maildir_server_path_unix "Server mount point for the directory of mail directories" "/mail"
 readWithDefault skeleton_maildir_client_path_unix "Client mount point for the directory of mail directories" "$skeleton_maildir_server_path_unix"
-export skeleton_maildir_path="$skeleton_grimoire_mail_serverid$(echo "$skeleton_maildir_client_path_unix" | tr / .)"
+export skeleton_maildir_path="$skeleton_grimoire_cyrus_mail_serverid$(echo "$skeleton_maildir_client_path_unix" | tr / .)"
 export skeleton_maildir_client_path="$(echo "$skeleton_maildir_client_path_unix" | sed -e "s+^/++g" | tr / .)"
 
 
@@ -226,35 +228,35 @@ default values will probably be correct, at least for the commands...
 EOF
 
 if [ -e "/etc/init.d/ldap" ]; then
- skeleton_ldap_start="/etc/init.d/ldap start"
- skeleton_ldap_stop="/etc/init.d/ldap stop"
+ skeleton_ldap_start_default="/etc/init.d/ldap start"
+ skeleton_ldap_stop_default="/etc/init.d/ldap stop"
 elif [ -e "/etc/init.d/slapd" ]; then
- skeleton_ldap_start="/etc/init.d/ldap start"
- skeleton_ldap_stop="/etc/init.d/ldap stop"
+ skeleton_ldap_start_default="/etc/init.d/slapd start"
+ skeleton_ldap_stop_default="/etc/init.d/slapd stop"
 fi
-readWithDefault skeleton_ldap_start "Command to start the LDAP server" "$skeleton_ldap_start"
-readWithDefault skeleton_ldap_stop "Command to stop the LDAP server" "$skeleton_ldap_stop"
+readWithDefault skeleton_ldap_start "Command to start the LDAP server" "$skeleton_ldap_start_default"
+readWithDefault skeleton_ldap_stop "Command to stop the LDAP server" "$skeleton_ldap_stop_default"
 
-[ -e "/etc/openldap" ] && skeleton_ldap_configdir="/etc/openldap"
-[ -e "/etc/ldap" ] && skeleton_ldap_configdir="/etc/ldap"
-readWithDefault skeleton_ldap_configdir "LDAP server configuration directory" "$skeleton_ldap_configdir"
-[ -e "/var/lib/ldap" ] && skeleton_ldap_dbdir="/var/lib/ldap"
-readWithDefault skeleton_ldap_dbdir "LDAP database directory" "$skeleton_ldap_dbdir"
+[ -e "/etc/openldap" ] && skeleton_ldap_configdir_default="/etc/openldap"
+[ -e "/etc/ldap" ] && skeleton_ldap_configdir_default="/etc/ldap"
+readWithDefault skeleton_ldap_configdir "LDAP server configuration directory" "$skeleton_ldap_configdir_default"
+[ -e "/var/lib/ldap" ] && skeleton_ldap_dbdir_default="/var/lib/ldap"
+readWithDefault skeleton_ldap_dbdir "LDAP database directory" "$skeleton_ldap_dbdir_default"
 
 if [ -e "/etc/init.d/grimoire" ]; then
- skeleton_grimoire_start="/etc/init.d/grimoire start"
- skeleton_grimoire_stop="/etc/init.d/grimoire stop"
+ skeleton_grimoire_start_default="/etc/init.d/grimoire start"
+ skeleton_grimoire_stop_default="/etc/init.d/grimoire stop"
 fi
-readWithDefault skeleton_grimoire_start "Command to start the Grimoire server" "$skeleton_grimoire_start" 
-readWithDefault skeleton_grimoire_stop "Command to stop the Grimoire server" "$skeleton_grimoire_stop" 
+readWithDefault skeleton_grimoire_start "Command to start the Grimoire server" "$skeleton_grimoire_start_default" 
+readWithDefault skeleton_grimoire_stop "Command to stop the Grimoire server" "$skeleton_grimoire_stop_default" 
 
-[ -e "/etc/init.d/httpd" ] && skeleton_httpd_restart="/etc/init.d/httpd restart"
-[ -e "/etc/init.d/apache2" ] && skeleton_httpd_restart="/etc/init.d/apache2 restart"
-[ -e "/etc/init.d/apache" ] && skeleton_httpd_restart="/etc/init.d/apache restart"
-readWithDefault skeleton_httpd_restart "Command to restart the web-server" "$skeleton_httpd_restart" 
+[ -e "/etc/init.d/httpd" ] && skeleton_httpd_restart_default="/etc/init.d/httpd restart"
+[ -e "/etc/init.d/apache2" ] && skeleton_httpd_restart_default="/etc/init.d/apache2 restart"
+[ -e "/etc/init.d/apache" ] && skeleton_httpd_restart_default="/etc/init.d/apache restart"
+readWithDefault skeleton_httpd_restart "Command to restart the web-server" "$skeleton_httpd_restart_default" 
 
-[ -e "/etc/init.d/webkit" ] && skeleton_webkit_restart="/etc/init.d/webkit restart"
-readWithDefault skeleton_webkit_restart "Command to restart the WebWare application-server" "$skeleton_webkit_restart" 
+[ -e "/etc/init.d/webkit" ] && skeleton_webkit_restart_default="/etc/init.d/webkit restart"
+readWithDefault skeleton_webkit_restart "Command to restart the WebWare application-server" "$skeleton_webkit_restart_default" 
 
 
 #### Generate Samba SID
@@ -279,12 +281,17 @@ fi
 #### Generate some composite values for the LDAP content
 
 export skeleton_hosts="$(uniqMachines $skeleton_roles)"
-export skeleton_grimoire_filesystem_hosts="$(uniqMachines grimoire_home grimoire_group_home grimoire_mail)"
+export skeleton_grimoire_filesystem_hosts="$(uniqMachines grimoire_home grimoire_group_home grimoire_courier_mail)"
+export skeleton_grimoire_cyrus_hosts="$skeleton_grimoire_cyrus_mail_servername"
 export skeleton_grimoire_printers_hosts="$skeleton_grimoire_printers_servername"
 
 export skeleton_grimoire_initcommands=""
 for host in $skeleton_grimoire_filesystem_hosts; do
  skeleton_grimoire_initcommands="grimoireInitCommand: _.introspection.mount($(grimoireConnect "$skeleton_ldap_servername" "$host").trees.local.filesystem('filesystem', '$(ref skeleton_$(hostname2varname "$host")_password)'))
+$skeleton_grimoire_initcommands"
+done
+for host in $skeleton_grimoire_cyrus_hosts; do
+ skeleton_grimoire_initcommands="grimoireInitCommand: _.introspection.mount($(grimoireConnect "$skeleton_ldap_servername" "$host").trees.local.cyrus('cyrus', '$(ref skeleton_$(hostname2varname "$host")_password)'))
 $skeleton_grimoire_initcommands"
 done
 for host in $skeleton_grimoire_printers_hosts; do

@@ -76,6 +76,15 @@ wait_for_ldap_server_to_come_up
 </m4quote>)
 
 
+####### The Cyrus IMAPd server #######
+
+define(<m4quote>cyrus_mail_functions</m4quote>, <m4quote></m4quote>)
+define(<m4quote>cyrus_mail_test</m4quote>, <m4quote></m4quote>)
+define(<m4quote>cyrus_mail_shutdown</m4quote>, <m4quote></m4quote>)
+define(<m4quote>cyrus_mail_configure</m4quote>, <m4quote></m4quote>)
+define(<m4quote>cyrus_mail_restart</m4quote>, <m4quote></m4quote>)
+
+
 ####### The Grimoire LDAP tree server #######
 
 define(<m4quote>grimoire_ldap_functions</m4quote>, <m4quote></m4quote>)
@@ -172,7 +181,7 @@ define(<m4quote>grimoire_group_home_restart</m4quote>, <m4quote>grimoire_filesys
 
 ####### Mail directory server #######
 
-define(<m4quote>grimoire_mail_functions</m4quote>, <m4quote>dnl
+define(<m4quote>grimoire_courier_mail_functions</m4quote>, <m4quote>dnl
 # Create mail directories for a home group
 create_maildir_homegroup () {
  groupdir="skeleton(maildir_server_path_unix)/$<m4quote>1</m4quote>"
@@ -189,9 +198,9 @@ create_maildir_user () {
 
 </m4quote>)
 
-define(<m4quote>grimoire_mail_test</m4quote>, <m4quote>grimoire_filesystem_test</m4quote>)
-define(<m4quote>grimoire_mail_shutdown</m4quote>, <m4quote>grimoire_filesystem_shutdown</m4quote>)
-define(<m4quote>grimoire_mail_configure</m4quote>, <m4quote>grimoire_filesystem_configure
+define(<m4quote>grimoire_courier_mail_test</m4quote>, <m4quote>grimoire_filesystem_test</m4quote>)
+define(<m4quote>grimoire_courier_mail_shutdown</m4quote>, <m4quote>grimoire_filesystem_shutdown</m4quote>)
+define(<m4quote>grimoire_courier_mail_configure</m4quote>, <m4quote>grimoire_filesystem_configure
 mkdir -p /etc/skel
 mkdir -p /etc/groupskel
 
@@ -201,7 +210,7 @@ create_maildir_homegroup administrators
 create_maildir_user administrators superadmin 1024 1025
 create_maildir_user administrators demoadmin 1025 1025
 </m4quote>)
-define(<m4quote>grimoire_mail_restart</m4quote>, <m4quote>grimoire_filesystem_restart</m4quote>)
+define(<m4quote>grimoire_courier_mail_restart</m4quote>, <m4quote>grimoire_filesystem_restart</m4quote>)
 
 
 ####### Webware front-end server #######
@@ -217,6 +226,15 @@ skeleton(httpd_restart)
 # Restart the WebWare application-server
 skeleton(webkit_restart)
 </m4quote>)
+
+
+####### The Cyrus IMAPd server #######
+
+define(<m4quote>grimoire_cyrus_mail_functions</m4quote>, <m4quote></m4quote>)
+define(<m4quote>grimoire_cyrus_mail_test</m4quote>, <m4quote></m4quote>)
+define(<m4quote>grimoire_cyrus_mail_shutdown</m4quote>, <m4quote></m4quote>)
+define(<m4quote>grimoire_cyrus_mail_configure</m4quote>, <m4quote></m4quote>)
+define(<m4quote>grimoire_cyrus_mail_restart</m4quote>, <m4quote></m4quote>)
 
 
 ####### CUPS printer server #######
