@@ -7,7 +7,7 @@ apt-get install build-essential apache2-threaded-dev python2.4-dev
 apt-get install xsltproc m2crypto python2.4-ldap samba-doc courier-ldap libpam-ldap libnss-ldap apache2 python-crypto
 
 # Optional
-apt-get install kolab-cyrus-common kolab-cyrus-imapd kolab-cyrus-pop3d samba 
+apt-get install kolab-cyrus-common kolab-cyrus-imapd kolab-cyrus-pop3d sasl2-bin samba
 
 
 
@@ -89,25 +89,5 @@ sed -e "s+\(.fileservername.*\)\])+\1, 'filesystem'])+g"  < /etc/Grimoire/Config
 ldapmodify  -x -W -D cn=admin,dc=freegroup-dev,dc=freecode,dc=no -f ~/FreeGroup/Config/defaults.ldif
 
 
-
-
-# Install MoinMoin
-
-apt-get install python2.4-moinmoin libapache2-mod-python2.4 python2.4-gdchart2 python2.4-xml
-cd /etc/apache2/mods-available
-wget $DEPEND/Config/moinmoin.conf
-cd ../mods-enabled
-ln -s ../mods-available/moinmoin.conf
-
-mkdir /var/lib/wiki
-cp -r /usr/share/moin/data /usr/share/moin/underlay /var/lib/wiki
-chown -R www-data: /var/lib/wiki
-chown -R www-data: /usr/share/moin/data
-chown -R www-data: /usr/share/moin/underlay
-
-cd /etc/moin
-wget $DEPEND/Config/farmconfig.py
-ln -s farmconfig.py wikiconfig.py
-wget $DEPEND/Config/wiki.py
-
-# Configure log-in
+# Configure Cyrus
+sed -s "s+# START=yes+START=yes+g" /etc/default/saslauthd > /etc/default/saslauthd.new; mv /etc/default/saslauthd.new /etc/default/saslauthd

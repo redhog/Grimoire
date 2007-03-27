@@ -81,7 +81,14 @@ wait_for_ldap_server_to_come_up
 define(<m4quote>cyrus_mail_functions</m4quote>, <m4quote></m4quote>)
 define(<m4quote>cyrus_mail_test</m4quote>, <m4quote></m4quote>)
 define(<m4quote>cyrus_mail_shutdown</m4quote>, <m4quote></m4quote>)
-define(<m4quote>cyrus_mail_configure</m4quote>, <m4quote></m4quote>)
+define(<m4quote>cyrus_mail_configure</m4quote>, <m4quote>dnl
+ {
+  echo skeleton(skeleton(cyrus_mail_server_varname)_password)
+  sleep 1 # Uggly hack
+  echo skeleton(skeleton(cyrus_mail_server_varname)_password)
+ } |
+  passwd cyrus
+</m4quote>)
 define(<m4quote>cyrus_mail_restart</m4quote>, <m4quote></m4quote>)
 
 

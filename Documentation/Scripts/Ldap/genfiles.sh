@@ -59,6 +59,14 @@ for skeleton_servertype in home group_home courier_mail; do
 done
 
 # Cyrus machine
+cyrusgenfiles="$genfiles/$(ref skeleton_cyrus_mail_servername)"
+mkdir -p "$cyrusgenfiles/etc"
+m4 templates/functions.in templates/cyrus.conf.in > "$cyrusgenfiles/etc/cyrus.conf"
+m4 templates/functions.in templates/imapd.conf.in > "$cyrusgenfiles/etc/imapd.conf"
+chmod ugo+r "$cyrusgenfiles/etc/cyrus.conf"
+chmod ugo+r "$cyrusgenfiles/etc/imapd.conf"
+
+# Cyrus Grimoire Tree machine
 cyrusgenfiles="$genfiles/$(ref skeleton_grimoire_cyrus_mail_servername)"
 mkdir -p "$cyrusgenfiles/$settings/local"
 m4 templates/functions.in templates/cyrus.py.in > "$cyrusgenfiles/$settings/local/cyrus.py"
