@@ -1,0 +1,93 @@
+Source: grimoire
+Section: unknown
+Priority: optional
+Maintainer: root <redhog@redhog.org>
+Build-Depends: debhelper (>= 4.0.0), python (>= 2.4), python-dev (>= 2.4), xsltproc, docbook-xsl, tla
+Standards-Version: 3.6.2
+
+Package: grimoire
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (= 2.4), grimoire-conf (= ${Source-Version})
+Description: An action-tree implementation for system administration
+  Grimoire is a Python implementation of an action-tree, a
+ tree-structured database of commands or methods that can be invoked
+ locally or on a server using rpc.
+  Grimoire allows arbitrary merging and divissions ofaction-trees and
+ has a fine-grained access-control that can be coupled to an
+ LDAP-database (paths down the tree are used to specify subtrees that
+ are either allowd or denied, and such paths are considered in an order
+ that lets abilities coupled to different entries in LDAP override each
+ other in a controllable manner).
+  Grimoire includes a base set of methods/actions for manipulation of
+ LDAP-entries for user-accounts (both posix-accounts and
+ samba-accounts), groups, courier mail-aliases and BIND DNS-zone
+ information, and for manipulation of the local filesystem on a
+ Grimoire server (e.g. creation of homedirectories using templates). It
+ also includes a Webware based web-GUI-frontend and a
+ command-line-based UI to manipulate the tree.
+
+Package: grimoire-doc
+Architecture: all
+Depends: 
+Description: Documentation for Grimoire
+ This package contains documentation for the Grimoire python action tree
+ implementation.
+
+Package: grimoire-conf
+Architecture: all
+Depends: grimoire (= ${Source-Version})
+Description: Configuration for Grimoire
+ This package contains configuration files for the Grimoire python
+ action tree implementation.
+
+
+
+Package: grimoire-ssl
+Architecture: any
+Depends: grimoire (= ${Source-Version}), m2crypto (>= 0.09)
+Description: SSL bindings for Grimoire
+ This package adds SSL encrypted DIRT (Direct Invocation of Remote
+ Tasks) to the set of remote-procedure-call-protocols of Grimoire.
+
+Package: grimoire-ldap
+Architecture: any
+Depends: grimoire (= ${Source-Version}), python-ldap (>= 1.9), sambapasswords
+Description: LDAP bindings for Grimoire
+ This package adds an LDAP directory administration tree to Grimoire.
+
+Package: grimoire-postgresql
+Architecture: any
+Depends: grimoire (= ${Source-Version}), postgresql-python (>= 3.4)
+Description: PostgreSQL bindings for Grimoire
+ This package adds a PostgreSQL database interface tree to Grimoire.
+
+Package: grimoire-filesystem
+Architecture: any
+Depends: grimoire (= ${Source-Version})
+Description: Filesystem bindings for Grimoire
+ This package adds a filesystem interface tree to Grimoire.
+
+Package: grimoire-cups
+Architecture: any
+Depends: grimoire (= ${Source-Version}), cupsys
+Description: CUPS bindings for Grimoire
+ This package adds a CUPS (Common Unix Printing System) printer-management-tree to Grimoire.
+
+Package: grimoire-client
+Architecture: any
+Depends: grimoire (= ${Source-Version}), tetex-latex, tetex-dvips, sed, cups
+Description: Public-terminal (user registration) tree
+ This package adds public-terminal (user-registration) tree to Grimoire.
+
+Package: grimoire-webware
+Architecture: any
+Depends: grimoire (= ${Source-Version}), grimoire-webware-conf (= ${Source-Version}), webware (>= 0.8), funformkit (>= 0.4.1), httpd
+Description: Web user-interface for Grimoire
+ This package adds a web-based interface to Grimoire.
+
+Package: grimoire-ldap-server
+Architecture: any
+Depends: grimoire (= ${Source-Version})
+Depends: openldap-servers, openldap-clients, samba-ldapschema-openldap, courier-ldapschema-openldap, m4, sed, grep, findutils, net-tools, bash, coreutils
+Description: Requirements for an LDAP-server for Grimoire
+ This package contains nessesary Schema-files for an LDAP-server to be used with Grimoire.
