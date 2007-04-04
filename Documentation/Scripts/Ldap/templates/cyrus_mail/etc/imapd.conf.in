@@ -159,7 +159,7 @@ sasl_maximum_layer: 1
 # NOTE: To support multiple virtual domains on the same interface/IP,
 # you need to list them all as loginreals. If you don't list them here,
 # (most of) your users probably won't be able to log in.
-loginrealms: skeleton(mail_domain) skeleton(mail_second_domain)
+loginrealms: freegroup-dev.freecode.no
 
 # Enable virtual domain support.  If enabled, the user's domain will
 # be determined by splitting a fully qualified userid at the last '@'
@@ -329,9 +329,9 @@ pts_module: ldap
 ldap_sasl: 0
 ldap_version: 3
 ldap_size_limit: 0
-ldap_uri: ldap://skeleton(ldap_servername)
+ldap_uri: ldap://skeleton(ldap_servername)/
 ldap_bind_dn: cn=admin,skeleton(ldap_realm)
-ldap_password: saltgurka
+ldap_password: skeleton(skeleton(grimoire_ldap_server_varname)_password)
 
 ldap_base: skeleton(ldap_realm)
 ldap_filter: (uid=%U)

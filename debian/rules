@@ -16,8 +16,8 @@
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
-indep_packages := grimoire-doc grimoire-conf
-arch_packages := grimoire grimoire-ssl grimoire-ldap grimoire-postgresql grimoire-filesystem grimoire-cups grimoire-client grimoire-webware
+indep_packages := grimoire-doc grimoire-conf grimoire-ldap-server grimoire-cyrus-server
+arch_packages := grimoire grimoire-ssl grimoire-ldap grimoire-postgresql grimoire-filesystem grimoire-cyrus grimoire-cups grimoire-client grimoire-webware
 
 sysconfdir := /etc
 libdir := /usr/lib
@@ -27,6 +27,7 @@ services := /srv
 ldapdir := $(sysconfdir)/openldap
 ldapschemadir := $(ldapdir)/schema
 pyversion := $(shell python -c "import sys; print str(sys.version_info[0]) + '.' + str(sys.version_info[1])")
+pynextversion := $(shell python -c "import sys; print str(sys.version_info[0]) + '.' + str(sys.version_info[1] + 1)")
 pydir := $(libdir)/python$(pyversion)/site-packages
 webware := $(services)/www/WebWare
 httpdconfdir := $(sysconfdir)/httpd/conf.d
@@ -70,6 +71,9 @@ install-indep:
 	cp -r Documentation/Scripts/Config.d $(CURDIR)/debian/grimoire-conf$(grimconf)/Config.d
 	cp -r Documentation/Scripts/Client $(CURDIR)/debian/grimoire-conf$(grimconf)/Client
 
+	mkdir -p $(CURDIR)/debian/grimoire-ldap-server$(ldapschemadir)
+	cp Documentation/Scripts/Ldap/Grimoire.schema  $(CURDIR)/debian/grimoire-ldap-server$(ldapschemadir)/Grimoire.schema
+
 install-arch:
 	dh_testdir; dh_testroot; dh_clean -k -s 
 	for package in $(arch_packages); do mkdir -p $(CURDIR)/debian/$$package; done
@@ -83,9 +87,6 @@ install-arch:
 	ln -s $(grimroot)/root/clients/cli.py $(CURDIR)/debian/grimoire$(sbindir)/grimoire
 	cp Documentation/Scripts/grimoire.init.d.debian $(CURDIR)/debian/grimoire$(sysconfdir)/init.d/grimoire
 	chmod ugo+x $(CURDIR)/debian/grimoire$(sysconfdir)/init.d/grimoire
-
-	mkdir -p $(CURDIR)/debian/grimoire-ldap-server$(ldapschemadir)
-	cp Documentation/Scripts/Ldap/Grimoire.schema  $(CURDIR)/debian/grimoire-ldap-server$(ldapschemadir)/Grimoire.schema
 
 # Must not depend on anything. This is to be called by
 # binary-arch/binary-indep
@@ -115,7 +116,7 @@ binary-common:
 	dh_makeshlibs
 	dh_installdeb
 	dh_shlibdeps
-	dh_gencontrol
+	dh_gencontrol -- -Vpyversion=$(pyversion) -Vpynextversion=$(pynextversion)
 	dh_md5sums
 	dh_builddeb
 

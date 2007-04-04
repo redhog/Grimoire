@@ -52,40 +52,32 @@ m4 templates/functions.in templates/ldap.py.in > "$grimldapgenfiles/$settings/lo
 export skeleton_servertype=""
 for skeleton_servertype in home group_home courier_mail; do
  if [ "$(ref skeleton_grimoire_${skeleton_servertype}_servername)" ]; then
-  typegenfiles="$genfiles/$(ref skeleton_grimoire_${skeleton_servertype}_servername)"
-  mkdir -p "$typegenfiles/$settings/local"
-  m4 templates/functions.in templates/filesystem.py.in > "$typegenfiles/$settings/local/filesystem.py"
+  instantiateTemplates "templates/functions.in" "templates/filesystem" "$genfiles/$(ref skeleton_grimoire_${skeleton_servertype}_servername)"
  fi
 done
 
 # Cyrus machine
-cyrusgenfiles="$genfiles/$(ref skeleton_cyrus_mail_servername)"
-mkdir -p "$cyrusgenfiles/etc"
-m4 templates/functions.in templates/cyrus.conf.in > "$cyrusgenfiles/etc/cyrus.conf"
-m4 templates/functions.in templates/imapd.conf.in > "$cyrusgenfiles/etc/imapd.conf"
-chmod ugo+r "$cyrusgenfiles/etc/cyrus.conf"
-chmod ugo+r "$cyrusgenfiles/etc/imapd.conf"
+instantiateTemplates "templates/functions.in" "templates/cyrus_mail" "$genfiles/$(ref skeleton_cyrus_mail_servername)"
 
 # Cyrus Grimoire Tree machine
-cyrusgenfiles="$genfiles/$(ref skeleton_grimoire_cyrus_mail_servername)"
-mkdir -p "$cyrusgenfiles/$settings/local"
-m4 templates/functions.in templates/cyrus.py.in > "$cyrusgenfiles/$settings/local/cyrus.py"
+instantiateTemplates "templates/functions.in" "templates/grimoire_cyrus_mail" "$genfiles/$(ref skeleton_grimoire_cyrus_mail_servername)"
 
 # Grimweb machine
-grimwebgenfiles="$genfiles/$skeleton_grimoire_grimweb_servername"
-mkdir -p "$grimwebgenfiles/$settings/clients"
-m4 templates/functions.in templates/base.py.in > "$grimwebgenfiles/$settings/clients/base.py"
+instantiateTemplates "templates/functions.in" "templates/grimoire_grimweb" "$genfiles/$skeleton_grimoire_grimweb_servername"
 
 # CUPS server
 printersgenfiles="$genfiles/$skeleton_grimoire_printers_servername"
 mkdir -p "$printersgenfiles/$settings/local"
 m4 templates/functions.in templates/printers.py.in > "$printersgenfiles/$settings/local/printers.py"
 
-# Generate setup.sh for all machines
+# Generate files for all machines
 export skeleton_servername
 for skeleton_servername in $skeleton_hosts; do
  export skeleton_server_varname="$(hostname2varname "$skeleton_servername")"
  hostgenfiles="$genfiles/$skeleton_servername"
  m4 templates/functions.in templates/setup.sh.in >> "$hostgenfiles/setup.sh"
  chmod u+x "$hostgenfiles/setup.sh"
+ instantiateTemplates "templates/functions.in" "templates/all" "$hostgenfiles"
 done
+
+echo "done."

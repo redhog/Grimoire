@@ -79,7 +79,6 @@ mkdir /etc/Grimoire
 cd /usr/lib/python2.4/site-packages/Grimoire
 cp -r Documentation/Scripts/Config.d /etc/Grimoire
 cd Documentation/Scripts/Ldap
-cp templates/slapd.conf.in.debian templates/slapd.conf.in
 ./setup.sh
 cd Generated_configuration_files/$(hostname -f)
 ./setup.sh

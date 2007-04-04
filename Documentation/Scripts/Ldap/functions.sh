@@ -102,3 +102,27 @@ grimoireConnect () {
   echo "_.trees.remote.dirt.$(echo "$dst" | sed -e "s+\\.+\\\\.+g")()"
  fi
 }
+
+instantiateTemplates () {
+ functions="$1"
+ templates="$2"
+ destination="$3"
+
+ find ${templates} -type d |
+  while read name; do
+   dst="${destination}/$(echo "${name}" | sed -e "s+^${templates}$++g" -e "s+^${templates}/\(.*\)$+\1+g")"
+   mkdir -p "${dst}"
+   chmod --reference="${name}" "${dst}"
+  done
+ find ${templates} \! -type d -a -name "*.in" |
+  while read name; do
+   dst="${destination}/$(echo "${name}" | sed -e "s+^${templates}/\(.*\)\.in$+\1+g")"
+   m4 ${functions} "${name}" > "${dst}"
+   chmod --reference="${name}" "${dst}"
+  done
+ find ${templates} \! -type d -a \! -name "*.in" |
+  while read name; do
+   dst="${destination}/$(echo "${name}" | sed -e "s+^${templates}/\(.*\)$+\1+g")"
+   cp -p "${name}" "${dst}"
+  done
+}
