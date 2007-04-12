@@ -74,10 +74,7 @@ m4 templates/functions.in templates/printers.py.in > "$printersgenfiles/$setting
 export skeleton_servername
 for skeleton_servername in $skeleton_hosts; do
  export skeleton_server_varname="$(hostname2varname "$skeleton_servername")"
- hostgenfiles="$genfiles/$skeleton_servername"
- m4 templates/functions.in templates/setup.sh.in >> "$hostgenfiles/setup.sh"
- chmod u+x "$hostgenfiles/setup.sh"
- instantiateTemplates "templates/functions.in" "templates/all" "$hostgenfiles"
+ instantiateTemplates "templates/functions.in" "templates/all" "$genfiles/$skeleton_servername"
 done
 
 echo "done."

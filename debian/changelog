@@ -1,3 +1,9 @@
+grimoire (0.2.main.146-1) unstable; urgency=low
+
+  * Fix for grimoire-webware to actually add a context for itself to webware...
+
+ -- root <redhog@redhog.org>  Fri, 30 Mar 2007 16:35:08 +0200
+
 grimoire (0.2.main.146) unstable; urgency=low
 
   * Initial Release.

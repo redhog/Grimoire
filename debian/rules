@@ -16,13 +16,13 @@
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
-indep_packages := grimoire-doc grimoire-conf grimoire-ldap-server grimoire-cyrus-server
+indep_packages := grimoire-doc grimoire-conf
 arch_packages := grimoire grimoire-ssl grimoire-ldap grimoire-postgresql grimoire-filesystem grimoire-cyrus grimoire-cups grimoire-client grimoire-webware
 
 sysconfdir := /etc
 libdir := /usr/lib
 sbindir := /usr/sbin
-services := /srv
+services := /var
 
 ldapdir := $(sysconfdir)/openldap
 ldapschemadir := $(ldapdir)/schema
@@ -70,6 +70,8 @@ install-indep:
 	mkdir -p $(CURDIR)/debian/grimoire-conf$(grimconf)
 	cp -r Documentation/Scripts/Config.d $(CURDIR)/debian/grimoire-conf$(grimconf)/Config.d
 	cp -r Documentation/Scripts/Client $(CURDIR)/debian/grimoire-conf$(grimconf)/Client
+	mkdir -p $(CURDIR)/debian/grimoire-conf$(sbindir)
+	cp -r Documentation/Scripts/Ldap $(CURDIR)/debian/grimoire-conf$(sbindir)/GrimConf
 
 	mkdir -p $(CURDIR)/debian/grimoire-ldap-server$(ldapschemadir)
 	cp Documentation/Scripts/Ldap/Grimoire.schema  $(CURDIR)/debian/grimoire-ldap-server$(ldapschemadir)/Grimoire.schema
@@ -87,6 +89,9 @@ install-arch:
 	ln -s $(grimroot)/root/clients/cli.py $(CURDIR)/debian/grimoire$(sbindir)/grimoire
 	cp Documentation/Scripts/grimoire.init.d.debian $(CURDIR)/debian/grimoire$(sysconfdir)/init.d/grimoire
 	chmod ugo+x $(CURDIR)/debian/grimoire$(sysconfdir)/init.d/grimoire
+
+	mkdir -p $(CURDIR)/debian/grimoire-webware$(webware)/Configs/Application.d
+	echo "Contexts['GrimWeb'] = '$(grimroot)/root/clients/html/funformkit/webware/_grimwebcontext'" > $(CURDIR)/debian/grimoire-webware$(webware)/Configs/Application.d/GrimWeb.config
 
 # Must not depend on anything. This is to be called by
 # binary-arch/binary-indep
