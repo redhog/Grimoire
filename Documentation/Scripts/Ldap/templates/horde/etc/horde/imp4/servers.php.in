@@ -1,0 +1,36 @@
+<?php
+$servers['cyrus'] = array(
+    'name' => 'Cyrus IMAP Server',
+    'server' => 'skeleton(cyrus_mail_servername)',
+    'hordeauth' => false,
+    'protocol' => 'imap/notls',
+    'port' => 143,
+    'maildomain' => 'squeezy.freecode.no',
+    'smtphost' => 'skeleton(cyrus_mail_servername)',
+    'smtpport' => 25,
+    'realm' => '',
+    'preferred' => '',
+    'admin' => array(
+        'params' => array(
+            'login' => 'cyrus',
+            'password' => 'skeleton(skeleton(cyrus_mail_server_varname)_password)',	
+            // The 'userhierarchy' parameter defaults to 'user.'
+            // If you are using a nonstandard hierarchy for personal
+            // mailboxes, you will need to set it here.
+            'userhierarchy' => 'user.',
+            // Although these defaults are normally all that is required,
+            // you can modify the following parameters from their default
+            // values.
+            'protocol' => 'imap/notls',
+            'hostspec' => 'skeleton(cyrus_mail_servername)',
+            'port' => 143
+        )
+    ),
+    'quota' => array(
+        'driver' => 'cyrus',
+        'params' => array(),
+    ),
+    'acl' => array(
+        'driver' => 'rfc2086',
+    ),
+);

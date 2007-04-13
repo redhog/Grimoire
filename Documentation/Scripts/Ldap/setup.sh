@@ -41,16 +41,17 @@ fi
 
 
 #### Server layout
-export skeleton_roles="ldap cyrus_mail grimoire_ldap grimoire_home grimoire_group_home grimoire_courier_mail grimoire_cyrus_mail grimoire_grimweb grimoire_printers"
+export skeleton_roles="ldap cyrus_mail horde grimoire_ldap grimoire_home grimoire_group_home grimoire_courier_mail grimoire_cyrus_mail grimoire_printers grimoire_grimweb"
 export skeleton_ldap_description="OpenLDAP database server"
 export skeleton_cyrus_mail_description="Cyrus IMAPd mail server"
+export skeleton_horde_description="Web UI (horde) server"
 export skeleton_grimoire_ldap_description="Grimoire LDAP tree server (Main Grimoire tree server)"
 export skeleton_grimoire_home_description="Grimoire Filesystem tree server for home directories"
 export skeleton_grimoire_group_home_description="Grimoire Filesystem tree server for group home directories"
 export skeleton_grimoire_courier_mail_description="Grimoire Filesystem tree server integration with the Curier IMAP server"
 export skeleton_grimoire_cyrus_mail_description="Grimoire Cyrus tree server for integration with the Cyrus IMAPd server"
-export skeleton_grimoire_grimweb_description="Web UI server (Webware server)"
 export skeleton_grimoire_printers_description="CUPS printer server and Grimoire print controller server"
+export skeleton_grimoire_grimweb_description="Web admin UI server (GrimWeb server)"
 
 cat <<EOF
 

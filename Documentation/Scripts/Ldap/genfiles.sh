@@ -48,22 +48,20 @@ m4 templates/functions.in templates/ldap.conf.in > "$grimldapgenfiles/$skeleton_
 chmod ugo+r "$grimldapgenfiles/$skeleton_ldap_configdir/ldap.conf"
 m4 templates/functions.in templates/ldap.py.in > "$grimldapgenfiles/$settings/local/ldap.py"
 
-# Filesystem machines
-export skeleton_servertype=""
-for skeleton_servertype in home group_home courier_mail; do
- if [ "$(ref skeleton_grimoire_${skeleton_servertype}_servername)" ]; then
-  instantiateTemplates "templates/functions.in" "templates/filesystem" "$genfiles/$(ref skeleton_grimoire_${skeleton_servertype}_servername)"
- fi
-done
-
-# Cyrus machine
-instantiateTemplates "templates/functions.in" "templates/cyrus_mail" "$genfiles/$(ref skeleton_cyrus_mail_servername)"
-
-# Cyrus Grimoire Tree machine
-instantiateTemplates "templates/functions.in" "templates/grimoire_cyrus_mail" "$genfiles/$(ref skeleton_grimoire_cyrus_mail_servername)"
-
-# Grimweb machine
-instantiateTemplates "templates/functions.in" "templates/grimoire_grimweb" "$genfiles/$skeleton_grimoire_grimweb_servername"
+for role
+ in \
+  grimoire_home \
+  grimoire_group_home \
+  grimoire_courier_mail \
+  cyrus_mail \
+  grimoire_cyrus_mail \
+  horde \
+  grimoire_grimweb;
+ do
+  if [ "$(ref skeleton_${role}_servername)" ]; then
+   instantiateTemplates "templates/functions.in" "templates/$role" "$genfiles/$(ref skeleton_${role}_servername)"
+  fi
+ done
 
 # CUPS server
 printersgenfiles="$genfiles/$skeleton_grimoire_printers_servername"

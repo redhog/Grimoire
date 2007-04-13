@@ -92,6 +92,15 @@ define(<m4quote>cyrus_mail_configure</m4quote>, <m4quote>dnl
 define(<m4quote>cyrus_mail_restart</m4quote>, <m4quote></m4quote>)
 
 
+####### The Horde server #######
+
+define(<m4quote>horde_functions</m4quote>, <m4quote></m4quote>)
+define(<m4quote>horde_test</m4quote>, <m4quote></m4quote>)
+define(<m4quote>horde_shutdown</m4quote>, <m4quote></m4quote>)
+define(<m4quote>horde_configure</m4quote>, <m4quote></m4quote>)
+define(<m4quote>horde_restart</m4quote>, <m4quote></m4quote>)
+
+
 ####### The Grimoire LDAP tree server #######
 
 define(<m4quote>grimoire_ldap_functions</m4quote>, <m4quote></m4quote>)
