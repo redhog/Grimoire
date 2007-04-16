@@ -54,11 +54,11 @@ build-indep-stamp: configure-stamp
 	touch build-indep-stamp
 	Tools/compiletranslations.sh
 	Tools/compiledocumentation.sh
-
 clean:
 	dh_testdir; dh_testroot; dh_clean
 	rm -f build-arch-stamp build-indep-stamp #CONFIGURE-STAMP#
 	Tools/clean.sh
+	Tools/log2aptlog.sh > debian/changelog
 
 install: install-indep install-arch
 install-indep:

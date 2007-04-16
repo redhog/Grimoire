@@ -1,6 +1,6 @@
 #! /bin/sh
 
-disttype=rpm
+disttype=deb
 server=download.gna.org:/upload/grimoire/
 
 params=0
@@ -16,10 +16,10 @@ done
 
 if [ "$help" ]; then
  cat <<EOF
-Usage: makedist.sh [--disttype=tgz|rpm] [--upload [--server=UPLOAD_DIRECTORY]]
+Usage: makedist.sh [--disttype=tgz|rpm|deb] [--upload [--server=UPLOAD_DIRECTORY]]
 
 Generate and optionally upload a distribution.
-Default disttype is rpm.
+Default disttype is deb.
 Default UPLOAD_DIRECTORY is '$server'.
 EOF
  exit 1
@@ -39,12 +39,14 @@ echo "Copying files..."
  echo "."
  tla inventory -s -d
 } |
+ sed -e "s+(sp)+ +g" |
  while read dir; do
   mkdir -p "=dist/Grimoire-$VERSION/$dir"
   cp -a "$dir/.arch-ids" "=dist/Grimoire-$VERSION/$dir/.arch-ids"
  done
 
 tla inventory -s -f |
+ sed -e "s+(sp)+ +g" |
  while read file; do
   cp -d "$file" "=dist/Grimoire-$VERSION/$file"
  done
@@ -65,12 +67,16 @@ m4 \
 cd "=dist"
 
 echo "Making tar.gz..."
-tar -cvzf "Grimoire-$VERSION.tgz" "Grimoire-$VERSION"
+tar -czf "Grimoire-$VERSION.tgz" "Grimoire-$VERSION"
 
 case "$disttype" in
  rpm)
   echo "Building rpm..."
   rpmbuild -ta "Grimoire-$VERSION.tgz";;
+ deb)
+  cd Grimoire-$VERSION
+  Tools/log2aptlog.sh > debian/changelog
+  dpkg-buildpackage
 esac
 
 if [ "$upload" ]; then
