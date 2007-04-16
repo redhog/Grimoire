@@ -1,3 +1,9 @@
+grimoire (0.2.main.151-1) unstable; urgency=low
+
+  * More config-templates
+
+ -- root <redhog@redhog.org>  Mon, 16 Mar 2007 15:15:00 +0200
+
 grimoire (0.2.main.146-1) unstable; urgency=low
 
   * Fix for grimoire-webware to actually add a context for itself to webware...
