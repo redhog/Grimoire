@@ -35,7 +35,7 @@ Description: Documentation for Grimoire
 
 Package: grimoire-conf
 Architecture: all
-Depends: grimoire (= ${Source-Version})
+Depends: grimoire (= ${Source-Version}), m4
 Description: Configuration for Grimoire
  This package contains configuration files for the Grimoire python
  action tree implementation.
