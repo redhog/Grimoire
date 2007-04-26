@@ -287,8 +287,11 @@ patsubst(skeleton(skeleton(server_varname)_roles), <m4quote>\([^ ]+\) *</m4quote
 
 #### Copy configuration files ####
 echo "Copying new configuration files to system, moving existing files to filename.old..."
-find etc/ -type d | while read path; do mkdir -p "/$path"; done
-find etc/ \! -type d | while read path; do [ -e "/$path" ] && mv "/$path" "/$path.old"; cp -a "$path" "/$path"; done
+(
+ cd filesystem
+ find etc/ -type d | while read path; do mkdir -p "/$path"; done
+ find etc/ \! -type d | while read path; do [ -e "/$path" ] && mv "/$path" "/$path.old"; cp -a "$path" "/$path"; done
+)
 
 #### Configure system ####
 patsubst(skeleton(skeleton(server_varname)_roles), <m4quote>\([^ ]+\) *</m4quote>, <m4quote>\1_configure<m4quote></m4quote></m4quote>)dnl

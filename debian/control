@@ -52,13 +52,14 @@ Description: SSL bindings for Grimoire
 Package: grimoire-ldap
 Architecture: any
 Depends: grimoire (= ${Source-Version}), python-ldap (>= 1.9), python-sambapasswords
-Suggests: slapd, ldap-utils, grimoire-ldapschema-openldap, samba-ldapschema-openldap, courier-ldapschema-openldap
+Suggests: slapd, db4.2-util, ldap-utils, grimoire-ldapschema-openldap, samba-ldapschema-openldap, courier-ldapschema-openldap
 Description: LDAP bindings for Grimoire
  This package adds an LDAP directory administration tree to Grimoire.
 
 Package: grimoire-ldapschema-openldap
 Architecture: all
 Depends: slapd
+Suggests: db4.2-util
 Description: Grimoire LDAP schema for OpenLDAP
  The Grimoire LDAP schema for OpenLDAP.
 
