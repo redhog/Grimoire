@@ -24,7 +24,7 @@ libdir := /usr/lib
 sbindir := /usr/sbin
 services := /var
 
-ldapdir := $(sysconfdir)/openldap
+ldapdir := $(sysconfdir)/ldap
 ldapschemadir := $(ldapdir)/schema
 pyversion := $(shell python -c "import sys; print str(sys.version_info[0]) + '.' + str(sys.version_info[1])")
 pynextversion := $(shell python -c "import sys; print str(sys.version_info[0]) + '.' + str(sys.version_info[1] + 1)")
