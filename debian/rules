@@ -16,7 +16,7 @@
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
-indep_packages := grimoire-doc grimoire-conf
+indep_packages := grimoire-doc grimoire-conf grimoire-ldapschema-openldap
 arch_packages := grimoire grimoire-ssl grimoire-ldap grimoire-postgresql grimoire-filesystem grimoire-cyrus grimoire-cups grimoire-client grimoire-webware
 
 sysconfdir := /etc
@@ -73,8 +73,8 @@ install-indep:
 	mkdir -p $(CURDIR)/debian/grimoire-conf$(sbindir)
 	cp -r Documentation/Scripts/Ldap $(CURDIR)/debian/grimoire-conf$(sbindir)/GrimConf
 
-	mkdir -p $(CURDIR)/debian/grimoire-ldap-server$(ldapschemadir)
-	cp Documentation/Scripts/Ldap/Grimoire.schema  $(CURDIR)/debian/grimoire-ldap-server$(ldapschemadir)/Grimoire.schema
+	mkdir -p $(CURDIR)/debian/grimoire-ldapschema-openldap$(ldapschemadir)
+	cp Documentation/Scripts/Ldap/Grimoire.schema  $(CURDIR)/debian/grimoire-ldapschema-openldap$(ldapschemadir)/Grimoire.schema
 
 install-arch:
 	dh_testdir; dh_testroot; dh_clean -k -s 
