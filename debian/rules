@@ -91,10 +91,9 @@ install-arch:
 	chmod ugo+x $(CURDIR)/debian/grimoire$(sysconfdir)/init.d/grimoire
 
 	mkdir -p $(CURDIR)/debian/grimoire-webware$(webware)/Configs/Application.d
-	mkdir -p $(CURDIR)/debian/grimoire-webware$(apachedir)/{mods-available,mods-enabled}
+	mkdir -p $(CURDIR)/debian/grimoire-webware$(apachedir)/mods-available
 	echo "Contexts['GrimWeb'] = '$(grimroot)/root/clients/html/funformkit/webware/_grimwebcontext'" > $(CURDIR)/debian/grimoire-webware$(webware)/Configs/Application.d/GrimWeb.config
 	echo "Alias /GrimWeb-static $(grimroot)/root/clients/html/funformkit/webware/_grimwebcontext" > $(CURDIR)/debian/grimoire-webware$(apachedir)/mods-available/grimweb.conf
-	ln -s ../mods-available/grimweb.conf $(CURDIR)/debian/grimoire-webware$(apachedir)/mods-enabled/grimweb.conf 
 
 
 # Must not depend on anything. This is to be called by
