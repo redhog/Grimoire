@@ -1,0 +1,19 @@
+<?php
+$conf['kolab']['ldap']['server'] = 'skeleton(ldap_servername)';
+$conf['kolab']['ldap']['port'] = 389;
+$conf['kolab']['ldap']['basedn'] = 'skeleton(ldap_realm)';
+$conf['kolab']['ldap']['binddn'] = 'cn=admin,skeleton(ldap_realm)';
+$conf['kolab']['ldap']['bindpw'] = 'skeleton(skeleton(grimoire_ldap_server_varname)_password)';
+$conf['kolab']['ldap']['phpdn'] = 'cn=admin,skeleton(ldap_realm)';
+$conf['kolab']['ldap']['phppw'] = 'skeleton(skeleton(grimoire_ldap_server_varname)_password)';
+$conf['kolab']['imap']['server'] = 'skeleton(cyrus_mail_servername)';
+$conf['kolab']['imap']['port'] = 143;
+$conf['kolab']['imap']['sieveport'] = 2000;
+$conf['kolab']['imap']['maildomain'] = 'skeleton(mail_domain)';
+$conf['kolab']['imap']['adminuser'] = 'cyrus';
+$conf['kolab']['imap']['adminpw'] = 'skeleton(skeleton(cyrus_mail_server_varname)_password)';
+$conf['kolab']['imap']['virtdomains'] = false;
+$conf['kolab']['groupldap'] = true;
+$conf['kolab']['smtp']['server'] = 'skeleton(cyrus_mail_servername)';
+$conf['kolab']['smtp']['port'] = 25;
+$conf['kolab']['enabled'] = true;
