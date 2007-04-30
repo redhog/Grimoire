@@ -251,6 +251,9 @@ class GenericValuedType(GenericDerivedType):
 ValuedType.generic = GenericValuedType
 
 class ListValuedType(ValuedType):
+    def getTag(cls, name, bases = (), dict = {}, tag = ()):
+        return DerivedType.getTag(name, bases, dict, (tuple(getDefAttr(bases, dict, 'values')),) + tag)
+    getTag = classmethod(getTag)
     def __strValues__(self):
         values = [unicode(value) for value in self.getValues()]
         if len(values) > 1:
