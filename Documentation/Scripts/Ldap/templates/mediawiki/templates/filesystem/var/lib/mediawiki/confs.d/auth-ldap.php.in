@@ -1,0 +1,11 @@
+<?php
+
+require_once('extensions/LdapAuthentication.php');
+
+$wgAuth = new LdapAuthenticationPlugin();
+$wgLDAPDomainNames = array("skeleton(ldap_servername)");
+$wgLDAPServerNames = array("skeleton(ldap_servername)" => "skeleton(ldap_servername)");
+$wgLDAPSearchAttributes = array("skeleton(ldap_servername)" => "uid");
+$wgLDAPBaseDNs = array("skeleton(ldap_servername)" => "skeleton(ldap_realm)");
+$wgLDAPEncryptionType = array("skeleton(ldap_servername)" => "false");
+$wgMinimalPasswordLength = 1;

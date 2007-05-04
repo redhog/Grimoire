@@ -1,0 +1,10 @@
+#! /bin/sh
+
+mkdir -p /etc/skel
+mkdir -p /etc/groupskel
+
+echo "Creating mail directories..."
+create_maildir_homegroup ""
+create_maildir_homegroup administrators
+create_maildir_user administrators superadmin 1024 1025
+create_maildir_user administrators demoadmin 1025 1025

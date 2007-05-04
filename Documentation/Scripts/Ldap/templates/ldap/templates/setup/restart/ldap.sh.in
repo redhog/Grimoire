@@ -1,0 +1,5 @@
+#! /bin/sh
+
+# Restart the Open LDAP database server again
+skeleton(ldap_start)
+wait_for_ldap_server_to_come_up

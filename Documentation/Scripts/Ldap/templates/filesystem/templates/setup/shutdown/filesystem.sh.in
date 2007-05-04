@@ -1,0 +1,4 @@
+#! /bin/sh
+
+# Stop the Grimoire server
+skeleton(grimoire_stop)

@@ -48,6 +48,7 @@ for role
   grimoire_ldap \
   grimoire_printers \
   horde \
+  mediawiki \
   ldap;
  do
   if [ "$(ref skeleton_${role}_servername)" ]; then

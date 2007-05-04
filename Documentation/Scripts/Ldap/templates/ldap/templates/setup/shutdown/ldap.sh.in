@@ -1,0 +1,4 @@
+#! /bin/sh
+
+# Shut down Open LDAP database server
+skeleton(ldap_stop)

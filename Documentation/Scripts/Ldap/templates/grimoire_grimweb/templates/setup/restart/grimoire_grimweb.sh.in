@@ -1,0 +1,7 @@
+#! /bin/sh
+
+# Restart the web-server
+skeleton(httpd_restart)
+
+# Restart the WebWare application-server
+skeleton(webkit_restart)

@@ -1,0 +1,11 @@
+#! /bin/sh
+
+if [ -e  "skeleton(ldap_dbdir)/skeleton(ldap_realm_dnsname)" ]; then
+ cat <<EOF
+
+A database with the LDAP realm skeleton(ldap_realm) already exists.
+Please remove it
+(rm -rf skeleton(ldap_dbdir)/skeleton(ldap_realm_dnsname)).
+EOF
+ exit 1
+fi

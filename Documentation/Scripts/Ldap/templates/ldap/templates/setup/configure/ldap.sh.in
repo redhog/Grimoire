@@ -1,0 +1,24 @@
+#! /bin/sh
+
+echo "Creating LDAP database directory..."
+mkdir skeleton(ldap_dbdir)/skeleton(ldap_realm_dnsname)
+chown ldap:ldap skeleton(ldap_dbdir)/skeleton(ldap_realm_dnsname)
+chmod 700 skeleton(ldap_dbdir)/skeleton(ldap_realm_dnsname)
+
+# Restart the Open LDAP database server
+skeleton(ldap_start)
+wait_for_ldap_server_to_come_up
+
+echo "Populating LDAP database..."
+ldapadd -x -y admin_password.secret -D cn=admin,skeleton(ldap_realm) -f basecontent.ldif
+echo "Setting passwords..."
+ldappasswd -x -y admin_password.secret -D cn=admin,skeleton(ldap_realm) cn=admin,skeleton(ldap_realm) -T admin_password.secret
+ldappasswd -x -y admin_password.secret -D cn=admin,skeleton(ldap_realm) uid=superadmin,ou=Administrators,ou=People,skeleton(ldap_realm) -T superadmin_password.secret
+ldappasswd -x -y admin_password.secret -D cn=admin,skeleton(ldap_realm) uid=demoadmin,ou=Administrators,ou=People,skeleton(ldap_realm) -T demoadmin_password.secret
+
+# Shut down Open LDAP database server again
+skeleton(ldap_stop)
+
+echo "Removing password override..."
+cp "skeleton(ldap_configdir)/slapd.conf" "skeleton(ldap_configdir)/slapd.conf.tmp"
+sed -e "s+rootpw+<m4quote>#</m4quote>rootpw+g" < "skeleton(ldap_configdir)/slapd.conf.tmp" > "skeleton(ldap_configdir)/slapd.conf"

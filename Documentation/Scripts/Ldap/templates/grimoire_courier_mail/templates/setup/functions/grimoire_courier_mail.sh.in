@@ -1,0 +1,15 @@
+#! /bin/sh
+
+# Create mail directories for a home group
+create_maildir_homegroup () {
+ groupdir="skeleton(maildir_server_path_unix)/$<m4quote>1</m4quote>"
+ mkdir "$groupdir"
+ mkdir "$groupdir/group.users"
+}
+
+# Create mail directories for a user
+create_maildir_user () {
+ groupdir="skeleton(maildir_server_path_unix)/$<m4quote>1</m4quote>"
+ mkdir "$groupdir/group.users/$<m4quote>2</m4quote>"
+ chown -R $<m4quote>3</m4quote>:$<m4quote>4</m4quote> "$groupdir/group.users/$<m4quote>2</m4quote>"
+}

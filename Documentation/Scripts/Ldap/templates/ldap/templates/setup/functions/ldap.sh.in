@@ -1,0 +1,11 @@
+#! /bin/sh
+
+# Function to wait for LDAP server to come up
+wait_for_ldap_server_to_come_up () {
+ echo "(If the following hangs, please check LDAP server log file for errors and try to start i manually)"
+ echo -n "Waiting for LDAP server to be connectable..."
+ while ldapsearch -x > /dev/null 2>&1; [ "$?" == 1 ]; do
+  sleep 10
+ done
+ echo "connectable."
+}

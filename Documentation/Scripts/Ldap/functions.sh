@@ -124,12 +124,14 @@ instantiateTemplates () {
     dst="${destination}/$(echo "${name}" | sed -e "s+^${tmplloc}$++g" -e "s+^${tmplloc}/\(.*\)$+\1+g")"
     mkdir -p "${dst}"
     chmod --reference="${name}" "${dst}"
+    chown --reference="${name}" "${dst}"
    done
   find "${tmplloc}" \! -type d -a -name "*.in" 2> /dev/null |
    while read name; do
     dst="${destination}/$(echo "${name}" | sed -e "s+^${tmplloc}/\(.*\)\.in$+\1+g")"
     m4 ${functions} "${name}" > "${dst}"
     chmod --reference="${name}" "${dst}"
+    chown --reference="${name}" "${dst}"
    done
   find "${tmplloc}" \! -type d -a \! -name "*.in" 2> /dev/null |
    while read name; do
