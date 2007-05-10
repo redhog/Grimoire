@@ -6,7 +6,7 @@ set(['login', 'username'], 'printers')
 # set(['login', 'password'], 'changethisdefaultpassword')
 # Remove the next line when you have set the above password
 # set(['login', 'password'], None)
-set(['login', 'password'], 'skeleton(skeleton(grimoire_<m4quote></m4quote>skeleton(servertype)_server_varname)_password)')
+set(['login', 'password'], 'skeleton(skeleton(skeleton(role)_server_varname)_password)')
 
 # Commands to perform at startup.
 # set(['initcommands'], [])
@@ -15,4 +15,4 @@ set(['login', 'password'], 'skeleton(skeleton(grimoire_<m4quote></m4quote>skelet
 treevar('printerservername', ['cups'])
 # How to set a complete domain name
 # treevar('printerservername', ['cups', 'gazonkware', 'com'])
-treevar('printerservername', [skeleton(grimoire_<m4quote></m4quote>skeleton(servertype)_serverid_python)])
+treevar('printerservername', [skeleton(skeleton(role)_serverid_python)])

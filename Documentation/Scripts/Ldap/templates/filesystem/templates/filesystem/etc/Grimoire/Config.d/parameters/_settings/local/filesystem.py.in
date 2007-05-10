@@ -7,7 +7,7 @@ set(['login', 'username'], 'filesystem')
 # set(['login', 'password'], 'changethisdefaultpassword')
 # Remove the next line when you have set the above password
 # set(['login', 'password'], None)
-set(['login', 'password'], 'skeleton(skeleton(grimoire_<m4quote></m4quote>skeleton(servertype)_server_varname)_password)')
+set(['login', 'password'], 'skeleton(skeleton(skeleton(role)_server_varname)_password)')
 
 # Commands to perform at startup.
 # set(['initcommands'], [])
@@ -16,4 +16,4 @@ set(['login', 'password'], 'skeleton(skeleton(grimoire_<m4quote></m4quote>skelet
 # treevar('fileservername', ['fileserver'])
 # How to set a complete domain name
 # treevar('fileservername', ['fileserver', 'gazonkware', 'com'])
-treevar('fileservername', [skeleton(grimoire_<m4quote></m4quote>skeleton(servertype)_serverid_python)])
+treevar('fileservername', [skeleton(skeleton(role)_serverid_python)])
