@@ -19,7 +19,7 @@ class Performer(Grimoire.Performer.Base):
                 values = self._getpath(Grimoire.Types.TreeRoot,
                                        path=['directory', 'get', 'ldap'] + revDnList)
 
-                maildirPath = values(['cn=defaults', 'grimoireMaildirPath'])[0].split('.')
+                maildirPath = values(['cn=defaults', 'grimoireCyrusdirPath'])[0].split('.')
 
                 # Group owner attribute contains a DN, and we only want a username
                 owner = Grimoire.Types.DN(values(['owner'])[0])[-1].split('=',2)[1]

@@ -8,6 +8,12 @@ if ! [ -e "$savefile" ]; then
  exit 1
 fi
 source "$savefile"
+export skeleton_homedir_server_path="$(echo "$skeleton_homedir_server_path_unix" | tr / .)"
+export skeleton_homedir_client_path="$(echo "$skeleton_homedir_client_path_unix" | sed -e "s+^/++g" | tr / .)"
+export skeleton_group_homedir_server_path="$(echo "$skeleton_group_homedir_server_path_unix" | tr / .)"
+export skeleton_group_homedir_client_path="$(echo "$skeleton_group_homedir_client_path_unix" | sed -e "s+^/++g" | tr / .)"
+export skeleton_maildir_server_path="$(echo "$skeleton_maildir_server_path_unix" | tr / .)"
+export skeleton_maildir_client_path="$(echo "$skeleton_maildir_client_path_unix" | sed -e "s+^/++g" | tr / .)"
 
 extensions="."
 if [ -f /etc/debian_version ]; then

@@ -82,15 +82,17 @@ grimoireSecondaryMailDomain: skeleton(mail_second_domain)
 # Path to append to create.homedir before path to home directory.
 # Hint: Mount a local.filesystem with the treevar $fileservername set
 # to the same path at the root.
-grimoireHomedirPath: skeleton(homedir_path)
+grimoireHomedirPath: skeleton(grimoire_home_serverid)<m4quote></m4quote>skeleton(homedir_server_path)
 # Path to prepend to home directory paths in user LDAP entries (that
 # is, the path to the mount point for home-directories on clients)
 grimoireClientHomedirPath: skeleton(homedir_client_path)
 # As grimoireHomedirPath but for mail directories (appended to create.maildir)
-grimoireMaildirPath: skeleton(maildir_path)
+grimoireMaildirPath: skeleton(grimoire_courier_mail_serverid)<m4quote></m4quote>skeleton(maildir_server_path)
 # Path to prepend to mail directory paths in user LDAP entries (that
 # is, the path to the mount point for mail-directories on the mail-server)
 grimoireClientMaildirPath: skeleton(maildir_client_path)
+# Dot-separated path to reach cyrus mail-directories from Grimoire
+grimoireCyrusdirPath: skeleton(grimoire_cyrus_mail_serverid)
 # Grimoire expressions to run on the Grimoire LDAP tree at login. You
 # probably want to mount some remote Grimoire trees (e.g. fileystem
 # trees, printer trees etc) here. One expression per attribute value.
@@ -209,11 +211,13 @@ cn: defaults
 # Path to append to create.homedir before path to group home directory.
 # Hint: Mount a local.filesystem with the treevar $fileservername set
 # to the same path at the root.
-grimoireHomedirPath: skeleton(group_homedir_path)
+grimoireHomedirPath: skeleton(grimoire_group_home_serverid)<m4quote></m4quote>skeleton(group_homedir_server_path)
 # Path to prepend to group home directory paths instansiated in files
 # (that is, the path to the mount point for group home-directories on
 # clients)
 grimoireClientHomedirPath: skeleton(group_homedir_client_path)
+# Dot-separated path to reach cyrus mail-directories from Grimoire
+grimoireCyrusdirPath: skeleton(grimoire_cyrus_mail_serverid)
 
 dn: ou=administrators,ou=groups,skeleton(ldap_realm)
 objectClass: grimoireGroup

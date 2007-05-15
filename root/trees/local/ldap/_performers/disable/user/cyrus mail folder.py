@@ -22,7 +22,7 @@ class Performer(Grimoire.Performer.Base):
                 values = self._getpath(Grimoire.Types.TreeRoot,
                                        path=['directory', 'get', 'ldap'] + revGroupDnList)
 
-                maildirPath = values(['cn=defaults', 'grimoireMaildirPath'])[0].split('.')
+                maildirPath = values(['cn=defaults', 'grimoireCyrusdirPath'])[0].split('.')
 
                 self._getpath(Grimoire.Types.MethodBase, 2,
                               ['disable', 'cyrus maildir', 'user'] + maildirPath + groupPath

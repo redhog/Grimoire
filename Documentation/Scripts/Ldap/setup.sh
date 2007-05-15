@@ -205,19 +205,10 @@ EOF
 
 readWithDefault skeleton_homedir_server_path_unix "Server mount point for the directory of home directories" "/home/people"
 readWithDefault skeleton_homedir_client_path_unix "Client mount point for the directory of home directories" "$skeleton_homedir_server_path_unix"
-export skeleton_homedir_path="$skeleton_grimoire_home_serverid$(echo "$skeleton_homedir_client_path_unix" | tr / .)"
-export skeleton_homedir_client_path="$(echo "$skeleton_homedir_client_path_unix" | sed -e "s+^/++g" | tr / .)"
-
 readWithDefault skeleton_group_homedir_server_path_unix "Server mount point for the directory of group home directories" "/home/groups"
 readWithDefault skeleton_group_homedir_client_path_unix "Client mount point for the directory of group home directories" "$skeleton_group_homedir_server_path_unix"
-export skeleton_group_homedir_path="$skeleton_grimoire_group_home_serverid$(echo "$skeleton_group_homedir_client_path_unix" | tr / .)"
-export skeleton_group_homedir_client_path="$(echo "$skeleton_group_homedir_client_path_unix" | sed -e "s+^/++g" | tr / .)"
-
 readWithDefault skeleton_maildir_server_path_unix "Server mount point for the directory of mail directories" "/mail"
 readWithDefault skeleton_maildir_client_path_unix "Client mount point for the directory of mail directories" "$skeleton_maildir_server_path_unix"
-export skeleton_maildir_path="$skeleton_grimoire_cyrus_mail_serverid$(echo "$skeleton_maildir_client_path_unix" | tr / .)"
-export skeleton_maildir_client_path="$(echo "$skeleton_maildir_client_path_unix" | sed -e "s+^/++g" | tr / .)"
-
 
 #### Server commands
 cat <<EOF
@@ -314,8 +305,8 @@ echo "done."
 
 
 #### Set up the system
-if [ -d "$genfiles/$(hostname)" ]; then
- cd "$genfiles/$(hostname)"
+if [ -d "$genfiles/$(hostname -f)" ]; then
+ cd "$genfiles/$(hostname -f)"
 
  cat <<EOF
 
@@ -324,7 +315,7 @@ generated files, or do the rest by hand.
 
 EOF
 
- find etc/ \! -type d |
+ (cd filesystem; find ./ \! -type d; ) |
   while read path; do
    if [ -e  "/$path" ]; then
     cat <<EOF
