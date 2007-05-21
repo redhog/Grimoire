@@ -9,3 +9,12 @@ $wgLDAPSearchAttributes = array("skeleton(ldap_servername)" => "uid");
 $wgLDAPBaseDNs = array("skeleton(ldap_servername)" => "skeleton(ldap_realm)");
 $wgLDAPEncryptionType = array("skeleton(ldap_servername)" => "false");
 $wgMinimalPasswordLength = 1;
+
+$wgLDAPGroupUseFullDN = array("skeleton(ldap_servername)" => false);
+$wgLDAPLowerCaseUsername = array("skeleton(ldap_servername)" => true);
+$wgLDAPGroupUseRetrievedUsername = array("skeleton(ldap_servername)" => false);
+$wgLDAPGroupObjectclass = array("skeleton(ldap_servername)" => "posixgroup");
+$wgLDAPGroupAttribute = array("skeleton(ldap_servername)" => "memberuid");
+$wgLDAPGroupNameAttribute = array("skeleton(ldap_servername)" => "cn");
+$wgLDAPUseLDAPGroups = array("skeleton(ldap_servername)" => true);
+$wgLDAPGroupsPrevail = array("skeleton(ldap_servername)" => true);
