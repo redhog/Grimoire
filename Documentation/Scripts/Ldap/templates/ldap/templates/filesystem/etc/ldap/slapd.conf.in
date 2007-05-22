@@ -2,6 +2,8 @@
 # This template is instantiated by the setup.sh script.
 
 # Required for basic functionality
+# FIXME: Add check for each of these if the corresponding
+# functionality is to be installed on any node in the cluster!
 include		skeleton(ldap_configdir)/schema/core.schema
 include		skeleton(ldap_configdir)/schema/cosine.schema
 include		skeleton(ldap_configdir)/schema/inetorgperson.schema
@@ -9,6 +11,7 @@ include		skeleton(ldap_configdir)/schema/nis.schema
 include         skeleton(ldap_configdir)/schema/samba.schema
 include         skeleton(ldap_configdir)/schema/courier.schema
 include         skeleton(ldap_configdir)/schema/Grimoire.schema
+include         skeleton(ldap_configdir)/schema/horde.schema
 
 # Schema check allows for forcing entries to
 # match schemas for their objectClasses's
@@ -57,6 +60,12 @@ index default               		sub
 
 # Save the time that the entry gets modified
 lastmod         on
+
+### Horde attributes
+access to attrs=hordePrefs,impPrefs,kronolithPrefs
+	by dn="cn=admin,dc=squeezy,dc=freecode,dc=no" write
+        by self write
+        by * read
 
 ### Grimoire attributes
 # Social security number for Swedish citizens
