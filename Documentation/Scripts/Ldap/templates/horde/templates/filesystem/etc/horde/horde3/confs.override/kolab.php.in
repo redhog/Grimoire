@@ -17,3 +17,4 @@ $conf['kolab']['groupldap'] = true;
 $conf['kolab']['smtp']['server'] = 'skeleton(cyrus_mail_servername)';
 $conf['kolab']['smtp']['port'] = 25;
 $conf['kolab']['enabled'] = true;
+$conf['prefs']['driver'] = 'kolab';
