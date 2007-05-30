@@ -92,7 +92,7 @@ skeleton(rootpassword)
 
 ### Horde attributes
 access to attrs=hordePrefs,impPrefs,kronolithPrefs
-	by dn="cn=admin,dc=squeezy,dc=freecode,dc=no" write
+	by dn="cn=admin,skeleton(ldap_realm)" write
         by self write
         by * read
 
