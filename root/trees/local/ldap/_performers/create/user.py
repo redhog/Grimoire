@@ -164,7 +164,7 @@ class Performer(Grimoire.Performer.Base):
 
                 conn.add_s(dn, kws.items())
 
-                for service in ('homedir', 'login', 'cyrus mail folder'):
+                for service in ('homedir', 'login', 'cyrus mail folder', 'horde'):
                     self._getpath(Grimoire.Types.MethodBase, 1,
                                   ['enable', 'user', service, '$ldapservername'] + path)()
 
