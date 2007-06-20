@@ -12,6 +12,8 @@ include         skeleton(ldap_configdir)/schema/samba.schema
 include         skeleton(ldap_configdir)/schema/courier.schema
 include         skeleton(ldap_configdir)/schema/Grimoire.schema
 include         skeleton(ldap_configdir)/schema/horde.schema
+include         skeleton(ldap_configdir)/schema/rfc2739.schema
+include         skeleton(ldap_configdir)/schema/kolab2.schema
 
 # Schema check allows for forcing entries to
 # match schemas for their objectClasses's
