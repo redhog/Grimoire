@@ -9,6 +9,3 @@ The flexible structure of Grimoire makes it easy to replicate functionality of e
 Grimoire also has SQL connectivity. To manipulate an SQL-database from within Grimoire is thus as easy as manipulating an LDAP-tree or the local filesystem. 
 
 The technologies behind Grimoire are Python (the modules must thus be written in Python) and SSL and for the web-GUI Apache, WebWare and FunFormKit are used. The SQL-connectivity is implemented for PostgreSQL at the moment, but other SQL-databases with python connectivity are also possible to support in the future. 
-
-Grimoire is versioned using the GNU Arch SCM. To register the Grimoire archive and check out Grimoire, issue the command 
-`tla register-archive "main AT grimoire.gna.org" "sftp COLON SLASH SLASH yourusername AT arch.gna.org/upload/grimoire/main.grimoire.gna.org"' 
