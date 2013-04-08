@@ -1,5 +1,4 @@
-import types, re, string, Grimoire.Utils, Composable, Representation, Path, About, Introspection, urllib, xml.sax.saxutils
-
+import types, re, string, Grimoire.Utils, Composable, Representation, Path, About, Introspection
 
 class ComposeType(object):
     class __metaclass__(types.TypeType):
@@ -16,31 +15,79 @@ class ComposeType(object):
     def compose(cls, obj, composer):
         return obj
 
-class Composer(object):
+class ComposeObjType(ComposeType): pass
+class ComposeTypeType(ComposeType): pass
+class ComposeWrapType(ComposeType): pass
 
-    translationTable = None
-    currentMethod = None
-    
+class ComposeWrapper(ComposeType):
+    def compose(cls, composer, obj):
+        class ParentComposer(composer.parameters(), cls.parentComposer): pass
+        return composer(ParentComposer(obj))
+
+class ComposeObjWrapper(ComposeWrapper, ComposeObjType): pass
+class ComposeTypeWrapper(ComposeWrapper, ComposeTypeType): pass
+
+class Composer(object):
+    __slots__ = ['typeMap', 'objMap']
+
     class __metaclass__(types.TypeType):
         def __new__(cls, name, bases, members):
-            composeMap = Grimoire.Utils.InstanceMap()
-            for base in bases:
-                if hasattr(base, 'composeMap'):
-                    composeMap.update(base.composeMap)
+            typeMap = Grimoire.Utils.SubTypeMap()
+            objMap = Grimoire.Utils.InstanceMap()
+            for base in Grimoire.Utils.Reverse(bases):
+                if hasattr(base, 'typeMap'):
+                    typeMap.update(base.typeMap)
+                if hasattr(base, 'objMap'):
+                    objMap.update(base.objMap)
             for member in members.itervalues():
-                if Grimoire.Utils.isSubclass(member, ComposeType) and member.type is not None:
-                    composeMap[member.type] = member
-            members['composeMap'] = composeMap
+                if Grimoire.Utils.isSubclass(member, ComposeTypeType) and member.type is not None:
+                    typeMap[member.type] = member
+                elif Grimoire.Utils.isSubclass(member, ComposeObjType) and member.type is not None:
+                    objMap[member.type] = member
+            members['typeMap'] = typeMap
+            members['objMap'] = objMap
             return types.TypeType.__new__(cls, name, bases, members)
 
+        def parameters(base):
+            return types.TypeType.__new__(type(base), base.__name__ + "_parameters", (base,),
+                                          {'typeMap': Grimoire.Utils.SubTypeMap(),
+                                           'objMap': Grimoire.Utils.InstanceMap()})
+
+        def wrap(base):
+            members = {}
+            if hasattr(base, 'typeMap'):
+                for composer in base.typeMap.itervalues():
+                    class Wrapper(ComposeTypeWrapper):
+                        type = composer.type
+                        parentComposer = base
+                    Wrapper.__name__ = "wrapped_" + composer.__name__
+                    members[Wrapper.__name__] = Wrapper
+            if hasattr(base, 'objMap'):
+                for composer in base.objMap.itervalues():
+                    class Wrapper(ComposeObjWrapper):
+                        type = composer.type
+                        parentComposer = base
+                    Wrapper.__name__ = "wrapped_" + composer.__name__
+                    members[Wrapper.__name__] = Wrapper
+            return type(base).__new__(type(base), "wrapped_" + base.__name__, (Composer,), members)
+
         def composeMapGet(composer, obj):
-            return composer.composeMap[obj]
+            try:
+                return composer.typeMap[obj]
+            except KeyError:
+                return composer.objMap[obj]
         composeMapGet = Grimoire.Utils.cachingFunction(composeMapGet)
 
         def __call__(composer, obj):
             return composer.composeMapGet(obj)(composer, obj)
 
-    class ComposeString(ComposeType):
+class GenericComposer(Composer):
+    __slots__ = ['currentMethod', 'translationTable']
+
+    currentMethod = None
+    translationTable = None
+
+    class ComposeString(ComposeObjType):
         type = types.BaseStringType
 
         def compose(cls, composer, obj):
@@ -51,7 +98,7 @@ class Composer(object):
                     pass
             return obj
 
-    class ComposeException(ComposeType):
+    class ComposeException(ComposeObjType):
         type = Exception
 
         def compose(cls, composer, obj):
@@ -59,19 +106,19 @@ class Composer(object):
                 return composer(obj.args[0])
             return composer(obj.args)
 
-    class ComposeGrimoireReference(ComposeType):
+    class ComposeGrimoireReference(ComposeObjType):
         type = Representation.GrimoireReference
 
         def compose(cls, composer, obj):
-            if composer.currentMethod is None:
-                raise TypeError("Unable to render GrimoireReferences outside of method context")
-            base = composer.currentMethod
-            if obj['levels']:
-                base = base[:-obj['levels']]
-            return composer(Representation.GrimoirePath(base + obj['path']))
+            if composer.currentMethod:
+                obj = composer.currentMethod + obj
+            res = Representation.GrimoirePath(obj['path'])
+            if obj['levels'] != 0:
+                res = Grimoire.Types.Formattable("%(levels)s/%(path)s", levels = obj['levels'], path = res)
+            return composer(res)
 
-class TextComposer(Composer):
-    class ComposePythonObject(ComposeType):
+class TextComposer(GenericComposer):
+    class ComposePythonObject(ComposeObjType):
         type = Grimoire.Utils.AnyDescendant
         def compose(cls, composer, obj):
             try:
@@ -91,12 +138,12 @@ class TextComposer(Composer):
                 pass
             return str(obj)
 
-    class ComposeObject(ComposeType):
+    class ComposeObject(ComposeObjType):
         type = Composable.Composable
         def compose(cls, composer, obj):
             return '<' + composer(type(obj)) + ' at ' + str(id(obj)) + '>'
 
-    class ComposeGenericMapping(ComposeType):
+    class ComposeGenericMapping(ComposeObjType):
         type = None
 
         format = ''
@@ -117,7 +164,7 @@ class TextComposer(Composer):
         type = Composable.Formattable
         def getFormat(self, composer, obj): return obj.format
 
-    class ComposeSequence(ComposeType):
+    class ComposeSequence(ComposeObjType):
         type = None
 
         prefix = suffix = delimiter = ''
@@ -135,7 +182,12 @@ class TextComposer(Composer):
 
     class ComposeRepresentationSequence(ComposeSequence):
         type = Representation.RepresentationSequence
-        def getDelimiter(cls, composer, obj): return obj.delimiter
+        def getDelimiter(cls, composer, obj):
+#            print "COMPOSE"
+#            print "    CLS", cls.__name__
+#            print "    COMPOSER", composer.__name__
+#            print "    OBJ", type(obj).__name__
+            return obj.delimiter
 
     class ComposeReverseSequence(ComposeSequence):
         type = None
@@ -221,7 +273,7 @@ class TextComposer(Composer):
             format += '/'
             return format
         
-    class ComposeURIParameters(ComposeType):
+    class ComposeURIParameters(ComposeObjType):
         type = Path.URIParameters
 
         def compose(cls, composer, obj):
@@ -254,7 +306,7 @@ License: %(licenseURL)s
             res['copychanges'] = Composable.Lines(res['copyright'], *res['changes'])
             return res
 
-    class ComposeParamsType(ComposeType):
+    class ComposeParamsType(ComposeObjType):
         type = Introspection.ParamsType
         def compose(cls, composer, obj):
             lines = []
@@ -282,62 +334,3 @@ License: %(licenseURL)s
             if obj.convertType:
                 lines.append(Grimoire.Types.AnnotatedValue(obj.convertType, "Values will be converted to the following types"))
             return composer(Grimoire.Types.Lines(*lines))
-
-class HtmlNoEscape(types.UnicodeType): pass
-class HtmlParagraph(types.DictType): pass
-
-class HtmlComposer(TextComposer):
-
-    methodBaseURI = None # URI pattern for GrimoireReference expansion. Example: "http://example.com/grimoire?sess=4711&callMethod=%(method)s&foo=32"
-
-    class ComposePythonObject(TextComposer.ComposePythonObject):
-        def compose(cls, composer, obj):
-            return xml.sax.saxutils.escape(TextComposer.ComposePythonObject.compose(composer, obj))
-
-    class ComposeObject(TextComposer.ComposeObject):
-        def compose(cls, composer, obj):
-            return '&lt;' + composer(type(obj)) + ' at ' + str(id(obj)) + '&gt;'
-
-    class ComposeHtmlNoEscape(TextComposer.ComposeString):
-        type = HtmlNoEscape
-
-    class ComposeString(TextComposer.ComposeString):
-        def compose(cls, composer, obj):
-            return xml.sax.saxutils.escape(TextComposer.ComposeString.compose(composer, obj))
-
-    class ComposeLines(TextComposer.ComposeLines):
-        def getDelimiter(cls, composer, obj): return HtmlNoEscape('<br/>')
-
-    class ComposeParagraph(TextComposer.ComposeGenericMapping):
-        type = HtmlParagraph
-        format = HtmlNoEscape('<p>%(paragraph)s</p>')
-
-    class ComposeParagraphs(TextComposer.ComposeParagraphs):
-        type = Composable.Paragraphs
-        def getList(cls, composer, obj):
-            return [HtmlParagraph(paragraph=paragraph)
-                    for paragraph in TextComposer.ComposeBlock.getList(composer, obj)]
-
-    class ComposeTitledURILink(TextComposer.ComposeGenericMapping):
-        type = Composable.TitledURILink
-        format = HtmlNoEscape('<a href="%(value)s">%(comment)s</a>')
-
-    class ComposeGrimoireReference(TextComposer.ComposeGrimoireReference):
-        def compose(cls, composer, obj):
-            if composer.methodBaseURI is None:
-                raise TypeError("Unable to render GrimoirePaths without a medthod base URI")
-            return composer.methodBaseURI % {
-                'method': urllib.quote_plus(Grimoire.Utils.encode(
-                    "." +  TextComposer.ComposeGrimoireReference.compose(composer, obj)))}
-
-    class ComposeCopyrightChange(TextComposer.ComposeCopyrightChange):
-        format = HtmlNoEscape('%(type)s (c) %(year)s by %(name)s &lt;<a href="mailto:%(email)s">%(email)s</a>&gt;')
-
-    class ComposeAboutItem(TextComposer.ComposeAboutItem):
-        format = HtmlNoEscape("""%(name)s<br/>
-<p>
- Version: %(versionname)s<br/>
- %(copychanges)s<br/>
- License: %(licenseURL)s
-</p>
-%(licenseText)s""")

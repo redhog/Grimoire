@@ -4,7 +4,13 @@
 grimoire_vendor > Documentation/vendor
 grimoire_version > Documentation/version
 
-xsltproc \
- -o Documentation/Overview.html \
- Tools/Styles/docbookhtml.xsl \
- Documentation/Overview.docbook
+find Documentation -name *.docbook |
+ while read name; do
+  htmlname="$(echo "$name" | sed -e "s+\.docbook$+.html+")"
+  echo "$name -> $htmlname"
+  xsltproc \
+   -o "$htmlname" \
+   Tools/Styles/docbookhtml.xsl \
+   "$name"
+ done
+

@@ -226,9 +226,11 @@ def subtypeCmp(x, y):
     elif isSubclass(x, y):
         return -1
     else:
-        # FIXME: What if x and y have a common ancestor, but inherits
-        # from other (non-common) classes too, and have those classes
-        # first in their inheritance lists?
+        #### fixme ####
+        # description="""What if x and y have a common ancestor, but
+        # inherits from other (non-common) classes too, and have those
+        # classes first in their inheritance lists?"""
+        #### end ####
         oldx = x # Not strictly needed...
         bx = bases(x, False)
         while bx and not isSubclass(y, x):
@@ -263,6 +265,7 @@ def hashAny(obj):
 
 def hashAnyNonHashable(obj):
     if isinstance(obj, types.ListType):
+        # FIXME: We could be smarter here and include hash(type(obj)) in some way...
         res = 3430009 # 3430009 == hash(()) + 1
         for v in obj:
             res += hashAny(v)

@@ -27,7 +27,7 @@ class Performer(Grimoire.Performer.Base):
             return self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.MethodBase, 1,
                                       ['list', 'ldapentries', '$ldapservername', 'Domains'] + path
-                                      )(depth, 'objectClass=dcObject', addType='ou')) #FIXME: Will create bad DN:s
+                                      )(depth, 'objectClass=dcObject', beginType='ou', addType='dc'))
         def _params(self, path):
             return Grimoire.Types.AnnotatedValue(
                 Grimoire.Types.ParamsType.derive(
@@ -50,16 +50,10 @@ class Performer(Grimoire.Performer.Base):
                                       path=['emailaliasPathonly', '$ldapservername'] + path + [username]
                                       )(maildrop))
         def _dir(self, path, depth):
-            # We have to add the "dc=" ourselves and not by
-            # using addType, since Domains is a different type (ou)
-            # than the rest of the path (dc).
-            # /Bjornsson 
-            path = [ 'dc='+elem for elem in path ]
-            
             return self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.MethodBase, 1,
-                                      ['list', 'ldapentries', '$ldapservername', 'ou=Domains'] + path
-                                      )(depth, 'objectClass=dNSZone'))
+                                      ['list', 'ldapentries', '$ldapservername', 'Domains'] + path
+                                      )(depth, 'objectClass=dcObject', beginType='ou', addType='dc'))
         def _params(self, path):
             return Grimoire.Types.AnnotatedValue(
                 Grimoire.Types.ParamsType.derive(

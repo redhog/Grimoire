@@ -1,0 +1,8 @@
+#! /bin/sh
+
+mkdir -p /etc/skel
+mkdir -p /etc/groupskel
+
+echo "Creating group home directories..."
+create_homedir_group "" 1026
+create_homedir_group administrators 1027

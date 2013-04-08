@@ -64,6 +64,8 @@ class Performer(Grimoire.Performer.Base):
     class set_ldap(LdapSubMethod):
         def _call(self, path, value):
             raise NotImplemented
+        def _hasAttr(self, path):
+            return 0
         def _params(self, path):
             return A(Ps([('value', A(Grimoire.Types.AnyType,
                                      'Value to set'))]),

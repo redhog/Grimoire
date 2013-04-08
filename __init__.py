@@ -81,6 +81,8 @@ for configTree in _.directory.get.parameters(['trees']):
             keyPath = configFilePath[len(configTree):]['relative']
             if keyPath[-1].endswith('.py'):
                 keyPath[-1] = keyPath[-1][:-3] # Remove .py"
+                if keyPath[-1] == '__init__':
+                    del keyPath[-1]
                 configPath, configKeyPath = Grimoire.Utils.splitList(keyPath, '_settings', 2)
                 try:
                     execfile(unicode(configFilePath))

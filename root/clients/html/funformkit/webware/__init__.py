@@ -1,7 +1,7 @@
-import Grimoire.Utils, Grimoire.Performer, Grimoire.Types, WebKit.Page, sys, string
+import Grimoire.Utils, Grimoire.Performer, Grimoire.Types, sys, string
 
-profileRespond = 'respondprof-'
-
+profileRespond = False # 'respondprof-'
+debugExceptionsWithPdb = True
 
 if profileRespond:
     import hotshot
@@ -9,6 +9,8 @@ if profileRespond:
 class Performer(Grimoire.Performer.Base):
     class webware(Grimoire.Performer.Method):
         def _call(performer):
+            import WebKit.Page
+            
             FormServlet = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase)())
 
             class FormPage(WebKit.Page.Page, FormServlet):
@@ -44,6 +46,11 @@ class Performer(Grimoire.Performer.Base):
                         except Exception, e:
                             import traceback
                             traceback.print_exc()
+
+                            if debugExceptionsWithPdb:
+                                import sys, pdb
+                                sys.last_traceback = sys.exc_info()[2]
+                                pdb.pm()
 
                             self.reconnectGrimoire()
                             self.response().reset()

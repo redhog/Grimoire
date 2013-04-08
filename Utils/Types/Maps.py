@@ -2,7 +2,7 @@ from Grimoire.Utils import Obj
 from Grimoire.Utils.Types import Wrapper
 from Grimoire.Utils.Types import SortedList
 from Grimoire.Utils.Types import Iter
-import types, weakref, traceback
+import types, weakref
 
 class ModifyGeneralizedDictMixIn(types.DictType):
     __slots__ = []

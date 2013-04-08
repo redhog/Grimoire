@@ -1,0 +1,30 @@
+#! /bin/sh
+
+# Ok, so there is a poff script in your distro. But that poff script
+# doesn't wait for the pppd to die before finnishing, so we can't
+# really use it. This script isn't any more intelligent, it actually
+# has much fewer options - the only way to invoce it is with the peer
+# name as first argument, but it waits for it to die.
+
+pid=$(
+ ps -o pid,cmd ax |
+  grep -e "pppd[ ]call $1" |
+  sed -e "s+ .*++g")
+
+if ! [ "$pid" ]; then
+ exit 1
+fi
+
+kill $pid
+times=0
+while kill -0 $pid 2> /dev/null; do
+ sleep 0.2
+ ((times++))
+ # Five seconds should be enought for eveyone
+ if ((times > 25)); then
+  kill -KILL $pid # F**ck it, we can't be waiting for ever you stupid process. Die die die!
+  break;
+ fi
+done
+
+exit 0

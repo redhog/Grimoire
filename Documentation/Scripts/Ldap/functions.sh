@@ -102,3 +102,41 @@ grimoireConnect () {
   echo "_.trees.remote.dirt.$(echo "$dst" | sed -e "s+\\.+\\\\.+g")()"
  fi
 }
+
+instantiateTemplates () {
+ functions="$1"
+ templates="$2"
+ destination="$3"
+ extensions="$4"
+
+ echo "instantiateTemplates $templates inherit to $destination ($functions)"
+ ls -d ${templates}/inherits/*/ 2> /dev/null |
+  while read parent; do
+   instantiateTemplates "$functions" "$parent" "$destination" "$extensions"
+  done
+
+ echo "instantiateTemplates $templates instantiate to $destination ($functions)"
+ for extension in $extensions; do
+  [ "$extension" == "." ] && extension=""
+  tmplloc="${templates}/templates${extension}"
+  find "${tmplloc}" -type d 2> /dev/null |
+   while read name; do
+    dst="${destination}/$(echo "${name}" | sed -e "s+^${tmplloc}$++g" -e "s+^${tmplloc}/\(.*\)$+\1+g")"
+    mkdir -p "${dst}"
+    chmod --reference="${name}" "${dst}"
+    chown --reference="${name}" "${dst}"
+   done
+  find "${tmplloc}" \! -type d -a -name "*.in" 2> /dev/null |
+   while read name; do
+    dst="${destination}/$(echo "${name}" | sed -e "s+^${tmplloc}/\(.*\)\.in$+\1+g")"
+    m4 ${functions} "${name}" > "${dst}"
+    chmod --reference="${name}" "${dst}"
+    chown --reference="${name}" "${dst}"
+   done
+  find "${tmplloc}" \! -type d -a \! -name "*.in" 2> /dev/null |
+   while read name; do
+    dst="${destination}/$(echo "${name}" | sed -e "s+^${tmplloc}/\(.*\)$+\1+g")"
+    cp -p -P "${name}" "${dst}"
+   done
+ done
+}

@@ -1,12 +1,15 @@
-import Grimoire.Types.Ability, Grimoire.Performer, Grimoire.Types, Grimoire.root.trees.local.ldap._Ldap, Grimoire.root.trees.local.ldap._Ability
-import Grimoire.Utils, ldap, types, sys, traceback
+import Grimoire.Types.Ability, Grimoire.Performer, Grimoire.Types, types
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
 
 class Performer(Grimoire.Performer.Base):
     class ldap(Grimoire.Performer.Method):
+        __related_group__ = ['login', 'ldap']
         def _call(self, userId, password, server = None, realm = None, admindn = None, adminpwd = None):
+            import Grimoire.root.trees.local.ldap._Ldap, Grimoire.root.trees.local.ldap._Ability
+            import Grimoire.Utils, ldap, types, sys, traceback
+
             directory = self._callWithUnlockedTree(lambda: self._getpath(Grimoire.Types.TreeRoot).directory.new())
             setParam = directory.directory.set.parameters
             getParam = directory.directory.get.parameters

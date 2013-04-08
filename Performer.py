@@ -4,16 +4,15 @@ classes. External access to the methods of the user-class is
 controlled by abilities, as specified in the ability-module.
 """
 
-import operator, string, types, sys, Grimoire.Types, Grimoire.Types.Ability, Grimoire.Utils, Grimoire.Utils.RPC, traceback
+import operator, string, types, sys, Grimoire.Types, Grimoire.Types.Ability, Grimoire.Utils, Grimoire.Utils.RPC
 
 
 debugMethodNotImplementedHere = 0
-debugTreeOps = 0
-
-if debugMethodNotImplementedHere: import traceback
+debugTreeOps = () #('dir', 'related')
 
 
-UnlimitedDepth = Grimoire.Utils.infinity
+UnlimitedDepth = Grimoire.Utils.InfinityClass(True)
+MethodBaseDepth = Grimoire.Utils.InfinityClass(True)
 
 def DirListFilter(prefix, depth, listing, chop=True, pathPos=1):
     """Filters a list of tuples. In each tuple, the first element must
@@ -122,7 +121,18 @@ def treeOp_combine_add(self, fns, **kw):
     return {'value': reduce(operator.add, Grimoire.Utils.Map(apply, fns), 0)}
 
 
-class Performer(Grimoire.Utils.RPC.ServerObject): pass
+class Performer(Grimoire.Utils.RPC.ServerObject):
+    __slots__ = []
+    def __add__(self, other):
+        if Grimoire.Utils.isInstance(other, Performer):
+            return Composer(Physical(self), Physical(other))
+        else:
+            path = other
+            if not Grimoire.Utils.isInstance(path, Grimoire.Types.GrimoireReference):
+                path = Grimoire.Types.GrimoireReference(path)
+            return Physical(self)._physicalGetpath(Grimoire.Types.CurrentNode, path['levels'], path['path'])
+    def __radd__(self, path):
+        return Prefixer(path, Physical(self))
 
 class Logical(Performer):
     __slots__ = ['_physical']
@@ -139,6 +149,12 @@ class Logical(Performer):
         # If the next line moves, please change the number in the
         # debug-printout-filter in Physical._treeOp
         return Physical(self)._treeOp([], "call", callarg=arg, callkw=kw)
+
+    def __add__(self, other):
+        return Logical(super(Logical, self).__add__(other))
+
+    def __radd__(self, other):
+        return Logical(super(Logical, self).__radd__(other))
 
 class Physical(Performer):
     """Physical is the base-class for all objects that makes up a
@@ -247,12 +263,19 @@ class Physical(Performer):
         other = Physical(other)
         if self._physicalRoot() is not other._physicalRoot():
             raise ValueError("Can not create references between methods of different trees")
-        selfPath = self._pathForSelf(dynamic=True)
-        otherPath = other._pathForSelf(dynamic=True)
-        commonLen = len(Grimoire.Utils.commonPrefix(selfPath, otherPath))
-        return Grimoire.Types.GrimoireReference(
-            len(selfPath) - commonLen,
-            otherPath[commonLen:])
+        return Grimoire.Types.GrimoireReference(other._pathForSelf(dynamic=True), 0) - Grimoire.Types.GrimoireReference(self._pathForSelf(dynamic=True), 0)
+
+    def _reReference(self, other, path):
+        """Given a reference path relative another method object,
+        return the same reference but relative the current method."""
+        return Physical(other)._physicalGetpath(path) - self._pathForSelf(dynamic=True)
+
+    def __description__(self, indentation):
+        return indentation + self.__class__.__name__ + '\n'
+    def __unicode__(self, indentation = ''):
+        return self.__description__(indentation)
+    def __str__(self):
+        return str(self.__unicode__())
 
     # Physical -> Logical API
     # (methods that returns Logicals)
@@ -266,9 +289,10 @@ class Physical(Performer):
         """Execute an operation named by treeOp (with argument *arg,
         **kw) on a node in the logical tree, specified by path.
         """
-        if debugTreeOps:
+        if treeOp in debugTreeOps:
+            import traceback
             tr = traceback.extract_stack()[:-1]
-            if tr[-1][1] == 141:
+            if tr[-1][1] == 151:
                 tr = tr[:-1]
             tr.reverse()
             def filter(item):
@@ -281,7 +305,10 @@ class Physical(Performer):
         try:
             return self._treeOp_recurse(path=path, treeOp=treeOp, wholePath=path, **kw)['value']
         except Grimoire.Types.MethodNotImplementedHere:
-            if debugMethodNotImplementedHere: print "MethodNotImplementedHere:", self, path; traceback.print_exc()
+            if debugMethodNotImplementedHere:
+                import traceback
+                print "MethodNotImplementedHere:", self, path;
+                traceback.print_exc()
             raise AttributeError(self._physicalRoot(), self._pathForSelf(path, True))
 
     def _treeOp_recurse(self, path, treeOp, **kw):
@@ -379,6 +406,7 @@ class Implementing(AbstractImplementing):
 
 
 class ImplementingHandling(AbstractImplementing, Handling):
+    __slots__ = []
     def _treeOp_handle(self, treeOp, **kw):
         return getattr(self, "_treeOp_impl_" +  treeOp,
                        self._treeOp_impl)(treeOp=treeOp, **kw)
@@ -394,7 +422,20 @@ class Cutter(Physical):
     def __init__(self, performer, basepath = []):
         Physical.__init__(self)
         self._basepath = basepath
-        self._setParent(Physical(performer))
+        Physical._setParent(self, Physical(performer))
+
+    # Ugglyhacks
+
+    # This is here to make sure that we won't lose the object we're
+    # cutting if we get added to some other tree. This is really
+    # uggly, and turning everything upside down and have the cutted
+    # object as _child, inheriting from SingleChildContainer would
+    # really be much better, if it didn't mean that
+    # Physical(s.foo.bar)._physicalRoot() !=
+    # Physical(s)._physicalRoot()
+    
+    def _setParent(self, parent):
+        pass
 
     # Optimizations
 
@@ -411,6 +452,9 @@ class Cutter(Physical):
 
     def _pathForSelf(self, extraPath = [], dynamic=False):
         return self._physicalParent()._pathForSelf(self._path(extraPath), dynamic)
+
+    def __unicode__(self, indentation = ''):
+        return self.__description__(indentation) + self._physicalParent().__unicode__(indentation + ' ')
 
     # Logical node API
 
@@ -446,7 +490,23 @@ class AbstractMethod(Implementing):
     def _treeOp_impl_related(self, path, depth, objectPath, objectDepth, **kw):
         return {'value': self._related(path, depth, objectPath, objectDepth)}
 
-    # You may override this one in user classes if you whish to.
+    # You may override these one in user classes if you whish to.
+
+    __related_hasobjects__ = True
+    
+    def _related_group(self, path, depth, objectPath, objectDepth):
+        return getattr(self, '__related_group__', None)
+
+    def _related_description(self, path, depth, objectPath, objectDepth):
+        description = getattr(self, '__related_description__', None)
+        if description is not None: return description
+        pathForSelf = self._pathForSelf()
+        while pathForSelf and pathForSelf[-1].startswith('$'):
+            del pathForSelf[-1]
+        return pathForSelf
+
+    def _related_objdir(self, path, depth):
+        return self._treeOp(path, 'dir', depth=depth)
 
     def _related(self, path, depth, objectPath, objectDepth):
         """This magic attempts to do "the right thing" for you. In
@@ -462,32 +522,50 @@ class AbstractMethod(Implementing):
         The description is either self.__related_description__ or if
         not set, the path to this method or sub method, with any
         terminating treevars removed.
-        """
-        if not hasattr(self, '__related_group__'):
-            return []
+        """        
+        relatedGroup = self._related_group(path, depth, objectPath, objectDepth)
+        if relatedGroup is None: return []
+        description = self._related_description(path, depth, objectPath, objectDepth)
         pathForSelf = self._pathForSelf()
         objPrefix = []
         while pathForSelf and pathForSelf[-1].startswith('$'):
             objPrefix[0:0] = [pathForSelf[-1]]
             del pathForSelf[-1]
-        description =  getattr(self, '__related_description__', pathForSelf)
+        # Handle path
+        #### fixme ####
+        # name = 'Double getPrefix call in related methods'
+        # description = """Is there any way we can merge these two
+        # calls to getPrefix? As it is, we're expanding treevars
+        # twice, and that's a performance hit!"""
+        #### end ####
         objPrefix, objPrefixLen, which = getPrefix(self,
                                                    objPrefix != [],
-                                                   self.__related_group__ + objPrefix,
-                                                   len(self.__related_group__ + objPrefix),
-                                                   objectPath, True)
+                                                   relatedGroup + objPrefix + path,
+                                                   len(relatedGroup + objPrefix + path),
+                                                   objectPath, True)        
         objectPathLen = len(objectPath)
         addPath = []
-        subPath = []
+        subPath = list(path)
         if which == None:
             return []
         elif which == -1:
-            addPath = objPrefix[objectPathLen:]
+            addPath += objPrefix[objectPathLen:]
         elif which == 1:
-            subPath = objectPath[objPrefixLen:]
+            subPath += objectPath[objPrefixLen:]
+        subObjDepth = objectDepth - max(0, (objPrefixLen - objectPathLen))
+        if subObjDepth < 0:
+            if self.__related_hasobjects__:
+                return [(0, addPath, description, subPath)]
+            else:
+                subObjDepth = 0
+        if depth is MethodBaseDepth:
+            objlist = self._related_objdir(subPath, subObjDepth)
+        else:
+            objlist = self._treeOp(subPath, 'dir', depth=subObjDepth)
         return DirListFilter(path, depth,
-                             Grimoire.Utils.Map(lambda (leaf, path): (leaf, addPath + path, description, subPath + path),
-                                                self._treeOp(subPath, 'dir', depth=objectDepth - max(0, (objPrefixLen - objectPathLen)))),
+                             Grimoire.Utils.Map(lambda (leaf, method):
+                                                    (leaf, addPath + method, description, subPath + method),
+                                                objlist),
                              False, 3)
 
 
@@ -598,6 +676,9 @@ class Container(ImplementingHandling):
             raise AssertionError(self, obj, extraPath)
         return self._pathForSelf(extraPath, dynamic)
 
+    def __unicode__(self, indentation = ''):
+        return self.__description__(indentation) + ''.join([child.__unicode__(indentation + ' ') for child in self._getChildren()])
+
     # Logical node API
 
     def _treeOp_handle(self, treeOp, **kw):
@@ -625,6 +706,7 @@ class SingleChildContainer(Container):
         return self._child._remove(*arg, **kw)
 
 class ThinSingleChildContainer(SingleChildContainer):
+    __slots__ = []
     def _treeOp_handle(self, **kw):
         return self._child._treeOp_recurse(**kw)
 
@@ -652,6 +734,9 @@ class AbstractRestrictor(ThinSingleChildContainer):
     def _ability(self):
         return self._abilityObject
 
+    def __description__(self, indentation):
+        return indentation + self.__class__.__name__ + ':' + unicode(self._ability()) + '\n'
+
 class Hide(AbstractRestrictor):
     """Hide restricts the set of methods cisible on another Physical
     by means of an Ability-object, as defined in the Ability
@@ -668,11 +753,40 @@ class Hide(AbstractRestrictor):
 
     def _treeOp_handle_dir(self, path, **kw):
         def filterUnallowed((leaf, pth)):
-            if not self._abilityObject(path + pth, not leaf):
-                raise Grimoire.Utils.FilterOutError()
-            return (leaf, pth)
+            if self._abilityObject(path + pth):
+                return (leaf, pth)
+            if self._abilityObject(path + pth, True):
+                return (0, pth)
+            raise Grimoire.Utils.FilterOutError()
+            
+        #### fixme ####
+        # description = """Make it possible for prefixer to know what we are
+        # filtering, so that we don't have to descend into unused
+        # branches of the tree..."""
+        #### end ####
+        if not self._abilityObject(path, True):
+            return {'value':[]}
         res = ThinSingleChildContainer._treeOp_handle(self, path=path, **kw)
-        res['value'] = Grimoire.Utils.Map(filterUnallowed, res['value'])
+        if not self._unlockedTree() or kw.get('filter', False):
+            res['value'] = Grimoire.Utils.Map(filterUnallowed, res['value'])
+        return res
+
+    def _treeOp_handle_related(self, path, **kw):
+        def filterUnallowed((leaf, objectPath, description, methodPath)):
+            if self._abilityObject(path + methodPath):
+                return (leaf, objectPath, description, methodPath)
+            raise Grimoire.Utils.FilterOutError()
+            
+        #### fixme ####
+        # description = """Make it possible for prefixer to know what we are
+        # filtering, so that we don't have to descend into unused
+        # branches of the tree..."""
+        #### end ####
+        if not self._abilityObject(path, True):
+            return {'value':[]}
+        res = ThinSingleChildContainer._treeOp_handle(self, path=path, **kw)
+        if not self._unlockedTree() or kw.get('filter', False):
+            res['value'] = Grimoire.Utils.Map(filterUnallowed, res['value'])
         return res
 
 class Restrictor(Hide):
@@ -841,6 +955,9 @@ class Prefixer(ThinSingleChildContainer):
     def _remove(self, *arg, **kw):
         raise TypeError('Nodes can not be inserted in, nor removed from, a Prefixer')
     
+    def __description__(self, indentation):
+        return indentation + self.__class__.__name__ + ':' + '.'.join(self._prefix) + '\n'
+
     # Logical node API
 
     def _treeOp_handle(self, path, **kw):
@@ -891,7 +1008,8 @@ class Prefixer(ThinSingleChildContainer):
                                                     depth=depth - max(0, (ownprefixlen - pathlen)),
                                                     objectPath=objectPath, objectDepth=objectDepth, **kw)
         res['value'] = Grimoire.Utils.Map(
-            lambda (leaf, objectPath, description, methodPath): (leaf, objectPath, description, ownprefix[pathlen:] + methodPath),
+            lambda (leaf, objectPath, description, methodPath):
+                (leaf, objectPath, description, ownprefix[pathlen:] + methodPath),
             res['value'])
         return res
 
@@ -954,6 +1072,7 @@ class Base(Composer):
     foo = Foo()
     foo.fie.naja.hehe(...)
     """
+    __slots__ = []
     _hide = []
     def __init__(self):
         ImplementingHandling.__init__(self)

@@ -17,13 +17,21 @@ class Performer(Grimoire.Performer.Base):
                               ['password', '$ldapservername'] + self.__getUserPath()
                                       )(newpwd))
         def _params(self):
-            return Grimoire.Types.AnnotatedValue(
-                Grimoire.Types.getValue(
-                    self._callWithUnlockedTree(
-                        lambda: self._getpath(Grimoire.Types.TreeRoot,
-                                              path=['introspection', 'params'] + self._physicalGetpath(
-                                                  Grimoire.Types.MethodBase, 1,
-                                                  ['password', '$ldapservername' ] + self.__getUserPath()
-                                                  )._pathForSelf()
-                                              )())),
-                'Change your own password')
+            #### fixme ####
+            # description = """We'd like to use introspection.params,
+            # but that bugs when that tree and our tree have different
+            # roots and change.password is hidden in the real tree..."""
+            #### end ####
+            def unlocked():
+                return Grimoire.Types.AnnotatedValue(
+                    Grimoire.Types.getValue(
+                        self._physicalGetpath(
+                            Grimoire.Types.TreeRoot
+                            )._treeOp(
+                                self._physicalGetpath(
+                                    Grimoire.Types.MethodBase, 1,
+                                    ['password', '$ldapservername'] + self.__getUserPath()
+                                    )._pathForSelf(),
+                                'params')),
+                    'Change your own password')
+            return self._callWithUnlockedTree(unlocked)

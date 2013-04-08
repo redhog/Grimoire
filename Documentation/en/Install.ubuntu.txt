@@ -1,0 +1,92 @@
+DEPEND = "https://files.freecode.no/shared/Div4/Div4b-products/FreeGroup/Div4c"
+
+# Build
+apt-get install build-essential apache2-threaded-dev python2.4-dev
+
+# Required
+apt-get install xsltproc m2crypto python2.4-ldap samba-doc courier-ldap libpam-ldap libnss-ldap apache2 python-crypto
+
+# Optional
+apt-get install kolab-cyrus-common kolab-cyrus-imapd kolab-cyrus-pop3d sasl2-bin samba
+
+
+
+# Install webkit
+cd /usr/lib
+wget http://switch.dl.sourceforge.net/sourceforge/webware/Webware-0.9.2.tar.gz
+tar -xvzf Webware-0.9.2.tar.gz
+rm Webware-0.9.2.tar.gz
+mv Webware-0.9.2 WebWare
+cd WebWare
+./install.py
+bin/MakeAppWorkDir.py /var/www/WebWare
+cd WebKit/Adapters/mod_webkit2
+sed -e "s+/usr/sbin/apxs+$(which apxs2)+g" < Makefile > Makefile.new; mv Makefile.new  Makefile
+make
+make install
+sed -e "s+webkit_module modules/+webkit_module /usr/lib/apache2/modules/+g" < apache.conf > /etc/apache2/mods-available/webkit.conf
+cd /etc/apache2/mods-enabled/
+ln -s ../mods-available/webkit.conf
+cd /etc/init.d/
+ln -s /var/www/WebWare/webkit
+
+
+# Install FunFormKit
+cd /usr/lib/python2.4/site-packages/
+wget http://mesh.dl.sourceforge.net/sourceforge/funformkit/FunFormKit-0.4.1.tar.gz
+tar -xvzf FunFormKit-0.4.1.tar.gz
+rm FunFormKit-0.4.1.tar.gz
+
+
+# Install sambapasswords, cyruslib etc
+cd /usr/lib/python2.4/site-packages/
+
+#wget http://www.cdf.toronto.edu/~agenkin/downloads/sambapasswords.py
+#wget http://oss.netfarm.it/download/cyruslib.py
+
+wget $DEPEND/Dependencies/sambapasswords.py 
+wget $DEPEND/Dependencies/cyruslib.py 
+wget $DEPEND/Dependencies/managesieve.py 
+
+
+# Install and secure OpenLDAP
+apt-get install slapd ldap-utils
+addgroup --system ldap
+adduser --system --ingroup ldap ldap
+chown -R ldap:ldap /var/lib/ldap
+sed -e "s+SLAPD_USER=.*+SLAPD_USER=ldap+g" -e "s+SLAPD_GROUP=.*+SLAPD_GROUP=ldap+g" < /etc/default/slapd > /etc/default/slapd.new; mv  /etc/default/slapd.new /etc/default/slapd
+
+# Configure OpenLDAP
+ln -s /usr/share/doc/courier-ldap/authldap.schema /etc/ldap/schema/courier.schema
+gunzip < /usr/share/doc/samba-doc/examples/LDAP/samba.schema.gz > /etc/ldap/schema/samba.schema
+
+# Install Grimoire
+cd /usr/lib/python2.4/site-packages
+tla get Grimoire--main--0.2 Grimoire
+cd Grimoire
+Tools/compiletranslations.sh
+Tools/compilecmodules.sh
+ln -s /usr/lib/python2.4/site-packages/Grimoire/root/clients/cli.py /usr/bin/grimoire
+ln -s /usr/lib/python2.4/site-packages/Grimoire/Documentation/Scripts/grimoire.init.d.debian /etc/init.d/grimoire
+ln -s /usr/lib/python2.4/site-packages/Grimoire/Documentation/Scripts/Ldap/Grimoire.schema /etc/ldap/schema/Grimoire.schema
+ln -s /usr/lib/python2.4/site-packages/Grimoire/root/clients/html/funformkit/webware/_grimwebcontext/ /var/www/WebWare/GrimWeb
+echo "Contexts['GrimWeb'] = 'GrimWeb'" >> /var/www/WebWare/Configs/Application.config
+echo "Alias /GrimWeb-static /usr/lib/python2.4/site-packages/Grimoire/root/clients/html/funformkit/webware/_grimwebcontext/" > /etc/apache2/mods-available/grimweb.conf
+ln -s ../mods-available/grimweb.conf /etc/apache2/mods-enabled/grimweb.conf
+
+# Configure the system
+mkdir /etc/Grimoire
+cd /usr/lib/python2.4/site-packages/Grimoire
+cp -r Documentation/Scripts/Config.d /etc/Grimoire
+cd Documentation/Scripts/Ldap
+./setup.sh
+cd Generated_configuration_files/$(hostname -f)
+./setup.sh
+sed -e "s+/WebWare/GrimWeb+/WKMod/GrimWeb+g" < /etc/Grimoire/Config.d/parameters/clients/html/_settings/__init__.py > /etc/Grimoire/Config.d/parameters/clients/html/_settings/__init__.py.new; mv /etc/Grimoire/Config.d/parameters/clients/html/_settings/__init__.py.new /etc/Grimoire/Config.d/parameters/clients/html/_settings/__init__.py
+echo "set(['tree'], '_.trees.local.login(\"the $(hostname -f)\", _.trees.local.ldap)')" >> /etc/Grimoire/Config.d/parameters/clients/_settings/__init__.py
+sed -e "s+\(.fileservername.*\)\])+\1, 'filesystem'])+g"  < /etc/Grimoire/Config.d/parameters/_settings/local/filesystem.py > /etc/Grimoire/Config.d/parameters/_settings/local/filesystem.py.new; mv /etc/Grimoire/Config.d/parameters/_settings/local/filesystem.py.new /etc/Grimoire/Config.d/parameters/_settings/local/filesystem.py
+ldapmodify  -x -W -D cn=admin,dc=freegroup-dev,dc=freecode,dc=no -f ~/FreeGroup/Config/defaults.ldif
+
+
+# Configure Cyrus
+sed -s "s+# START=yes+START=yes+g" /etc/default/saslauthd > /etc/default/saslauthd.new; mv /etc/default/saslauthd.new /etc/default/saslauthd

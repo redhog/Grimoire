@@ -1,4 +1,4 @@
-import Grimoire.Performer, Grimoire.Utils.M2fixed, M2Crypto, types
+import Grimoire.Performer, types
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -6,6 +6,7 @@ Ps = Grimoire.Types.ParamsType.derive
 class Performer(Grimoire.Performer.Base):
     class ssl(Grimoire.Performer.Method):
         def _call(self, host, port, cacert = None, ssl_context = None, *arg, **kw):
+            import Grimoire.Utils.M2fixed, M2Crypto
             if ssl_context:
                 ctx = ssl_context
             else:

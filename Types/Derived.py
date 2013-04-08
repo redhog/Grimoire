@@ -95,6 +95,7 @@ class GeneratedType(types.TypeType):
         return unicode(self).encode()
 class GenericGeneratedType(object):
     __metaclass__ = GeneratedType
+        
 GeneratedType.generic = GenericGeneratedType
 
 class StaticDerivedType(GeneratedType):
@@ -232,7 +233,7 @@ UTF8Type = EncodedStringType.derive('utf-8')
 
 class ValuedType(DerivedType):
     def derive(cls, parentType = None, values = (), name = None, bases = None, dict = None):
-        d = extendDictWithDefaults(dict, {'values':tuple(values)})
+        d = extendDictWithDefaults(dict, {'values':values})
         return super(ValuedType, cls).derive(parentType, name, bases, d)
     derive = classmethod(derive)
     def getTag(cls, name, bases = (), dict = {}, tag = ()):
@@ -241,10 +242,7 @@ class ValuedType(DerivedType):
     def getValues(self):
         return self.values
     def __strValues__(self):
-        values = [unicode(value) for value in self.getValues()]
-        if len(values) > 1:
-            values[-1] = 'or ' + values[-1]
-        return string.join(values, ', ')
+        return unicode(self.getValues())
 class GenericValuedType(GenericDerivedType):
     __metaclass__ = ValuedType
     values = ()
@@ -252,7 +250,38 @@ class GenericValuedType(GenericDerivedType):
         super(GenericValuedType, self).__init__(self.parentType(value))
 ValuedType.generic = GenericValuedType
 
-class HintedType(ValuedType):
+class ListValuedType(ValuedType):
+    def getTag(cls, name, bases = (), dict = {}, tag = ()):
+        return DerivedType.getTag(name, bases, dict, (tuple(getDefAttr(bases, dict, 'values')),) + tag)
+    getTag = classmethod(getTag)
+    def __strValues__(self):
+        values = [unicode(value) for value in self.getValues()]
+        if len(values) > 1:
+            values[-1] = 'or ' + values[-1]
+        return string.join(values, ', ')
+class GenericListValuedType(GenericValuedType):
+    __metaclass__ = ListValuedType
+ListValuedType.generic = GenericListValuedType
+
+class SubsetType(ValuedType):
+    description = 'subset of'
+    def derive(cls, parentSet = set(), name = None, bases = None, dict = None):
+        return super(SubsetType, cls).derive(type(parentSet), parentSet, name, bases, dict)
+    derive = classmethod(derive)
+class GenericSubsetType(GenericValuedType):
+    __metaclass__ = SubsetType
+    parentSet = set()
+    def __init__(self, value):
+        value = self.parentType(value)
+        values = self.__class__.getValues()
+        if not values.issuperset(value):
+            raise ValueError('Value %(value)s not a subset of %(values)s' % {
+                'value': repr(value),
+                'values': repr(values)})
+        super(GenericSubsetType, self).__init__(value)
+SubsetType.generic = GenericSubsetType
+
+class HintedType(ListValuedType):
     description = 'with suggested values'
     def __unicode__(self):
         values = self.__strValues__()
@@ -260,11 +289,11 @@ class HintedType(ValuedType):
         if values:
             res += ' with suggested values ' + values
         return res
-class GenericHintedType(GenericValuedType):
+class GenericHintedType(GenericListValuedType):
     __metaclass__ = HintedType
 HintedType.generic = GenericHintedType
 
-class RestrictedType(ValuedType):
+class RestrictedType(ListValuedType):
     description = "any of"
     def __isInstance__(self, value):
         bareValues = map(Composable.getValue, self.getValues())
@@ -279,7 +308,7 @@ class RestrictedType(ValuedType):
         else:
             return 'No allowed values! (of type %(parentType)s)' % {
                 'parentType': unicode(self.parentType)}
-class GenericRestrictedType(GenericValuedType):
+class GenericRestrictedType(GenericListValuedType):
     __metaclass__ = RestrictedType
     def __init__(self, value):
         value = self.parentType(value)
@@ -291,9 +320,9 @@ class GenericRestrictedType(GenericValuedType):
                 'lst': repr(bareValues)})
 RestrictedType.generic = GenericRestrictedType
 
-class BitfieldType(ValuedType):
+class BitfieldType(ListValuedType):
     description = "Bitfield"
-class GenericBitfieldType(GenericValuedType):
+class GenericBitfieldType(GenericListValuedType):
     __metaclass__ = BitfieldType
     def __init__(self, value):
         value = value or 0

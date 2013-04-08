@@ -1,0 +1,2012 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd"
+[
+<!ENTITY vendor SYSTEM "../vendor">
+<!ENTITY version SYSTEM "../version">
+]>
+
+<article lang="en">
+ <articleinfo>
+  <title>The Grimoire Python action tree implementation</title>
+
+  <subtitle>&version; from &vendor;
+  </subtitle>
+
+  <corpauthor>
+   <mediaobject>
+    <caption><ulink url="http://www.takeit.se/">AB TakeIT</ulink>, <ulink url="http://www.uanywhere.com.au/">uAnywhere</ulink></caption>
+    <imageobject>
+      <imagedata fileref="../Pictures/Logos/Orm.eps" format="EPS" width="300pt" scalefit="1"/>
+    </imageobject>
+    <imageobject>
+     <imagedata fileref="../Pictures/Logos/Orm.png" format="PNG" width="300pt" scalefit="1"/>
+    </imageobject>
+    <textobject>
+     <phrase>AB TakeIT, uAnywhere</phrase>
+    </textobject>
+   </mediaobject>
+  </corpauthor>
+
+  <author>
+   <firstname>Egil</firstname>
+   <surname>Möller</surname>
+   <email>redhog@redhog.org</email>
+  </author>
+
+  <copyright>
+   <year>2004-2006</year>
+   <holder role="mailto:redhog@redhog.org">Egil Möller</holder>
+  </copyright>
+
+  <legalnotice>
+   <para>This document is free software; you can redistribute it
+   and/or modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation; either version 2 of
+   the License, or (at your option) any later version.</para>
+
+   <para>This document is distributed in the hope that it will be
+   useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.</para>
+
+   <para>You should have received a copy of the GNU General Public
+   License along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+   USA</para>
+  </legalnotice>
+
+  <abstract><para>This document explains the rationales behind action
+  trees and Grimoire and how to deploy Grimoire for system
+  administration, extend it with new methods and interface against
+  it from other systems.</para></abstract>
+
+  <keywordset>
+   <keyword>action</keyword>
+   <keyword>tree</keyword>
+   <keyword>administration</keyword>
+   <keyword>ldap</keyword>
+   <keyword>sql</keyword>
+  </keywordset>
+ </articleinfo>
+
+ <section id="about">
+  <title>About</title>
+  <highlights>This chapter introduces Grimoire in particular and the
+  concept of action trees in general.</highlights>
+
+  <section id="about-action-trees"><title>Action trees</title>
+   <para>System administration is traditionally done by one or a small
+   group of (equally) trusted person(s). In larger organizations
+   however, this group might not be big enought to fullfill all the
+   administrative needs of the organization smoothly, and other people
+   within the organization might not be trusted with full access to
+   the system. Thus there is a need for delegation of specific
+   administrative tasks or sets of tasks to other not fully trusted
+   persons, e.g. group leaders or heads of departments.</para>
+
+   <para>Some people traditionally given (non computer) administative
+   tasks, do not have the skill or knowledge to handle all the details
+   of the tasks within their responsibilities, while other people
+   should not be allowed to perform any but some combinations of
+   tasks. Thus there is a need for easy developement of abstractions
+   over existing tasks.</para>
+
+   <para>An action tree is a set of <emphasis>methods</emphasis>,
+   tasks that can be performed, organized into a tree. Note that there
+   are no <emphasis>objects</emphasis> (files, hosts, users) on which
+   methods are performed; a method is a combination of what to do and
+   with what, in one unit. This might sound counter intuitive but
+   proves advantageous for the delegation of responsibilites. For
+   example, to create a new user in the group hackers of the IT
+   department one might use the method
+   <code>create.user.it.hackers.</code></para>
+
+   <para>Access control on an action tree is done on subtrees. As both
+   task and object makes up the method, one can control access to both
+   classes and subclasses of tasks and of objects. Access control can
+   be as fine grained or coarse grained as needed for any particular
+   user and method subtree.</para>
+
+   <para>To ease developement of abstractions over existing methods, a
+   tree should both be exportable over an rpc channel and possible to
+   cut, paste and merge with other trees as needed to form a tree
+   suitable for a particular user.</para>
+  </section>
+
+  <section id="about-the-grimoire-action-tree"><title>The Grimoire
+  action tree</title>
+   <para>Grimoire is a Python implementation of an action tree
+   representing trees as trees of Python objects (and their member
+   variables and methods). It has an access control system that can be
+   coupled to an LDAP database where paths down the tree are used to
+   specify subtrees that are either allowed or denied. Such paths are
+   considered in an order that lets abilities coupled to different
+   entries in LDAP override each other in a controllable
+   manner.</para>
+
+   <para>Grimoire includes a base set of methods/actions for
+   manipulation of LDAP entries for user accounts (both POSIX accounts
+   and Samba accounts), groups, courier mail aliases and BIND DNS zone
+   information, and for manipulation of the local file system on a
+   Grimoire server (e.g. creation of home directories using
+   templates). It also includes a Webware based web GUI and a command
+   line UI to manipulate the tree.</para>
+  </section>
+ </section>
+
+ <section id="installation"><title>Installation</title>
+  <highlights>This chapter describes how to install Grimoire, its
+  components and any related software on a server or on a network of
+  servers.</highlights>
+
+  <section
+  id="installation-installation-procedure-tgz"><title>Installation
+  procedure - tgz</title>
+   <section id="installation-requirements"><title>Requirements</title>
+    <para>In order to install Grimoire the following other software
+     packages are required:
+
+     <orderedlist>
+      <listitem><para>Python &gt;= 2.3</para></listitem>
+     </orderedlist>
+    </para>
+
+    <para>Depending on what methods you want to install and use in
+     your tree, some or all of the following software packages may
+     need to be installed in addition to the one listed above:
+
+     <orderedlist>
+      <listitem><para>For translations to work:
+       <orderedlist>
+	<listitem>GNU Gettext</listitem>
+       </orderedlist>
+      </para></listitem>
+
+      <listitem><para>To compile the documentation into useful formats:
+       <orderedlist>
+	<listitem>libxslt (xsltproc) &gt;= 1.1</listitem>
+	<listitem>Norman Walsh's XSL stylesheets for DocBook XML</listitem>
+       </orderedlist>
+      </para></listitem>
+
+      <listitem><para>To connect to and share Grimoire trees over encrypted channels:
+       <orderedlist>
+	<listitem>M2Crypto &gt;= 1.2</listitem>
+	<listitem>OpenSSL &gt;= 0.9.x (or rather, the version
+	 your version of M2Crypto requires)</listitem>
+       </orderedlist>
+      </para></listitem>
+
+      <listitem><para>To use the LDAP Grimoire tree (trees.local.ldap):
+       <orderedlist>
+	<listitem>python-ldap &gt;= 1.9.999</listitem>
+	<listitem>libldap &gt;= 2.1.23 (or rather, the version required
+	 by your version of python-ldap)</listitem>
+       </orderedlist>
+      </para></listitem>
+
+      <listitem><para>To use the SQL Grimoire tree (trees.local.sql):
+       <orderedlist>
+	<listitem>PostgreSQL</listitem>
+	<listitem>PyGreSQL &gt;= 3.4</listitem>
+	<listitem>postgresql-libs &gt;= 7.3.4 (or rather, the version required
+	 by your version of PyGreSQL)</listitem>
+       </orderedlist>
+      </para></listitem>
+
+      <listitem><para>To use the printer administration tree (trees.local.printers):
+       <orderedlist>
+	<listitem>CUPS</listitem>
+       </orderedlist>
+      </para></listitem>
+
+      <listitem><para>To use the Client public terminal (user registration) tree:
+       <orderedlist>
+	<listitem>LaTeX</listitem>
+	<listitem>dvips</listitem>
+	<listitem>(GNU) sed</listitem>
+	<listitem>lpd or CUPS</listitem>
+       </orderedlist>
+      </para></listitem>
+
+      <listitem><para>To use the Web based user interface (Grimweb)
+       <orderedlist>
+	<listitem>Apache</listitem>
+	<listitem>Webware &gt;= 0.8</listitem>
+	<listitem>FunFormKit &gt;= 0.4.1</listitem>
+       </orderedlist>
+      </para></listitem>
+
+     </orderedlist>
+    </para>
+   </section>
+
+   <section><title>Installation instructions</title>
+    <para>
+     <orderedlist>
+      <listitem><para>Untar the distribution tgz in
+      /usr/lib/python2.3/site-packages. It will create a directory
+      called 'Grimoire'.</para></listitem>
+
+      <listitem><para>In the new directory, run the command <code
+      language="sh">Tools/compiletranslations.sh</code>. This will
+      compile the translation catalogues for various languages from
+      <filename>.po</filename> text files to binary .mo
+      files.</para></listitem>
+
+      <listitem><para>Optionally, to compile the Python C extension
+      modules, which will dramatically increase Grimoires speed, run the
+      command <code language="sh">Tools/compilecmodules.sh</code>. You
+      will need to have the Python header files installed in order to
+      do this.</para></listitem>
+
+      <listitem><para>Create <filename>/usr/bin/grimoire</filename> as
+      a symbolic link to
+      <filename>/usr/lib/python2.3/site-packages/Grimoire/root/clients/cli.py</filename>.</para></listitem>
+
+      <listitem><para>Create a directory
+      <filename>/etc/Grimoire</filename> and copy
+      <filename>/usr/lib/python2.3/site-packages/Grimoire/Documentation/Scripts/Config.d</filename>
+      into it.</para></listitem>
+
+      <listitem><para>Modify the files in
+      <filename>/etc/Grimoire/Config.d</filename> to match your system and
+      what you intend to use your Grimoire server for.</para></listitem>
+
+      <listitem><para>You may place additional configuration, in the
+       same format as <filename>/etc/Grimoire/Config.d</filename>, in a
+       per user <filename>~/.Grimoire/Config.d</filename> or, if you have the
+       <code>$CHOICESPATH</code> environment variable set, in any directory
+       <filename>Grimoire/Config.d</filename> in any of the
+       directories specified in that variable.</para>
+
+       <para>Values from the different files override each other:
+       files from directories earlier (to the left) in
+       <code>$CHOICESPATH</code> override later ones which in turn
+       override <filename>~/.Grimoire/Config.d</filename> which in
+       turn override the system global
+       <filename>/etc/Grimoire/Config.d</filename>.
+       </para></listitem>
+
+      <listitem><para>If you want a Grimoire server (serving a Grimoire
+      tree to other hosts) to be running on the machine
+
+       <orderedlist>
+	<listitem><para>If you are using SysV init (you are, if you
+	are running RedHat, Mandrake, SuSE or Debian), create
+	<filename>/etc/init.d/grimoire</filename> as a symbolic link
+	to
+	<filename>/usr/lib/python2.3/site-packages/Grimoire/Documentation/Scripts/grimoire.init.d</filename>
+	and add symbolic links for starting and stopping it in the run
+	level directories (<filename>/etc/rc?.d</filename>) you see
+	fit. Alternatively, if your distribution supports it, the run
+	level selection can be done using <code>chkconfig --levels
+	LEVELS grimoire on</code>.</para></listitem>
+
+	<listitem><para>For other init schemes (such as the BSD one),
+	check out the <filename>grimoire.init.d</filename> script and
+	copy the line that runs Grimoire with some arguments (and
+	stdout and stderr redirected to <filename>/dev/null</filename>)
+	into whatever init script is suitable on your
+	system.</para></listitem>
+       </orderedlist>
+      </para></listitem>
+
+      <listitem><para>If you want to use the Webware GUI
+       <orderedlist>
+	<listitem><para>Create a new Webware work directory
+	</para></listitem>
+
+	<listitem><para>In the workdir make a new context as a symbolic
+	link to
+	<filename>/usr/lib/python2.3/site-packages/
+Grimoire/root/clients/html/funformkit/webware/_grimwebcontext</filename>.
+	</para></listitem>
+
+	<listitem><para>Make sure you have filled in the Grimoire
+	expression for the Grimoire tree to present in the UI under
+	<code>['tree']</code> in
+	<filename>Config.d/parameters/_settings/clients/base.py</filename>.
+	</para></listitem>
+
+       </orderedlist>
+      </para></listitem>
+
+      <listitem><para>If you want to use the LDAP tree, run the script
+      <code>setup.sh</code> in the
+      <filename>Documentation/Scripts/Ldap</filename> directory on the
+      machine intended to run the LDAP database server. Note that this
+      script needs to be run with that directory as its current
+      directory to find its helper files.</para></listitem>
+     </orderedlist>
+    </para>
+   </section>
+  </section>
+
+  <section
+  id="installation-installation-procedure-rpm"><title>Installation
+  procedure - rpm</title>
+   <para>
+    <orderedlist>
+     <listitem><para>Install the package <filename>Grimoire</filename>
+     and optionally <filename>Grimoire-SSL</filename> if you want to
+     use encrypted network connections.</para></listitem>
+
+     <listitem><para>Modify the files in
+     <filename>/etc/Grimoire/Config.d</filename> to match your system
+     and what you intend to use your Grimoire server
+     for.</para></listitem>
+
+     <listitem><para>You may place additional configuration (in the
+      same format as <filename>/etc/Grimoire/Config.d</filename>) in a
+      per user <filename>~/.Grimoire/Config.d</filename> or, if you
+      have the <code>$CHOICESPATH</code> environment variable set, in
+      any directory <filename>Grimoire/Config.d</filename> in any of
+      the directories specified in that variable.</para>
+
+      <para>Values from the different files override each other: files
+      from directories earlier (to the left) in
+      <code>$CHOICESPATH</code> override later ones which in turn
+      override <filename>~/.Grimoire/Config.d</filename> which in turn
+      override the system global
+      <filename>/etc/Grimoire/Config.d</filename>.
+      </para>
+     </listitem>
+
+     <listitem><para>If you want a Grimoire server (serving a Grimoire
+     tree to other hosts) to be running on the machine, use
+     <code>chkconfig grimoire on</code>.</para></listitem>
+
+     <listitem><para>If you want to use the Webware GUI
+      <orderedlist>
+       <listitem><para>Install the package
+       <filename>Grimoire-Webware</filename>.</para></listitem>
+
+       <listitem><para>Make sure you have filled in the Grimoire
+       expression for the Grimoire tree to present in the UI under
+       <code>['tree']</code> in
+       <filename>Config.d/parameters/_settings/clients/base.py</filename>.
+       </para></listitem>
+
+      </orderedlist>
+     </para></listitem>
+
+     <listitem><para>If you want to use the LDAP tree
+      <orderedlist>
+       <listitem><para>Install the package
+       <filename>Grimoire-LDAP</filename>.</para></listitem>
+
+       <listitem><para>On the machine intended to run the LDAP database server
+	<orderedlist>
+         <listitem><para>Install the package
+         <filename>Grimoire-LDAP-Server</filename></para></listitem>
+
+	 <listitem><para>Set up an LDAP directory by running the script
+	 <code>setup.sh</code> in the
+         <filename>/usr/share/doc/Grimoire/Scripts/Ldap</filename>
+         directory. Note that this script needs to be run with that
+         directory as its current directory to find its helper
+         files.</para></listitem>
+	</orderedlist>
+       </para></listitem>
+      </orderedlist>
+     </para></listitem>
+
+    </orderedlist>
+   </para>
+  </section>
+
+  <section
+  id="installation-existing-system"><title>Converting an existing system</title>
+
+  <highlights>This chapter describes how to install Grimoire on an
+  existing system that already uses LDAP as its user
+  database.</highlights>
+
+   <para>To install Grimoire on an existing system already using LDAP,
+   start by taking a full database backup to LDIF. Then remove the
+   database and follow the normal Grimoire installation instructions.
+   When done installing Grimoire, edit a copy of your LDIF database
+   backup accordning to the instructions below and load it into your
+   new LDAP database.</para>
+
+   <section
+   id="installation-existing-system-convert"><title>Converting user entries</title>
+
+    <para>It is sometimes required to change the UID of certain users
+    not to clash with the default Grimoire users with those UIDs. This
+    could very well be accomplished by removing those Grimoire default
+    users and making sure some other users has the cn=security entries
+    of those users, so that they will be able to perform any Grimoire
+    action.</para>
+
+    <para>Groups has to be identified as either home groups or
+    non-home-groups. E.g. at a school, home groups might be 'staff',
+    'administrators' and 'students', while non-home-groups might be
+    'webmail', 'year9', 'senior_students'. Basicly this involves
+    identifying groups that people never change between and groups that
+    people are entering and exiting depending on time, behaviour,
+    requirements etc.</para>
+
+    <para>All non-home-groups are moved under
+    ou=groups,dc=mycompany,dc=com so e.g. year9 is
+    ou=year9,ou=groups,dc=mycompany,dc=com (note how ou, not cn is
+    included in the dn)</para>
+
+    <para>All non-home-groups have their cn changed to be the path to
+    the group, e.g. year9.groups (if year9 would have a sub-group, say
+    ou=spring,ou=year9,ou=groups,dc=mycompany,dc=com, that one would
+    have the cn spring.year9.groups).</para>
+
+    <para>All home-groups are moved under ou=people,dc=mycompany,dc=com
+    so e.g. students is
+    ou=students,ou=people,dc=mycompany,dc=com</para>
+
+    <para>Same thing with cn change for home-groups, except their name
+    ends with "people", not "groups".</para>
+
+    <para>All users in a home-group, say students, had their
+    ldapentries moved from e.g.
+    uid=imastudent,ou=users,dc=mycompany,dc=com to
+    uid=imastudent,ou=studebts,ou=people,dc=mycompany,dc=com</para>
+
+    <para>All users have their homeDirectory changed to
+    /home/people/$HOMEGROUP/group.users/$USERNAME. This is to allow for
+    /home/groups group home-directories, and to allow for
+    sub-home-groups.</para>
+
+    <para>All groups are changed to have the following objectClass:es:
+    posixGroup, grimoireGroup, sambaGroupMapping</para>
+
+    <para>All users are changed to have the following objectClass:es:
+    grimoirePerson, sambaSamAccount, grimoireAccount,
+    CourierMailAccount, posixAccount, inetOrgPerson, shadowAccount</para>
+
+    <para>All machines are changed to have the following
+    objectClass:es: posixAccount, grimoireMachine, device,
+    sambaSamAccount</para>
+
+    <para>Note that these objectClasses might require extra attributes
+    from what you currently have on your objects, e.g. mailbox and
+    owner.</para>
+
+    <para>owner should generally be set to the dn of say superadmin or
+    some other powerfull user. For users and machines, this is only
+    documentation, for groups it affects who is allowed to do certain
+    things with the group from within Grimoire.</para>
+
+    <para>mailbox should be the same as homeDirectory, but start with
+    say /mail or something instead of /home/people. This obviously has
+    to correspond to your Grimoire configuration.</para>
+
+    <para>Since windows groups must have the right name, these groups
+    shall NOT have their path as cn, e.g. "Domain admins" might be
+    ou=Domain admins,ou=groups,dc=mycompany,dc=com but will
+    nevertheless have cn set to just "Domain admins", not "Domain
+    admins.groups". This only has one glitch - the Grimoire UIs will
+    show the group name as "Domain admins.groups" even though this is
+    not the real group name - Grimorie uses the DN, not the cn to make
+    up a path to the group, which is only later used to recreate the
+    group name in the UI.</para>
+
+   </section>
+
+   <section
+   id="installation-existing-system-problems"><title>Possible/likly problems</title>
+
+    <para>When converting a system to use Grimoire, group names are
+    changed. This means that any configuration for third-party
+    applications referencing groups by names have to be changed to use
+    the new names. Examples of this problem includes Samba and PAM
+    access rights.</para>
+
+    <para>When converting a system to use Grimoire, home directories
+    are moved. This means that any configuration for third-party
+    applications referencing home directories by explicit paths
+    (rather than ~username) have to be changed to use the new names.
+    Examples of this problem includes Samba share definitions other
+    than the implicit home directory share and mozilla
+    profiles.</para>
+
+    <para>If the UID has been changed for any user, make sure to chown
+    the home-directory and any other files owned by the user to the
+    new UID, or the user will not be able to access his/her
+    files.</para>
+
+   </section>
+  </section>
+ </section>
+
+ <section id="introduction"><title>Introduction</title>
+  <highlights>Grimoire is made up of four main parts; the trees of
+  methods, the different user interfaces, the core library and a vast
+  set of utility functions. This chapter gives an overview of those
+  parts and describes various methods for accessing a Grimoire
+  tree.</highlights>
+
+  <section
+  id="introduction-accessing-a-tree-from-the-command-line-ui"><title>Accessing
+  a tree from the command line UI</title>
+   <para>Grimoire does have a small language of its own, although its
+   syntax and semantics are subsets of those of Python expressions
+   (with one extension, but that is irrelevant for the normal
+   user). Since expressions are used throughout Grimoire for various
+   configuration tasks it is crucial to understand them. The
+   command line client also uses such expressions and is thus
+   suitable for testing and learning them.</para>
+
+   <para>The command line client <code>grimoire</code> accepts a
+   "tree" expression and any number of "normal" expressions. The tree
+   expression is evaluated in the main Grimoire tree and if it
+   evaluates to a new Grimoire tree the remaining normal expressions
+   are evaluated in that tree. If no "normal" expressions are given
+   but a single extra argument being the empty string "", the command
+   line client will present the user with a prompt at which normal
+   commands can be written and evaluated directly.</para>
+
+   <para>All python data expressions are Grimoire expressions, that is
+   numbers, strings, lists, tuples, mappings, <code>True</code>,
+   <code>False</code> and <code>None</code>, and evaluates to
+   themselves. In addition, the special symbol <code>_</code>
+   evaluates to the tree within which the expression is
+   evaluated.</para>
+
+   <para>A branch/subtree or method may be selected from a tree using
+   the same syntax as for object attribute access in python, that is
+   by a path of method names separated by dots,
+   e.g. <code>_.foo.bar.fie</code> means the branch fie on the branch
+   bar on the branch foo on the tree in which the expression is
+   evaluated. Method names may contain any character except for
+   separators (parenthesises, braces, brackets, less/greater than,
+   dot, comma, colon, citation marks, minus, plus and spaces) and must
+   begin with a non digit. However, any of the disallowed characters
+   may still be included if escaped with a backslash (backslash must
+   itself be escaped with another backslash).</para>
+
+   <para>Given a method it might be applied to some arguments using
+   the same syntax as used in python - a parenthesized list of values
+   and/or name = value
+   pairs. E.g. <code>_.create.user.customers.gazonkware('fred',
+   password='qwerty')</code>.</para>
+
+   <para>A complex example connecting to a remote tree, running a
+    method on that tree that returns a tree, and starting a local
+    Grimoire server in the background reexporting that tree.
+
+    <programlisting language="grimoire">
+_.trees.server.dirt(_.trees.remote.dirt.grimoireserver\.gazonkware\.com(
+    ).trees.local.ldap('fred', 'qwerty'), 0)
+    </programlisting>
+   </para>
+  </section>
+
+  <section
+  id="introduction-accessing-a-tree-from-python"><title>Accessing a
+  tree from Python</title>
+   <highlights>This chapter describes how to use Grimoire from within a
+   Python program. You can skip this if you are only going to use
+   Grimoire to administer your system, and will neither be extending
+   it with new methods nor write specialized user interfaces to ease
+   some task for non skilled users.</highlights>
+
+   <para>A method tree in Grimoire, is implemented as a python object
+   (of the class <code>Grimoire.Performer.Logical</code>), with member
+   variables which in turn are such python objects, and so on. Some of
+   these objects represents Grimoire methods, and are callable.</para>
+
+   <para>For example, assume you have an instance of the LDAP Grimoire
+    tree in the variable <code>t</code>, and that there is a user fred
+    (under
+    <code>ou=hackers,ou=gazonkware,ou=customers,ou=people</code>). Then
+
+    <programlisting language="python">
+t.change.password.customers.gazonkware.hackers.fred('gazonk')
+    </programlisting>
+
+    would change freds password to 'gazonk'.
+   </para>
+
+   <para>Of course, if you changed passwords on people under
+    <code>customers.gazonkware</code> often, you could assign
+    <code>t.change.password.customers.gazonkware</code> to another
+    variable, say <code>f</code>.
+
+    <programlisting language="python">
+f = t.change.password.customers.gazonkware
+f.hackers.fred('gazonk')
+f.marketeers.fred('qwerty')
+    </programlisting>
+   </para>
+
+   <para>A complex example connecting to a remote tree, running a
+    method on that tree that returns a tree, and starting a local
+    Grimoire server in the background reexporting that tree.
+
+    <programlisting language="grimoire">
+Grimoire._.trees.server.dirt(
+    getattr(Grimoire._.trees.remote.dirt,
+            'grimoireserver.gazonkware.com'
+           )().trees.local.ldap('fred', 'qwerty'),
+    0)
+    </programlisting>
+   </para>
+
+   <para>As all types of names are allowed as method names, the class
+   <code>Grimoire.Performer.Logical</code> fully overrides the member
+   lookup functionality. Sometimes however, one must access some
+   internal structure or method on the objects that builds up the
+   tree. Actually, the tree is made up of objects of subclasses of the
+   class <code>Grimoire.Performer.Performer</code>, of which there are
+   two different views, one is the <emphasis>logical</emphasis> view
+   as described above, and one is as a <emphasis>physical</emphasis>
+   view, that allows access to internal (physical) methods and member
+   variables, <emphasis>but not to (logical) tree
+   methods</emphasis>. To change view of an object, simply pass it
+   through <code>Grimoire.Performer.Logical</code> and
+   <code>Grimoire.Performer.Physical</code> respectively.</para>
+
+   <para>An example:
+    <programlisting language="python">
+print t.change.password.customers.gazonkware.hackers.fred('gazonk')
+pt = Grimoire.Performer.Physical(t)
+print pt._treeOp(['change', 'password', 'customers', 'gazonkware'],
+                 'translate', ('sv', 'hackers'))
+t2 = Grimoire.Performer.Logical(pt)
+t2 == t
+    </programlisting>
+   </para>
+
+  </section>
+
+  <section id="introduction-access-control"><title>Access
+  control</title>
+   <para>The <link
+   linkend="constructing-trees-constructing-trees-out-of-old-trees-access-control">access
+   control on a Grimoire tree</link> is based on path prefix
+   matching. A path is matched by an access control rule if the path
+   begins with the path in the rule. As a special case, if the path in
+   the rule ends with the empty string, the rule will match that path
+   with the empty string removed, and only that path.</para>
+
+   <para>More complex access rights are built up using a list of
+   rules, each a pair of a "category" and a path, where the category
+   is one of <code>Allow</code>, <code>Deny</code>, or
+   <code>Ignore</code>. Such a list is called an ability. If a path is
+   allowed by an ability is decided by walking down the list from top
+   to bottom, and if a path in a rule matches the path to decide over,
+   acting upon the category of the rule
+
+    <orderedlist>
+     <listitem><para>If the category of a matched rule is
+     <code>Allow</code>, the path is allowed.</para></listitem>
+
+     <listitem><para>If it is <code>Deny</code>, it is likewise
+      denied.</para></listitem>
+
+     <listitem><para>If it is <code>Ignore</code> however, the search
+     continues down the list, but the next rule matching the path
+     (regardless if it is an <code>Allow</code>, <code>Deny</code>, or
+     <code>Ignore</code> rule), is ignored.</para></listitem>
+    </orderedlist>
+   </para>
+
+   <para>The list
+
+    <programlisting language="ability">
+Deny: create.user.gazonkware
+Allow: create.user
+Allow: create.host
+    </programlisting>
+
+    will for example deny
+    <code>create.user.gazonkware.customers.fred</code>, allow
+    <code>create.user.barware.customers.anna</code>, deny
+    <code>create.domain.bar\.com</code> and <code>allow
+    create.host.mycomputer</code>.
+   </para>
+
+   <para>The exact syntax used to specify such list varies between
+   different places in Grimoire - lists in LDAP by need uses <link
+   linkend="the-main-tree-the-trees-branch-the-ldap-tree-access-control">LDAP
+   attributes</link> for the category, and thus must use the ldif
+   format as external syntax, whereas from within python <link
+   linkend="core-library-layout-access-control">a list of tuples of
+   subclasses of a Category class and string lists representing
+   paths</link> is used.</para>
+  </section>
+ </section>
+
+
+ <section id="the-main-tree"><title>The main tree</title>
+  <highlights>The main tree contains most of the Grimoire functionality,
+  including methods that loads all the other trees. You should at
+  least skim this chapter through to get an idea of what functionality
+  there is.</highlights>
+
+  <para>The main tree is available in the <code>Grimoire._</code>
+   variable (and the tree expression in the command line UI is
+   evaluated within the main tree):
+
+   <programlisting language="python">
+>>> for leaf, path in Grimoire._.introspection.dir():
+...     print leaf, string.join(path, '.')
+...
+1 introspection.about
+1 introspection.translate
+1 introspection.able
+1 introspection.dir
+1 introspection.methodOfExpression
+1 introspection.eval
+1 introspection.exist
+1 introspection.params
+1 directory.list
+1 directory.new
+1 directory.set
+1 directory.get
+1 directory.implementation.new.data
+1 directory.implementation.get
+1 directory.implementation.push.frame.data
+1 directory.implementation.set
+1 trees.test
+1 trees.test.Error
+1 trees.remote.ssl.dirt
+1 trees.remote.dirt
+1 trees.rpc.binding.dirt
+1 trees.rpc.connect.ssl
+1 trees.rpc.connect.ssl.error
+1 trees.rpc.connect.tcp
+1 trees.rpc.listen.ssl
+1 trees.rpc.listen.tcp
+1 trees.local.sql
+1 trees.local.sql.error
+1 trees.local.unprotected.filesystem
+1 trees.local.filesystem
+1 trees.local.ldap
+1 trees.local.client
+1 trees.local.unprotected.printers
+1 trees.local.printers
+1 trees.local.login
+1 trees.server.treestore
+1 trees.server.servertree
+1 trees.server.socket.bound.dirt
+1 trees.server.dirt
+1 trees.server.ssl.dirt
+   </programlisting>
+
+   If you replace each . by a / in the paths above, you can compare it
+   with paths in the directory tree of python source files defining
+   the methods, named <filename>root</filename>, inside the Grimoire
+   directory.
+  </para>
+
+  <section
+  id="the-main-tree-introspection"><title>Introspection</title>
+   <para>The introspection branch contains methods to query the tree
+    and other methods for information such as which parameters a
+    method takes, or what methods there are. For example, given a
+    method <code>trees.local.Ldap</code>, a description and a
+    parameter specification can be retrieved with
+
+    <programlisting language="python">
+Grimoire._.introspection.params.trees.local.ldap()
+    </programlisting>
+   </para>
+
+   <para>The value <code>introspection.params</code> returns is a
+   machine-readable one, but if you mangle it with
+   <code>unicode()</code> and then print it, you will get a nice human
+   description. For more descriptions on a specific method
+   (e.g. <code>introspection.dir</code> one) than is given in this
+   overview text, you may use
+   <code>introspection.params</code>.</para>
+
+   <para>The value returned by <code>introspection.params</code>
+   consists of several objects of different types wrapped up in each
+   other. Outermost is an <code>AnnotatedValue</code> object - a pair
+   of another object and a comment.</para>
+
+   <para>The functions <code>Grimoire.Types.getValue</code> and
+   <code>Grimoire.Types.getComment</code> are available for extracting
+   these two components. Note that these are <emphasis>not</emphasis>
+   methods on the objects of that class, and can be applied to other
+   objects too, in which case <code>getValue</code> will return its
+   argument, and <code>getComment</code> will either return
+   <code>None</code> or any value supplied as a second
+   argument.</para>
+
+   <para>The object in the <code>AnnotatedValue</code> is of the type
+   <code>ParamsType</code>, which is a specification of what
+   parameters a method takes. It contains four elements:
+   <code>arglist</code>, <code>resargstype</code>,
+   <code>reskwtype</code>, and <code>required</code>.</para>
+
+   <para><code>arglist</code> is a list of pairs of parameter names
+   and types. The types may either be normal python type objects or
+   classes, or <code>AnnotatedValues</code> of such objects.</para>
+
+   <para><code>resargstype</code> and <code>reskwtype</code> specifies
+   the types for extra arguments and extra keyword arguments,
+   respectively. They may be either <code>None</code>, meaning no
+   extra arguments are allowed, or a python type, class or
+   <code>AnnotatedValue</code> of a type or class.</para>
+
+   <para><code>required</code> is a numeric value, which specifies how
+   many of the parameters specified in arglist, counted from the left,
+   must be specified in a call.</para>
+
+   <para>One would also be able to list all methods with
+
+    <programlisting language="python">
+>>> Grimoire._.introspection.dir()
+[(1, ['introspection', 'about']), (1, ['introspection', 'translate']),
+(1, ['introspection', 'able']), (1, ['introspection', 'dir']), (1,
+['introspection', 'methodOfExpression']), (1, ['introspection',
+'eval']), (1, ['introspection', 'exist']), (1, ['introspection',
+'params']), (1, ['directory', 'list']), (1, ['directory', 'new']), (1,
+['directory', 'set']), (1, ['directory', 'get']), (1, ['directory',
+'implementation', 'new', 'data']), (1, ['directory', 'implementation',
+'get']), (1, ['directory', 'implementation', 'push', 'frame',
+'data']), (1, ['directory', 'implementation', 'set']), (1, ['trees',
+'Test']), (1, ['trees', 'Test', 'error']), (1, ['trees', 'remote',
+'ssl', 'dirt']), (1, ['trees', 'remote', 'dirt']), (1, ['trees',
+'rpc', 'binding', 'dirt']), (1, ['trees', 'rpc', 'connect', 'ssl']),
+(1, ['trees', 'rpc', 'connect', 'ssl', 'error']), (1, ['trees', 'rpc',
+'connect', 'tcp']), (1, ['trees', 'rpc', 'listen', 'ssl']), (1,
+['trees', 'rpc', 'listen', 'tcp']), (1, ['trees', 'local', 'sql']),
+(1, ['trees', 'local', 'sql', 'error']), (1, ['trees', 'local',
+'unprotected', 'filesystem']), (1, ['trees', 'local', 'filesystem']),
+(1, ['trees', 'local', 'ldap']), (1, ['trees', 'local', 'client']),
+(1, ['trees', 'local', 'unprotected', 'printers']), (1, ['trees',
+'local', 'printers']), (1, ['trees', 'local', 'login']), (1, ['trees',
+'server', 'treestore']), (1, ['trees', 'server', 'servertree']), (1,
+['trees', 'server', 'socket', 'bound', 'dirt']), (1, ['trees',
+'server', 'dirt']), (1, ['trees', 'server', 'ssl', 'dirt'])]
+    </programlisting>
+   </para>
+
+   <para>The result is a list of pairs, each a true boolean value and
+   a path to a method. The <code>dir</code> method also takes an
+   optional depth argument, indicating how far down in the tree to
+   recurse during the search for methods. The default value is
+   infinity. As a special case, the depth 0 may be used to test for
+   <emphasis>existence</emphasis> of a method in the tree. If this
+   argument is used to obscure branches deeper down in the tree, the
+   listing will include pairs with a false boolean value and a path to
+   the point under which the obscured branch resists.</para>
+  </section>
+
+  <section id="the-main-tree-the-directory"><title>The
+  directory</title>
+   <highlights>The directory is similar in usage to GNOME:s gconf
+   database and Windows' registry, but is slightly more general. You
+   might want to skip this chapter until later if you have just
+   started to learn Grimoire.</highlights>
+
+   <para>A directory is a database optimized for reading, that is, the
+   opposite of an action tree (such as Grimoire) that is optimized for
+   writing. To make things a bit confusing, Grimoire contains a
+   directory, which is accessible using a tree methods in the action
+   tree...</para>
+
+   <para>The directory in Grimoire is actually a meta directory that
+   merges together any number of directories such as the configuration
+   data for Grimoire (initially from files, but stored in RAM), LDAP,
+   etc.</para>
+
+   <para>The directory consists of an inheritance tree, with nodes
+   containing trees of data. A lookup will be performed on a "keypath"
+   in a node in the inheritance tree specified by a path, and on all
+   nodes up along that path until a node with data at the
+   keypath. This model catches several common usages of directories -
+   such as: looking up a default domain, add a mail account, and
+   adding a user at a specific place in the LDAP tree.</para>
+
+   <para>
+    <programlisting language="python">
+>>> Grimoire.Utils.getpath(t.directory.get.ldap,
+                           ['ou=people', 'ou=administrators', 'uid=redhog']
+                          )(['cn=defaults', 'mailDomain'])
+['jamtlinux.net']
+    </programlisting>
+
+    The above searches for <code>['cn=defaults', 'mailDomain']</code> in
+
+    <programlisting language="grimoire">
+t.directory.get.ldap.ou=people.ou=administrators.uid=redhog
+    </programlisting>
+
+    where it is not found,
+
+    <programlisting language="grimoire">
+t.directory.get.ldap.ou=people.ou=administrators
+    </programlisting>
+
+    where it is found. It would then have continued if it wasn't found:
+
+    <programlisting language="grimoire">
+t.directory.get.ldap.ou=people
+t.directory.get.ldap
+    </programlisting>
+   </para>
+
+   <para>The ldap directory will just append the keypath to the end of
+    the path, and construct a DN out of all but the last item, and use
+    the last one as attribute name.
+
+    <programlisting language="python">
+>>> t.directory.get.parameters(['local', 'ldap', 'server'])
+'ldap'
+    </programlisting>
+   </para>
+
+   <para>Note that <link
+   linkend="constructing-trees-implementing-new-directory-services">the
+   different directories</link> need not be spread out over different
+   subtrees under <code>directory.get</code>, but may overlap and
+   override each other. For instance, you might set
+   <code>['cn=defaults', 'mailDomain']</code> in
+   <code>ldap.ou=people.ou=administrators.uid=redhog</code> in a
+   config file, overriding the value from LDAP. Normally, the
+   directory in RAM ("data") overrides other directories, but this is
+   not required for all trees.</para>
+
+   <section
+   id="the-main-tree-the-directory-treevars"><title>Treevars</title>
+    <para>If Grimoire finds a part of a method path that begins with a
+    dollar sign ($), it will construct a second method path for the
+    same method. The new method path is formed by expanding the name
+    that began with a dollar sign, replacing it with a path from the
+    directory (if one is found).</para>
+
+    <para>Grimoire searches for the keypath <code>['treevar',
+    NAME]</code>, where NAME is the name searched for, in the tree
+    <code>treevar.METHODNAME</code>, where METHODNAME is the prefix of
+    the method path up to, but not including, the name searched
+    for.</para>
+
+    <para>Note that the value in the directory should be a path
+    (represented as a list of strings), not just one string, and the
+    whole path will be inserted in place of the name.</para>
+   </section>
+
+   <section
+   id="the-main-tree-the-directory-configuration-trees"><title>Configuration
+   trees</title>
+    <para>At start up, Grimoire loads several configuration files from
+    <filename>/etc/Grimoire/Config.d</filename> etc.. These files are
+    normal python files which manipulate the Grimoire directory.</para>
+
+    <para>To ease the mainaince and writing of such files, two special
+    methods are defined within these when they are loaded -
+    <code>get</code> and <code>set</code>, which calls
+    <code>Grimoire._.directory.get</code> and
+    <code>Grimoire._.directory.set</code> respectively, and which uses
+    the path to the current file relative to the main configuration
+    directory it is in
+    (like<filename>/etc/Grimoire/Config.d</filename>) to construct
+    prefixes to prepend to the path and keypath.</para>
+
+    <para>The parts of the file paths used for paths and key paths are
+     split using a directory named <filename>_settings</filename>, and
+     the file extension <filename>.py</filename> is removed from the
+     final file name in the paths, e.g. a file path
+     <filename>parameters/_settings/clients/html.py</filename> will
+     result in paths being prefixed with <code>['parameters']</code>
+     and key paths with <code>['clients', 'html']</code>. That is, in
+     that file a call to
+
+     <programlisting language="python">
+set.currentMachine.currentUser(['static', 'url'],
+                                'http://example.com/GrimWeb-static')
+     </programlisting>
+
+     will result in a call
+
+     <programlisting language="python">
+Grimoire._.directory.set.parameters.currentMachine.currentUser(
+    ['clients', 'html', 'static', 'url'],
+    'http://example.com/GrimWeb-static')
+     </programlisting>
+    </para>
+   </section>
+  </section>
+
+  <section id="the-main-tree-the-trees-branch"><title>The
+  <code>trees</code> branch</title>
+   <highlights>The trees branch contains a set of methods that all
+   returns new trees - either specialized ones for different task such
+   as LDAP manipulation, or remote ones retrieved from another host
+   running a Grimoire server. Most of these trees also includes a
+   linked-in "copy" of the main tree for convienence.</highlights>
+
+   <section
+   id="the-main-tree-the-trees-branch-remote-connections"><title>Remote
+   connections</title>
+    <para>Connections to a remote tree is done by the method
+     <code>trees.remote.dirt.HOSTNAME[.PORT]</code> (or
+     <code>trees.remote.ssl.dirt.HOSTNAME[.PORT]</code>), which
+     returns an object that represent the remote tree locally. It can
+     be used exactly as any local tree. Calling a method on that
+     object, will result in a remote call over the network to a method
+     on the remote tree on the sever.
+
+     <programlisting language="python">
+<![CDATA[
+>>> unicode(Grimoire._.introspection.params.trees.remote.dirt())
+u'Connects to a remote host, specified by a path (host, port), using
+Grimoire over DIRT over tcp and returns the remote tree as a locally
+accessible one: '
+]]>
+     </programlisting>
+
+     The output is a description of the method with the parameters
+     listed last (after the colon). In this case there is none.
+    </para>
+
+    <para>To use this method, you of course needs a remote tree to
+     connect to. To publish a tree so that it is available remotely,
+     any method under <code>trees.server</code> may be used (depending
+     on what protocol you want to publish it over, e.g. DIRT or
+     DIRT over SSL), e.g. <code>trees.server.dirt</code>:
+
+     <programlisting language="python">
+>>> unicode(Grimoire._.introspection.params.trees.server.dirt())
+u'Serves an object to the outside world using DIRT (optionally over
+ssl): obj: Performer to serve: Grimoire.Performer.Performer, daemonic:
+Whether to detach the server thread or not (if detached, the Python
+process will not terminate until all serve threads has terminated):
+Grimoire.Types.Derived.BooleanType'
+     </programlisting>
+    </para>
+
+    <para>Start a server in a new thread in the current process of
+     serving the main Grimoire tree itself:
+
+     <programlisting language="python">
+<![CDATA[
+>>> unicode(Grimoire._.trees.server.dirt(Grimoire._))
+u'dirt server for <Grimoire.Performer.Composer instance at 0x40a587cc>
+on :8445: <Thread(dirt server for <Grimoire.Performer.Composer
+instance at 0x40a587cc> on :8445, started daemon)>'
+]]>
+     </programlisting>
+    </para>
+
+    <para>You can now connect to this tree from the same machine, and
+     even the same process, just from another thread (note that
+     currently, the SSL implementation used, OpenSSL in conjunction
+     with M2Crypto, is not thread safe, and connecting over SSL to a
+     tree served by another thread in the same process in the same
+     manner will deadlock):
+
+     <programlisting language="python">
+>>> t = Grimoire._.trees.remote.dirt.locahost()
+     </programlisting>
+
+     You can see that <code>t.introspection.dir</code> gives exact the
+     same output as <code>Grimoire.tree.introspection.dir</code> did
+     above. This is because you published the complete main Grimoire
+     tree (<code>Grimoire._</code>) using the server you launched
+     above.
+    </para>
+   </section>
+
+   <section
+   id="the-main-tree-the-trees-branch-the-ldap-tree"><title>The LDAP
+   tree</title>
+    <para>The LDAP tree contains methods for manipulating the LDAP
+     data base. It uses LDAP based authentication and
+     access control. The function local.ldap is used to log in to
+     LDAP. It establishes a connection to the LDAP server,
+     authenticates the user and returns a Grimoire tree.
+
+     <programlisting language="python"><![CDATA[>>> unicode(Grimoire._.introspection.params.trees.local.ldap())
+u"Returns an LDAP manipulation tree for an LDAP server:
+ userId: User name: Grimoire.Types.Derived.UsernameType,
+ password: User password: nonempty Grimoire.Types.Derived.LosePasswordType
+ (server: LDAP server name: <type 'str'>,
+  realm: LDAP realm (base DN appended to all DNs): <type 'str'>,
+  admindn: LDAP administrator DN (relative to realm)): <type 'str'>,
+  adminpwd: Administrator password: nonempty
+            Grimoire.Types.Derived.LosePasswordType)"]]>
+     </programlisting>
+
+     Note that the output is re-indented to make it more readable, at
+     the moment, the real output is unfortunately not at all as
+     readable, and that the optional arguments are really only
+     optional if their corresponding values in the Grimoire
+     config file are set (except for admindn, which is assumed to be
+     <code>cn=admin,REALM</code> if not set).
+    </para>
+
+    <section
+    id="the-main-tree-the-trees-branch-the-ldap-tree-ldap-specific-directory-entries"><title>LDAP
+    specific directory entries</title>
+     <para>An LDAP tree has some extra directory entries, notably for
+     accessing the LDAP connection object, the DN of the logged in
+     user and objects and attributes in the LDAP database itself. All
+     but the last category are stored in the normal "data"
+     implementation.
+
+      <variablelist>
+       <varlistentry><term><code>'local', 'ldap', 'user',
+       'dn'</code></term><listitem><para>contains the DN of the
+       current logged in user, with the LDAP REALM
+       removed.</para></listitem></varlistentry>
+
+       <varlistentry><term><code>'local', 'ldap', 'user',
+       'conn'</code></term><listitem><para>contains an LDAP connection
+       object, connected as the logged in
+       user.</para></listitem></varlistentry>
+
+       <varlistentry><term><code>'local', 'ldap', 'admin',
+       'conn'</code></term><listitem><para>contains an LDAP connection
+       object, connected ad the database administrator. Note that most
+       operations on LDAP a user is allowed to perform, are made up by
+       operations which each taken by itself, the user is
+       <emphasis>not</emphasis> allowed to perfom. Thus, such
+       operations must be performed in the name of the
+       administrator.</para></listitem></varlistentry>
+      </variablelist>
+     </para>
+    </section>
+
+    <section
+    id="the-main-tree-the-trees-branch-the-ldap-tree-listing-ldap-entries"><title>Listing
+    LDAP entries</title>
+     <para>The method <code>list.ldapentries</code> can be used to
+     list ldap entries, for example to construct a result to return
+     from <code>_dir()</code> on a SubMethod. To ease this specific
+     usage, its first argument and any extra path (it is a
+     <code>SubMethod</code> itself), share the same semantics as the
+     arguments to <code>_dir()</code>, that is, the extra path is a
+     prefix under which searches are perfomed, and depth governs how
+     deep to search in the tree.</para>
+
+     <para>Note that since depth in LDAP search semantics, scope, can
+     only be one of <code>BASE</code> (corresponding to <code>depth =
+     length(prefix)</code>), <code>ONE</code> (corresponding to
+     <code>depth = length(prefix) + 1</code>) and <code>SUB</code>
+     (corresponding to <code>depth = UnlimitedDepth</code>), all
+     <code>depths > length(prefix) + 1</code> will result in a search
+     with <code>scope = SUB</code>, throughout the entire LDAP subtree
+     under the specified prefix.</para>
+    </section>
+
+    <section
+    id="the-main-tree-the-trees-branch-the-ldap-tree-access-control"><title>Access
+    control</title>
+     <para>The entries of the ability list for a Grimoire LDAP tree
+      are gathered from several LDAP database entries. The entries are
+      constructed from the <code>grimoireAbilityAllow</code>,
+      <code>grimoireAbilityDeny</code> and
+      <code>grimoireAbilityIgnore</code> attributes of the following
+      LDAP database entries, and in this order:
+
+      <orderedlist>
+       <listitem><para><code>cn=security</code> under the users own
+       entry,</para></listitem>
+
+       <listitem><para><code>cn=security</code> under the home group
+       and any surrounding group (e.g. groups having a suffix of the
+       home group DN as DN), sorted on the length of the DN, with the
+       longest ones first,</para></listitem>
+
+       <listitem><para>and <code>cn=security</code> under each group
+       the user is a member of (that is, the ones that has a
+       <code>memberUid</code> attribute equal to the username of the
+       user), sorted on the length of their DNs, with the longest ones
+       first.</para></listitem>
+      </orderedlist>
+     </para>
+
+     <para>Each LDAP entry may have several
+     <code>grimoireAbilityAllow</code>,
+     <code>grimoireAbilityDeny</code> or
+     <code>grimoireAbilityIgnore</code> attributes, each holding a
+     single path. The paths are normal dot separated Grimoire paths,
+     but with an extra leading dot. The attributes are sorted on
+     path length, and each attribute is the used to construct one rule
+     for the ability.</para>
+    </section>
+   </section>
+
+   <section
+   id="the-main-tree-the-trees-branch-the-sql-tree"><title>The SQL
+   tree</title>
+    FIXME: Write section
+   </section>
+
+   <section
+   id="the-main-tree-the-trees-branch-the-filesystem-tree"><title>The
+   filesystem tree</title>
+    <para>The filesystem tree provides several methods for
+    manipulating the local filesystem, for example on a server hosting
+    home directories or maildirs. It is protected by a
+    username/password pair, set in the config file (on the server
+    serving the tree),
+    <filename>Config.d/parameters/_settings/local/filesystem.py</filename>,
+    under <code>['login', 'username']</code> and <code>['login',
+    'password']</code>, respectively. All filesystem methods include a
+    prefix specified by the treevar
+    <code>fileservername</code>.</para>
+
+    FIXME: Write section
+   </section>
+
+   <section
+   id="the-main-tree-the-trees-branch-the-printer-tree"><title>The
+   Printer tree</title>
+    FIXME: Write section
+   </section>
+
+   <section
+   id="the-main-tree-the-trees-branch-the-login-mini-tree"><title>The
+   login mini tree</title>
+    <para>The method <code>trees.local.login</code> might be used as a
+    wrapper for any other method that takes at least a username and a
+    password, such as the LDAP or SQL login methods, providing a nicer
+    user interface when logging in. It takes two parameters, a
+    description of the tree, and a login method.</para>
+   </section>
+  </section>
+ </section>
+
+ <section id="constructing-trees"><title>Constructing trees</title>
+  <highlights>This chapter describes how to extend Grimoire with new
+  methods or whole new trees. You will only need to read this if you
+  plan to use Grimoire to administrate a new type of system or add new
+  administrative tasks. In that case, you should also read
+  <xref linkend="core-library-layout"/> below.</highlights>
+
+  <section
+  id="constructing-trees-constructing-trees-out-of-old-trees"><title>Constructing
+  trees out of old trees</title>
+   <highlights>Grimoire trees can be cut into pieces, merged and
+   rechaped in various ways. This chapter describes how to do
+   this. You might want to skip this chapter until you actually have a
+   need to forge existing trees.</highlights>
+
+   <para>A subtree of a tree can be cut out using a
+    <code>Gimoire.Performer.Cutter</code> object. For example, given a
+    tree in the variable <code>t1</code>,
+
+    <programlisting language="python">
+t2 = Gimoire.Performer.Cutter(t1, ['create', 'user', 'fred'])
+    </programlisting>
+
+    will assign the branch/subtree <code>create.user.fred</code> to
+    the variable <code>t2</code>.
+   </para>
+
+   <para>The same can be accomplished directly on a logical view of
+    trees using a short-cut that uses just ordinary Python attribute
+    access. The following code carries out the same operation as the
+    code in the example above, but with a logical view of the tree in
+    <code>t1</code>
+
+    <programlisting language="python">
+t2 = t1.create.user.fred
+    </programlisting>
+   </para>
+
+   <para>The opposite, to prefix a tree with some extra path, is done
+    using a <code>Gimoire.Performer.Prefixer</code> object. Such an
+    object will represent a tree containing all methods of the tree
+    within it, but with the same prefix prepended to the paths to each
+    of them. For example, given a tree <code>t</code> with the methods
+    <code>password</code> and <code>language</code>, and
+
+    <programlisting language="python">
+t2 = Gimoire.Performer.Prefixer(['change, 'own'], t2)
+    </programlisting>
+
+    the tree in <code>t2</code> will have the two methods
+    <code>change.own.password</code> and
+    <code>change.own.language</code>.
+   </para>
+
+   <para>Two or more trees can be combined to form a larger one using
+    a <code>Gimoire.Performer.Composer</code> object. For example,
+    assume you have the two trees <code>x</code> and <code>y</code>,
+    <code>x</code> having the method
+    <code>create.user.gazonkware.fred</code> and <code>y</code> having
+    the methods <code>change.own.password</code> and
+    <code>change.defaults.people</code>, and
+
+    <programlisting language="python">
+z = Gimoire.Performer.Composer([x, y])
+    </programlisting>
+
+    Then <code>z</code> would have the methods
+    <code>create.user.gazonkware.fred</code>,
+    <code>change.own.password</code> and
+    <code>change.defaults.people</code>.
+   </para>
+
+   <section
+   id="constructing-trees-constructing-trees-out-of-old-trees-access-control"><title>Access
+   control</title>
+    <para>Access to methods of a tree can be restricted to just some
+    subtrees, that is, arbitrary branches/subtrees can be removed,
+    using an object of the class
+    <code>Gimoire.Performer.Restrictor</code>. Given a tree
+    <code>t</code>, and a function <code>f</code> of one argument,
+    <code>u = Gimoire.Performer.Restrictor(t, f)</code> is a new tree,
+    containing all branches of <code>t</code> for which <code>f</code>
+    returns <code>True</code>, given the path of the branch.</para>
+
+    <para>There are a set of standard functions for access control
+    included in Grimoire, described in <link
+    linkend="core-library-layout-access-control">the core library
+    layout section</link>.</para>
+   </section>
+  </section>
+
+  <section id="constructing-trees-writing-new-methods"><title>Writing
+  new methods</title>
+   <para>Objects of subclasses of <code>Grimoire.Performer.Base</code>
+   are used to construct new trees. Each such object contains a set of
+   methods implemented in the subclass as a class variable containing
+   a subclass of <code>Grimoire.Performer.Method</code>. As this may
+   sound a bit confusing, an example might be in place:
+
+    <programlisting language="python">
+class MyTree(Grimoire.Performer.Base):
+    class bite_fred(Grimoire.Performer.Method):
+      ...
+    class write_email_fred@example.com(Grimoire.Performer.Method):
+      ...
+    class restart_server_apache(Grimoire.Performer.Method):
+      ...
+
+t = MyTree()
+t.restart.server.apache()
+    </programlisting>
+   </para>
+
+   <para>As seen above, the names of the class variables all begin
+   with an underscore, which is not there in the method names, and
+   each subsequent underscore is converted into a dot in the method
+   names.</para>
+
+   <para>The <code>Grimoire.Performer.Method</code> subclass must
+    implement some virtual methods (and may override some default ones
+    too, if desirable), namely the one that is called when the
+    Grimoire method it implements is called (<code>_call(self, *arg,
+    **kw)</code>), and the one describing which parameters the former
+    one takes (<code>_params(self)</code>):
+
+    <programlisting language="python">
+class bite_fred(Grimoire.Performer.Method):
+    def _call(self, hardnes = 0):
+        return "Can't bite fred that hard! He won't like that..."
+
+    def _params(self):
+        # We only take one parameter, of type int, and there are no
+        # required parameters (0).
+        return Grimoire.Types.ParamsType.derive([('hardness', types.int)], 0)
+    </programlisting>
+
+    Note that <code>_params</code> should always return an object of
+    the class <code>Grimoire.Types.ParamsType</code>.
+   </para>
+  </section>
+
+  <section id="constructing-trees-virtual-trees"><title>Virtual
+  trees</title>
+   <para>It is often desirable to construct a virtual tree of methods
+    - all implemented by the same code, and the names of them taken
+    from one database (e.g. an LDAP tree or the directory structure on
+    a file system). This can be done using a subclass of a special
+    subclass of <code>Grimoire.Performer.Method</code>,
+    <code>Grimoire.Performer.SubMethod</code>. Subclasses of this
+    class must implement one more method (<code>_dir</code>), and the
+    other methods has a slightly different API:
+
+    <programlisting language="python">
+class bite(Grimoire.Performer.SubMethod):
+    def _call(self, path, hardnes = 0):
+        return "Can't bite " + string.join(path, '.') + \
+               " that hard! He/She won't like that..."
+
+    def _dir(self, path, depth):
+        # You don't _need_ to care about depth, it is
+	# only there for optimization.
+        # However, path, you need to care for. Only items with that
+        # path as a prefix should be returned, and the prefix removed
+        # from them. For now, just fire an error if it is not the
+        # empty path...
+	if path != []:
+	    raise Exception("Can't handle this yet...")
+        # Each item should be a pair of the number 1, and a path.
+        return [(1, ['Andersson', 'Anna']),
+                (1, ['Johansson', 'Johan']),
+                (1, ['Hacker', 'Random', 'J']),
+                (1, ['Loser', 'Random', 'J'])]
+
+    def _params(self, path):
+        # You can have the different virtual methods take different
+        # sets of parameters, then use path to check for which of them
+        # the description is asked for.
+        # We still only take one "real" parameter, of type int, and there are no
+        # required parameters (0).
+        return Grimoire.Types.ParamsType.derive([('hardness', types.int)], 0)
+    </programlisting>
+   </para>
+
+   <para>The difference in API is that both <code>_call</code> and
+   <code>_params</code> takes an extra <code>path</code> argument,
+   that will contain the "rest path" when a virtual method is
+   called. Let's say the above <code>SubMethod</code> is in the
+   <code>Base</code> object <code>t</code>, then calling
+   <code>t.bite.Andersson.Anna</code> would result in a call to
+   <code>_call</code>, with <code>path</code> set to
+   <code>['Andersson', 'Anna']</code>.</para>
+  </section>
+
+  <section
+  id="constructing-trees-referencing-methods"><title>Referencing
+  methods</title>
+   <para>The physical methods <code>_getpath(root =
+    Grimoire.Types.CurrentNode, levels = 0, path = [])</code>,
+    <code>_physicalRoot()</code>, <code>_physicalParent()</code>,
+    <code>_physicalBase()</code> and
+    <code>_callWithUnlockedTree(function, *arg, **kw)</code> of a
+    Grimoire tree object (<code>Method</code>, <code>SubMethod</code>,
+    <code>Base</code> etc) can be used to refference other methods
+    from within a method in various ways:
+
+    <variablelist>
+
+     <varlistentry><term><code>_getpath(root =
+      Grimoire.Types.CurrentNode, levels = 0, path = [])</code></term>
+      <listitem>references another part of the logical tree.
+       <para>Given a tree <code>t</code>,
+       <code>Grimoire.Performer.Physical(t)._getpath(path=['create',
+       'user', 'administrators'])</code> is equivalent to
+       <code>Grimoire.Performer.Logical(t).create.user.administrators</code>.</para>
+ 
+       <para>The <code>root</code> argument selects where the path is
+        rooted. If it is the default,
+        <code>Grimoire.Types.CurrentNode</code>, the path is rooted at
+        the object on which <code>_getpath</code> was invoked. If it
+        is <code>Grimoire.Types.TreeRoot</code> and the current tree
+        object is actually part of a larger tree, the path is rooted
+        at the root of that larger tree. For example given a tree
+        <code>t</code> as above
+
+        <programlisting language="python">
+t2 = Grimoire.Performer.Logical(t).create.user
+t3 = Grimoire.Performer.Physical(t2)._getpath(
+    Grimoire.Types.TreeRoot, 0, ['change', 'password'])
+t4 = Grimoire.Performer.Logical(t).change.password
+t3 == t4
+        </programlisting>
+       </para>
+
+       <para>There is one more value possible for <code>root</code>,
+       <code>Grimoire.Types.MethodBase</code>. This value is only
+       valid if the current tree object is a
+       <code>Grimoire.Performer.Method</code> or
+       <code>Grimoire.Performer.SubMethod</code> object within a
+       <code>Grimoire.Performer.Base</code> object, and will reference
+       the point in the logical tree where the
+       <code>Grimoire.Performer.Base</code> object is rooted.</para>
+
+       <para>Lastly, the <code>levels</code> argument can be used to
+       ascend any number of levels towards the root of the tree (It is
+       of course not available when <code>root</code> is set to
+       <code>Grimoire.Types.TreeRoot</code>) prior to descending along
+       the given <code>path</code> argument.</para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry><term><code>_physicalParent()</code></term>
+      <listitem><para>returns the surrounding Grimoire object
+      (<code>Prefixer</code>, <code>Base</code>,
+      <code>Composer</code>, <code>Restrictor</code>, etc). Use with
+      care.</para></listitem>
+     </varlistentry>
+
+     <varlistentry><term><code>_physicalBase()</code></term>
+      <listitem><para>returns the surrounding <code>Base</code> object
+      of a <code>Method</code> or <code>SubMethod</code>. As
+      <code>Base</code> creates several intermediary
+      <code>Prefixer</code> objects on the fly,
+      <code>_physicalParent</code> can not be used (easily) from
+      within a <code>Method</code> or <code>SubMethod</code> to access
+      the surrounding <code>Base</code>. Use with
+      care.</para></listitem>
+     </varlistentry>
+
+     <varlistentry><term><code>_physicalRoot()</code></term>
+      <listitem><para>returns the outhermost surrounding Grimoire
+      object (the grand grand grandparent :). Use with
+      care.</para></listitem>
+     </varlistentry>
+
+     <varlistentry><term><code>_callWithUnlockedTree(function, *arg,
+      **kw)</code></term>
+      <listitem><para>calls <code>function(*arg, **kw)</code> but with
+      no access restrictions from the current user. Neither any
+      subsecuent call done by <code>function</code> will have any such
+      restrictions, until the return of <code>function</code>, even if
+      it in turn calls <code>_callWithUnlockedTree</code> on some
+      other function. The return value of
+      <code>_callWithUnlockedTree</code> is that of
+      <code>function</code>.</para></listitem>
+     </varlistentry>
+    </variablelist>
+   </para>
+  </section>
+
+  <section id="constructing-trees-loading-trees"><title>Loading
+  trees</title>
+   <highlights>This chapter describes how to create whole new trees and
+   how the different files making up a tree implementation are
+   combined into the final tree. You might want to read this chapter
+   if you have problem putting your method implementation in the right
+   place, or if you want to create a whole new tree of
+   methods.</highlights>
+
+
+   <para>Most Grimoire trees are implemented in several separate files
+   in a directory structure that resembles the tree structure of the
+   Grimoire tree once loaded.</para>
+
+   <para>Each <filename>.py</filename> file in the tree may contain a
+    descendant of the <code>Performer.Base</code> class called
+    <code>Performer</code>, which will be instantiated. All such
+    instantiated classes will be joined with a
+    <code>Performer.Composer</code> according to the rules below. In
+    addition, <filename>.po</filename> files with translations may be
+    scattered over the tree to be loaded into the resulting Grimoire
+    tree:
+
+    <orderedlist>
+     <listitem><para>The Performer class in the file
+     <filename>foo/bar/fie.py</filename> will be joined in the
+     <code>Composer</code> with the prefix <code>['foo',
+     'bar']</code>. Note that the filename is deliberately left out of
+     that path.</para></listitem>
+
+     <listitem><para>The Performer class in the file
+     <filename>foo/bar/fie/__init__.py</filename> will be joined in
+     the <code>Composer</code> with the prefix <code>['foo',
+     'bar']</code>. Note that the last directory name (as well as the
+     filename) is deliberately left out of that
+     path.</para></listitem>
+
+     <listitem><para>The load function will <emphasis>not</emphasis>
+     descend into directories whose name has a leading underscore,
+     except for the top level directory.</para></listitem>
+
+     <listitem><para>Translations in the file
+     <filename>foo/bar/fie/_Translation/$LANG/LC_MESSAGES/naja.po</filename>
+     are loaded into the prefix used for the file or directory
+     <filename>foo/bar/fie/naja</filename>.</para></listitem>
+    </orderedlist>
+   </para>
+
+   <para>To load such a tree, the method <code>trees.local.load</code>
+   is used. It takes one argument, the module path to the tree to load
+   as a string (like
+   <code>'Grimoire.root.trees.local.ldap._Performes'</code>). Usually,
+   it should be called with a name relative to the current module,
+   using the Python special variable <code>__name__</code>, like
+   <code>Grimoire._.trees.local.load(__name__ +
+   '._performers')</code>.</para>
+
+   <para>The main tree is implemented this way and resides in the
+   directory <filename>root</filename>. It is loaded using this
+   mechanism when the Grimoire python module is imported, and put into
+   the variable <code>Grimoire._</code>. It has been described under
+   <xref linkend="the-main-tree"/>.</para>
+
+   <section
+   id="constructing-trees-adding-introspection-to-a-tree"><title>Adding
+   introspection to a tree</title>
+    <para>The class returned by <code>trees.introspection</code>
+     implements a Grimoire tree that adds introspection to any tree it
+     is combined with. That is, given a tree <code>t1</code> and
+
+     <programlisting language="python">
+t2 = Gimoire.Performer.Composer([
+    ([], t1),
+    ([], Grimoire._.trees.introspection())])
+     </programlisting>
+
+     <code>t2</code> would hold a set of extra methods to query the
+     tree about the ones defined in <code>t1</code>.
+    </para>
+   </section>
+
+   <para>The method <code>trees.local.load.standardtree</code> is a
+   wrapper around <code>trees.local.load</code> which automatically
+   adds introspection and directory services to the loaded tree,
+   aswell as supports execution of init commands in the loaded
+   tree. For more information, please use
+   <code>introspection.params</code>.</para>
+  </section>
+
+  <section
+  id="constructing-trees-implementing-new-directory-services"><title>Implementing
+  new directory services</title>
+   <highlights>This chapter describes how to implement new back ends for
+   the directory. If you skipped the chapter on the directory under
+   the main tree above, you should skip this chapter as
+   well.</highlights>
+
+   <para>The methods <code>directory.get</code> and
+   <code>directory.set</code> only implements the recursion up along
+   the directory path, and uses data storage back end methods under
+   <code>directory.implementation.get</code> and
+   <code>directory.implementation.set</code> respectively, to actually
+   provide the data storage.</para>
+
+   <para>The mechanism is similar for get and set. When
+   <code>directory.get</code> gets called with a path and keypath, it
+   will construct a method path to call for each prefix of the path,
+   by appending the path <code>directory.implementation.get</code>,
+   the path prefix, and element consisting of the value of
+   <code>Grimoire.Types.pathSeparator</code>, and the keypath. It will
+   call those methods beginning with the longest prefix and continuing
+   with shorter and shorter prefixes until the call succeds (does not
+   throw an <code>AttributeError</code>, or there are no shorter
+   prefixes of the path, in which case an <code>AttributeError</code>
+   is thrown.</para>
+
+   <para>What this all means is that, to implement a directory data
+   storage back end, you need to provide methods or sub methods under
+   <code>directory.implementation.get</code> and/or
+   <code>directory.implementation.set</code>, that takes the same
+   arguments as <code>directory.get</code> and
+   <code>directory.set</code>, except for the keypath which is mangled
+   into the path. These methods does not have to do any recursion or
+   other magic, only provide a value or accept a value to store. For a
+   simple example, take a look in the file
+   <filename>root/trees/local/ldap/_performers/directory/implementation/Ldap.py</filename></para>
+  </section>
+ </section>
+
+ <section id="writing-new-uis"><title>Writing new UIs</title>
+  <para>A new user interface could easily be written as a normal
+  python program that just calls the appropriate methods on a Grimoire
+  tree object, and presents the results to the user in some
+  way. However, there are several tasks that most UIs will have to
+  perform. Such as rendering some sort of tree of methods and when the
+  tree expands further, perform <code>introspection.dir()</code>
+  calls. The methods under <code>clients</code> provides such services
+  as normal python classes.</para>
+ </section>
+
+ <section id="core-library-layout"><title>Core library layout</title>
+  <highlights>This chapter describes the core library functions. The
+  core library is made up of the tree system (already pretty well
+  covered), the type system, the access control system and helper
+  functions. This chapter is only of interrest to those implementing
+  new Grimoire methods or who uses Grimoire trees from within a Python
+  program.</highlights>
+
+  <section id="core-library-layout-type-system"><title>Type
+  system</title>
+   <para>The type system is implemented in the module
+   <code>Grimoire.Types</code>. It is split up over several files in
+   the <filename>Types</filename> directory, all merged into one
+   module. Conceptually, is is made up of two sets of types.</para>
+
+   <para>The first is solely extensions/restrictions of types in the
+   python types module - integer ranges, lists containing values of a
+   specific type, etc. These are used to specify the type required for
+   an argument of a Grimoire method more in detail.</para>
+
+   <para>The second set provides text objects that can be translated
+   and composed in various ways to adhere to whatever rendering device
+   is available in a client software (teletype terminal, HTML
+   renderer, Gtk+, etc). A special subset of the second set is a set
+   of types that represent some real data type, such as an e-mail
+   address, an URI or a path. These types have additional
+   functionality to parse strings into such objects.</para>
+
+   <para>For more information on the type system, please read the
+   doc strings of each type (using the python help function).</para>
+  </section>
+
+  <section id="core-library-layout-access-control"><title>Access
+  control</title>
+   <para>The module <code>Grimoire.Types.Ability</code> defines two
+   access control functions (or rather, objects that can act as
+   functions).</para>
+
+   <para>Objects of the <code>Grimoire.Types.Ability.Simple</code>
+   class matches a path by prefix, and allows all paths that begins
+   with that prefix (or if the "prefix" ends in an empty string,
+   allows only the path equal to the prefix except that last empty
+   string item).</para>
+
+   <para>More complex access rights can be built up from the
+   <code>Grimoire.Types.Ability.Simple</code> ones using an object of
+   the <code>Grimoire.Types.Ability.List</code> class. Such an object
+   is initialized with a list of pairs of a subclass of
+   <code>Grimoire.Types.Ability.Category</code> and a
+   <code>Grimoire.Types.Ability.Simple</code> object. The
+   <code>Grimoire.Types.Ability.Category</code> subclasses are
+   <code>Grimoire.Types.Ability.Allow</code>,
+   <code>Grimoire.Types.Ability.Deny</code>, or
+   <code>Grimoire.Types.Ability.Ignore</code>.</para>
+
+   <para>The List class determines if a given path is allowed or not
+    by walking down the list, as described in the <link
+    linkend="introduction-access-control">introduction</link>.
+
+    <programlisting language="python">
+>>> a = Grimoire.Types.Ability.Allow
+>>> d = Grimoire.Types.Ability.Deny
+>>> l = Grimoire.Types.Ability.List([
+ (d, ['create', 'user', 'gazonkware']),
+ (a, ['create', 'user']),
+ (a, ['create', 'host'])])
+>>> l(['create', 'user', 'gazonkware', 'customers', 'fred'])
+False
+>>> l(['create', 'user', 'barware', 'customers', 'anna'])
+True
+>>> l(['create', 'domain', 'bar.com'])
+False
+>>> l(['create', 'host', 'mycomputer'])
+True
+    </programlisting>
+   </para>
+
+   <para>Note that the <code>Grimoire.Types.Ability.List</code> class
+   is initialized from a list of pairs of category and path, where
+   path is either a simple list of strings, or a
+   <code>Grimoire.Types.Ability.Simple</code> object, and category is
+   either <code>Grimoire.Types.Ability.Allow</code>,
+   <code>Grimoire.Types.Ability.Deny</code> or
+   <code>Grimoire.Types.Ability.Ignore</code>, or <code>0</code> or
+   <code>False</code> (same as
+   <code>Grimoire.Types.Ability.Deny</code>) or <code>1</code> or
+   <code>True</code> (same as
+   <code>Grimoire.Types.Ability.Allow</code>).</para>
+  </section>
+ </section>
+
+ <section id="policies"><title>Policies</title>
+  <highlights>This chapter describes Grimoire coding standards. When
+  coding Grimoire methods (or changing the Grimoire library itself),
+  please try to adhere to the guidelines specified in this section if
+  there are no severe problems with doing so in your specific
+  case.</highlights>
+
+  <section id="policies-tree-structure"><title>Tree structure</title>
+   <para>The whole point of Grimoire is that the tree could be
+    extended with any module you need to fulfill all your
+    administration needs. The tree could look any way you
+    like. However, to be easily and quickly understood by the user,
+    some naming conventions are needed. Also, if you want your module
+    to be a part of the Grimoire distribution, you will probably have
+    to follow this naming policy. It's been created to:
+
+    <orderedlist>
+     <listitem><para>reduce the amount of information that the user
+     has to go through to get to the right place. More than seven
+     options in each step is not recommended by UI
+     gurus.</para></listitem>
+
+     <listitem><para>protect the user from having to choose between
+     several slightly ambigous choises. For example, to configure a
+     printer queue, do I select "manage", "change" or
+     "modify"?</para></listitem>
+    </orderedlist>
+   </para>
+
+   <para>After writing a fair amount of modules, we have succeeded to
+   isolate some management "verbs" that should cover most management
+   tasks. If you for some "verb" invent a sub category, fill it in
+   here so that everyone will be using the same sub categories. When
+   doing so, please try to keep the tree orderly and minimal.</para>
+
+   <para>In the naming conventions below, sysnonyms listed within
+   parenthesis are the verbs that should not be used.</para>
+
+   <para>The naming conventions for methods that users will call
+    directly
+
+    <variablelist>
+     <varlistentry><term>list (Synonyms: show,
+     view)</term></varlistentry>
+
+     <varlistentry><term>create (Synonyms: add)</term>
+      <listitem>
+       <variablelist>
+	<varlistentry><term>ability (Internal. Create an
+	ability)</term></varlistentry>
+       </variablelist>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry><term>delete (Synonyms: remove, kill)</term>
+      <listitem>
+       <variablelist>
+	<varlistentry><term>ability (Internal. Delete an
+	ability)</term></varlistentry>
+       </variablelist>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry><term>change (Synonyms: modify, manage)</term>
+      <listitem>
+       <variablelist>
+	<varlistentry><term>ability</term>
+	 <listitem>
+	  <variablelist>
+	   <varlistentry><term>allow (Synonyms:
+	   grant)</term></varlistentry>
+
+	   <varlistentry><term>deny</term></varlistentry>
+
+	   <varlistentry><term>cancel (Synonyms: revoke, delete,
+ 	    remove)</term>
+	    <listitem>
+	     <variablelist>
+	      <varlistentry><term>allow (Synonyms:
+	      allowance)</term></varlistentry>
+
+	      <varlistentry><term>deny (Synonyms:
+	      denial)</term></varlistentry>
+             </variablelist>
+            </listitem>
+	   </varlistentry>
+	  </variablelist>
+	 </listitem>
+	</varlistentry>
+       </variablelist>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry><term>disable (Synonyms: stop,
+     unload)</term></varlistentry>
+
+     <varlistentry><term>enable (Synonyms: start,
+     load)</term></varlistentry>
+
+     <varlistentry><term>reset (Synonyms: restart,
+     reload)</term></varlistentry>
+
+    </variablelist>
+
+    and the naming conventions for internal methods of all trees and
+    for methods in the main tree
+
+    <variablelist>
+     <varlistentry><term>trees (Grimoire trees and tree
+      functions)</term>
+      <listitem>
+       <variablelist>
+	<varlistentry><term>local (Locally available
+	trees)</term></varlistentry>
+
+	<varlistentry><term>remote (Connect to remote
+	trees)</term></varlistentry>
+
+	<varlistentry><term>server (Serve trees to remote
+	hosts)</term></varlistentry>
+       </variablelist>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry><term>introspection (Aquire information or operate
+     on the tree itself)</term>
+      <listitem>
+       <variablelist>
+	<varlistentry><term>dir (Synonyms: list,
+	denumerate)</term></varlistentry>
+
+	<varlistentry><term>params (Synonyms: parameters, help,
+	about)</term></varlistentry>
+
+	<varlistentry><term>eval (Synonyms: evaluate,
+	interpret)</term></varlistentry>
+       </variablelist>
+      </listitem>
+     </varlistentry>
+
+
+     <varlistentry><term>directory (Generalized configuration data
+     access)</term>
+      <listitem>
+       <variablelist>
+	<varlistentry><term>get (Synonyms: read,
+	find)</term></varlistentry>
+
+	<varlistentry><term>set (Synonyms:
+	write)</term></varlistentry>
+
+	<varlistentry><term>list (Synonyms: dir,
+	find)</term></varlistentry>
+
+	<varlistentry><term>implementation (Data storage
+	implementations)</term>
+	 <listitem>
+	  <variablelist>
+	   <varlistentry><term>get (Synonyms: read,
+	   find)</term></varlistentry>
+
+	   <varlistentry><term>set (Synonyms:
+	   write)</term></varlistentry>
+	  </variablelist>
+	 </listitem>
+	</varlistentry>
+       </variablelist>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry><term>client (User interfaces. Synonyms:
+     ui)</term></varlistentry>
+
+    </variablelist>
+   </para>
+  </section>
+
+  <section id="policies-character-encodings"><title>Character
+  encodings</title>
+   <variablelist>
+    <varlistentry>
+     <term>Internally (Method path elements, method parameters)</term>
+     <listitem><para>Strings may be either Types.StringType or Unicode
+     Types.UnicodeString or subclasses of one of these. In the case of
+     Types.StringType, the content is allways US ASCII, never Latin-1
+     or somesuch.</para></listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term>DIRT (Grimoire RPC)</term>
+     <listitem><para>Everything is UTF-8 encoded.</para></listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term>Externally (Grimoire interfacing to other systems)</term>
+     <listitem><para>If possible, UTF-8 is used. With some systems it
+     is possible to choose encoding when connecting. In those cases
+     UTF-8 is allways used. With systems that has to be configured to
+     use one encoding, the likelieness that other systems besides
+     Grimoire are also talking to that system and the negative
+     implications of forcing UTF-8 on all those must be considered,
+     but if possible, UTF-8 is still be used. If it is highly
+     impractical to enforce an encoding, the encoding is a
+     configuration option, but with a default value of
+     UTF-8.</para></listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term>UI</term>
+     <listitem><para>If it is possible to enforce an encoing without
+     the user noticing, as in the case with web interfaces, UTF-8 is
+     used. If the user environment provides an encoding configuration,
+     as in the case with a UNIX text interface (locale provides this),
+     the provided encoding is used.</para></listitem>
+    </varlistentry>
+   </variablelist>
+  </section>
+ </section>
+
+ <section id="further-help"><title>Further help</title>
+  <para>Use
+   <orderedlist>
+    <listitem><para><code>introspection.params</code> and
+    <code>introspection.dir</code> to check out a
+    tree.</para></listitem>
+
+    <listitem><para>the python <code>help()</code> function to get
+    more information on a sub module, class, object, method or
+    function.</para></listitem>
+   </orderedlist>
+  </para>
+ </section>
+</article>
+
+
+<!--
+LocalWords:  LDAP Grimoire
+-->

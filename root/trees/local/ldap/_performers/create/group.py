@@ -22,9 +22,8 @@ class Performer(Grimoire.Performer.Base):
             gid = Grimoire.Utils.encode(gidNumber, 'ascii')
 
             # Get the samba base SID from LDAP
-            id = conn.search(string.join(['cn=sambaDomain'] + [conn.realm], ','),
-                              ldap.SCOPE_BASE, attrlist=['sambaSID'])
-            sambaDomainSID = conn.result(id)[1][0][1]['sambaSID'][0]
+	    sambaDomainSID = conn.result(conn.search(conn.realm, ldap.SCOPE_SUBTREE, filterstr='objectClass=sambaDomain',
+                                                     attrlist=['sambaSID']))[1][0][1]['sambaSID'][0]
             sambaGroupRID = (gidNumber * 2) + 1001
             sambaSID = "%s-%s" %(sambaDomainSID, sambaGroupRID)
 
@@ -56,21 +55,12 @@ class Performer(Grimoire.Performer.Base):
         def _call(self, path, name):
             name = unicode(name)
             def unlocked():
-                values = self._getpath(Grimoire.Types.TreeRoot,
-                                       path=['directory', 'get', 'ldap', 'ou=groups'] + ['ou=' + item for item in path])
-                grimoireHomedirPath = values(['cn=defaults', 'grimoireHomedirPath'], 'home.groups', False)[0].split('.')
-                grimoireClientHomedirPath = values(['cn=defaults', 'grimoireClientHomedirPath'], 'home.groups', False)[0].split('.')
-
                 res = self._getpath(Grimoire.Types.MethodBase,
                                     path=['abstract group', '$ldapservername', 'groups'] + path
                                     )(name)
-                gid = Grimoire.Types.getValue(res)
-
-                self._getpath(Grimoire.Types.MethodBase,
-                              path=['homedir', 'group'] + grimoireHomedirPath + path
-                              )(name, gid,
-                                HOME = unicode(Grimoire.Types.defaultLocalRoot + grimoireClientHomedirPath + path + [name] + ['group.contents']))
-
+                for service in ('homedir', 'cyrus shared mail folder'):
+                    self._getpath(Grimoire.Types.MethodBase, 1,
+                                  ['enable', 'group', service, '$ldapservername'] + path + [name])()
                 def allow(subject, *paths):
                     self._getpath(Grimoire.Types.MethodBase, path=['ability', 'dn', '$ldapservername'] + subject)(
                         Grimoire.Types.Ability.List([(Grimoire.Types.Ability.Allow, path)
@@ -79,14 +69,14 @@ class Performer(Grimoire.Performer.Base):
                 allow(Grimoire.Utils.Reverse(
                           self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(
                               ['local', 'ldap', 'user', 'dn']).split(',')),
-                      ['change', 'ability', 'allow', 'groups'] + path,
-                      ['change', 'ability', 'cancel', 'allow', 'groups'] + path,
-                      ['change', 'group', 'add member'] + path,
-                      ['change', 'group', 'remove member'] + path,
-                      ['create', 'group'] + path,
-                      ['delete', 'group'] + path)
+                      ['change', 'ability', 'allow', 'groups'] + path + [''],
+                      ['change', 'ability', 'cancel', 'allow', 'groups'] + path + [''],
+                      ['change', 'group', 'add member'] + path + [''],
+                      ['change', 'group', 'remove member'] + path + [''],
+                      ['create', 'group'] + path + [''],
+                      ['delete', 'group'] + path + [''])
                 allow(['ou=' + item for item in ['groups'] + path + [name]],
-                      ['create', 'group'] + path + [''])
+                      ['create', 'group'] + path + [name, ''])
                 return res
             return self._callWithUnlockedTree(unlocked)
 
@@ -105,28 +95,17 @@ class Performer(Grimoire.Performer.Base):
 
     class homeGroup(Grimoire.Performer.SubMethod):
         __path__ = ['home group', '$ldapservername']
-        __related_group__ = ['group']
+        __related_group__ = ['home group']
         def _call(self, path, name):
             name = unicode(name)
             def unlocked():
-                values = self._getpath(Grimoire.Types.TreeRoot,
-                                       path=['directory', 'get', 'ldap', 'ou=people'] + ['ou=' + item for item in path])
-                grimoireHomedirPath = values(['cn=defaults', 'grimoireHomedirPath'], 'home.groups', False)[0].split('.')
-                grimoireClientHomedirPath = values(['cn=defaults', 'grimoireClientHomedirPath'], 'home.groups', False)[0].split('.')
-
                 res = self._getpath(Grimoire.Types.MethodBase,
                                     path=['abstract group', '$ldapservername', 'people'] + path
                                     )(name)
-                gid = Grimoire.Types.getValue(res)
 
-                self._getpath(Grimoire.Types.MethodBase,
-                              path=['homedir', 'homegroup'] + grimoireHomedirPath + path
-                              )(name, gid,
-                                HOME = unicode(Grimoire.Types.defaultLocalRoot + grimoireClientHomedirPath + path + [name] + ['group.contents']))
-
-                self._getpath(Grimoire.Types.MethodBase,
-                              path=['maildir', 'homegroup'] + grimoireHomedirPath + path
-                              )(name, gid)
+                for service in ('homedir',):
+                    self._getpath(Grimoire.Types.MethodBase, 1,
+                                  ['enable', 'home group', service, '$ldapservername'] + path + [name])()
 
                 return res
             return self._callWithUnlockedTree(unlocked)
@@ -134,7 +113,7 @@ class Performer(Grimoire.Performer.Base):
         def _dir(self, path, depth):
             return self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.MethodBase, 1,
-                                      ['list', 'ldapentries', '$ldapservername', 'Groups'] + path
+                                      ['list', 'ldapentries', '$ldapservername', 'People'] + path
                                       )(depth, 'ou=*', addType='ou'))
         def _params(self, path):
             return A(Ps([('name', A(Grimoire.Types.UsernameType,

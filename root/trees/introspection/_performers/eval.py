@@ -5,9 +5,9 @@ Ps = Grimoire.Types.ParamsType.derive
 
 class Performer(Grimoire.Performer.Base):
     class methodOfExpression(Grimoire.Performer.Method):
-        def _call(self, expr):
+        def _call(self, expr, simpleExpressionOnly = False):
             if Grimoire.Utils.isInstance(expr, types.BaseStringType):
-                expr = Grimoire.Utils.Serialize.Reader.read(Grimoire.Utils.Serialize.Reader.Buffer(expr))
+                expr = Grimoire.Utils.Serialize.Reader.read(Grimoire.Utils.Serialize.Reader.Buffer(str(expr))) # FIXME: Bufer should really do the conversion to utf-8 by itself!
             res = []
             while (Grimoire.Utils.isInstance(expr, Grimoire.Utils.Serialize.Types.Extension)
                    and expr.value[0] is not Grimoire.Utils.Serialize.Types.Identifier):
@@ -17,8 +17,12 @@ class Performer(Grimoire.Performer.Base):
                         and member.value[0] is Grimoire.Utils.Serialize.Types.Identifier):
                         res.append(member.value[1])
                     else:
+                        if simpleExpressionOnly:
+                            raise Exception("Not simple")
                         res = []
                 elif expr.value[0] is Grimoire.Utils.Serialize.Types.Application:
+                    if simpleExpressionOnly:
+                        raise Exception("Not simple")
                     expr = expr.value[1][0]
                     res = []
                 else:
@@ -42,9 +46,12 @@ class Performer(Grimoire.Performer.Base):
 
             def evaluate(type, value):
                 if type is Grimoire.Utils.Serialize.Types.Identifier and value == '_':
-                    # FIXME: This means that _.foo.bar._.fie will give
-                    # an error, that is, a single underscore can not
-                    # be used as a method path element name!
+                    #### fixme ####
+                    # description = """This means that _.foo.bar._.fie
+                    # will give an error, that is, a single underscore
+                    # can not be used as a method path element
+                    # name!"""
+                    #### end ####
                     return self._getpath(Grimoire.Types.TreeRoot)
                 elif type is Grimoire.Utils.Serialize.Types.Member:
                     (obj, member) = value

@@ -1,7 +1,7 @@
 #! /bin/sh
 
-disttype=rpm
-server=download.gna.org:/upload/grimoire/
+disttype=deb
+server=download.gna.org:/upload/webwidgets/
 
 params=0
 while (($# >> 0)); do
@@ -16,61 +16,67 @@ done
 
 if [ "$help" ]; then
  cat <<EOF
-Usage: makedist.sh [--disttype=tgz|rpm] [--upload [--server=UPLOAD_DIRECTORY]]
+Usage: makedist.sh [--disttype=tgz|rpm|deb] [--upload [--server=UPLOAD_DIRECTORY]]
 
 Generate and optionally upload a distribution.
-Default disttype is rpm.
+Default disttype is deb.
 Default UPLOAD_DIRECTORY is '$server'.
 EOF
  exit 1
 fi
 
 . Tools/getversion.sh
-VENDOR="$(grimoire_vendor)"
-VERSION="$(grimoire_version)"
+TITLE="$(pkgdist_title)"
+VENDOR="$(pkgdist_vendor)"
+VERSION="$(pkgdist_version)"
 
 echo "Building $disttype for $VERSION from $VENDOR:"
 
 echo "Removing old files..."
-rm -rf "=dist/Grimoire-$VERSION"
+rm -rf "=dist/$TITLE-$VERSION"
 
 echo "Copying files..."
 {
  echo "."
  tla inventory -s -d
 } |
+ sed -e "s+(sp)+ +g" |
  while read dir; do
-  mkdir -p "=dist/Grimoire-$VERSION/$dir"
-  cp -a "$dir/.arch-ids" "=dist/Grimoire-$VERSION/$dir/.arch-ids"
+  mkdir -p "=dist/$TITLE-$VERSION/$dir"
+  cp -a "$dir/.arch-ids" "=dist/$TITLE-$VERSION/$dir/.arch-ids"
  done
 
 tla inventory -s -f |
+ sed -e "s+(sp)+ +g" |
  while read file; do
-  cp "$file" "=dist/Grimoire-$VERSION/$file"
+  cp -d "$file" "=dist/$TITLE-$VERSION/$file"
  done
 
-mkdir -p "=dist/Grimoire-$VERSION/{arch}"
-ls "{arch}" |
- grep -v "++pristine-trees" |
+mkdir -p "=dist/$TITLE-$VERSION/{arch}"
+find "{arch}" -maxdepth 1 -mindepth 1 ! -name "++pristine-trees" |
  while read file; do
-  cp -a "{arch}/$file" "=dist/Grimoire-$VERSION/{arch}/$file"
-done
+  cp -a -d "$file" "=dist/$TITLE-$VERSION/$file"
+ done
 
 echo "Making spec-file..."
 m4 \
  -DVENDOR="$VENDOR" \
  -DVERSION="$VERSION" \
- < "Tools/Grimoire.spec.in" > "=dist/Grimoire-$VERSION/Grimoire.spec"
+ < "Tools/$TITLE.spec.in" > "=dist/$TITLE-$VERSION/$TITLE.spec"
 
 cd "=dist"
 
 echo "Making tar.gz..."
-tar -cvzf "Grimoire-$VERSION.tgz" "Grimoire-$VERSION"
+tar -czf "$TITLE-$VERSION.tgz" "$TITLE-$VERSION"
 
 case "$disttype" in
  rpm)
   echo "Building rpm..."
-  rpmbuild -ta "Grimoire-$VERSION.tgz";;
+  rpmbuild -ta "$TITLE-$VERSION.tgz";;
+ deb)
+  cd $TITLE-$VERSION
+  Tools/log2aptlog.sh > debian/changelog
+  dpkg-buildpackage
 esac
 
 if [ "$upload" ]; then
@@ -80,14 +86,14 @@ if [ "$upload" ]; then
   rpm)
    bindst="$(rpm -E "%{_rpmdir}/%{_build_arch}")"
    srcdst="$(rpm -E "%{_srcrpmdir}")"
-   cp "$bindst/Grimoire-$VERSION-1_ti_1.i386.rpm" "download/RPMS"
-   cp "$bindst/Grimoire-"*"-$VERSION-1_ti_1.i386.rpm" "download/RPMS"
-   cp "$srcdst/Grimoire-$VERSION-1_ti_1.src.rpm" "download/RPMS"
+   cp "$bindst/$TITLE-$VERSION-1_ti_1.i386.rpm" "download/RPMS"
+   cp "$bindst/$TITLE-"*"-$VERSION-1_ti_1.i386.rpm" "download/RPMS"
+   cp "$srcdst/$TITLE-$VERSION-1_ti_1.src.rpm" "download/RPMS"
    yum-arch "download/RPMS"
    createrepo "download/RPMS"
    ;;
   tgz)
-   cp "Grimoire-$VERSION.tgz" "download/Grimoire-$VERSION.tgz"
+   cp "$TITLE-$VERSION.tgz" "download/$TITLE-$VERSION.tgz"
    ;;
  esac
  rsync -a "download/" "$server"

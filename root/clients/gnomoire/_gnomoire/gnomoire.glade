@@ -1,0 +1,860 @@
+<?xml version="1.0" standalone="no"?> <!--*- mode: xml -*-->
+<!DOCTYPE glade-interface SYSTEM "http://glade.gnome.org/glade-2.0.dtd">
+
+<glade-interface>
+<requires lib="gnome"/>
+<requires lib="bonobo"/>
+
+<widget class="GnomeApp" id="mainWindow">
+  <property name="visible">True</property>
+  <property name="title" translatable="yes">Grimoire</property>
+  <property name="type">GTK_WINDOW_TOPLEVEL</property>
+  <property name="window_position">GTK_WIN_POS_NONE</property>
+  <property name="modal">False</property>
+  <property name="default_width">600</property>
+  <property name="default_height">501</property>
+  <property name="resizable">True</property>
+  <property name="destroy_with_parent">False</property>
+  <property name="icon">Orm.small.png</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
+  <property name="focus_on_map">True</property>
+  <property name="enable_layout_config">True</property>
+  <signal name="delete_event" handler="on_close" last_modification_time="Sun, 12 Mar 2006 13:52:07 GMT"/>
+
+  <child internal-child="dock">
+    <widget class="BonoboDock" id="bonobodock1">
+      <property name="visible">True</property>
+      <property name="allow_floating">True</property>
+
+      <child>
+	<widget class="BonoboDockItem" id="bonobodockitem1">
+	  <property name="visible">True</property>
+	  <property name="shadow_type">GTK_SHADOW_NONE</property>
+
+	  <child>
+	    <widget class="GtkMenuBar" id="menubar">
+	      <property name="visible">True</property>
+
+	      <child>
+		<widget class="GtkMenuItem" id="file">
+		  <property name="visible">True</property>
+		  <property name="stock_item">GNOMEUIINFO_MENU_FILE_TREE</property>
+
+		  <child>
+		    <widget class="GtkMenu" id="file_menu">
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="newSessionMenuItem">
+			  <property name="visible">True</property>
+			  <property name="stock_item">GNOMEUIINFO_MENU_NEW_ITEM</property>
+			  <property name="label" translatable="yes">_New session</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_newSession_activate" last_modification_time="Mon, 30 Jan 2006 16:56:34 GMT"/>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="close">
+			  <property name="visible">True</property>
+			  <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
+			  <signal name="activate" handler="on_close" last_modification_time="Sun, 12 Mar 2006 13:48:15 GMT"/>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+
+	      <child>
+		<widget class="GtkMenuItem" id="view">
+		  <property name="visible">True</property>
+		  <property name="stock_item">GNOMEUIINFO_MENU_VIEW_TREE</property>
+
+		  <child>
+		    <widget class="GtkMenu" id="view_menu">
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="newViewMenuItem">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">New _view</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_newViewMenuItem_activate" last_modification_time="Sun, 12 Mar 2006 13:49:44 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image137">
+			      <property name="visible">True</property>
+			      <property name="pixbuf">newView.png</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="newTreeViewMenuItem">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">New _tree view</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_newTreeViewMenuItem_activate" last_modification_time="Sun, 12 Mar 2006 14:03:44 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image138">
+			      <property name="visible">True</property>
+			      <property name="pixbuf">newTreeView.png</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkCheckMenuItem" id="openMethodsInNewWindow">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">Open methods in new window</property>
+			  <property name="use_underline">True</property>
+			  <property name="active">False</property>
+			  <signal name="toggled" handler="on_openMethodsInNewWindow_toggled" last_modification_time="Sun, 12 Mar 2006 13:47:35 GMT"/>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+
+	      <child>
+		<widget class="GtkMenuItem" id="go">
+		  <property name="label" translatable="yes">_Go</property>
+		  <property name="use_underline">True</property>
+
+		  <child>
+		    <widget class="GtkMenu" id="go_menu">
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="forward">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">_Forward</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_forward_activate" last_modification_time="Mon, 30 Jan 2006 07:30:36 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image139">
+			      <property name="visible">True</property>
+			      <property name="stock">gtk-go-forward</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="back">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">_Back</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_back_activate" last_modification_time="Mon, 30 Jan 2006 07:30:36 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image140">
+			      <property name="visible">True</property>
+			      <property name="stock">gtk-go-back</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+
+	      <child>
+		<widget class="GtkMenuItem" id="bookmarks">
+		  <property name="label" translatable="yes">_Bookmarks</property>
+		  <property name="use_underline">True</property>
+
+		  <child>
+		    <widget class="GtkMenu" id="bookmarks_menu">
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="addBookmark">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">_Add bookmark</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_addBookmark_activate" last_modification_time="Mon, 13 Mar 2006 03:53:13 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image141">
+			      <property name="visible">True</property>
+			      <property name="stock">gtk-add</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="manageBookmarks">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">_Manage bookmarks</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_manageBookmarks1_activate" last_modification_time="Mon, 13 Mar 2006 03:53:13 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image142">
+			      <property name="visible">True</property>
+			      <property name="stock">gtk-properties</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkSeparatorMenuItem" id="separator1">
+			  <property name="visible">True</property>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+
+	      <child>
+		<widget class="GtkMenuItem" id="relatedMethods">
+		  <property name="visible">True</property>
+		  <property name="label" translatable="yes">_Related methods</property>
+		  <property name="use_underline">True</property>
+		  <signal name="activate" handler="on_relatedMethods_activate" last_modification_time="Mon, 30 Jan 2006 07:30:36 GMT"/>
+
+		  <child>
+		    <widget class="GtkMenu" id="relatedMethods_menu">
+
+		      <child>
+			<widget class="GtkMenuItem" id="dummy1">
+			  <property name="label" translatable="yes">dummy</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_dummy1_activate" last_modification_time="Fri, 03 Mar 2006 12:06:10 GMT"/>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+
+	      <child>
+		<widget class="GtkMenuItem" id="help">
+		  <property name="visible">True</property>
+		  <property name="stock_item">GNOMEUIINFO_MENU_HELP_TREE</property>
+
+		  <child>
+		    <widget class="GtkMenu" id="help_menu">
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="gnomoireUserManual">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">Gnomoire user manual</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_gnomoireUserManual_activate" last_modification_time="Mon, 13 Mar 2006 05:45:06 GMT"/>
+			  <accelerator key="F1" modifiers="0" signal="activate"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image143">
+			      <property name="visible">True</property>
+			      <property name="stock">gnome-stock-book-yellow</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="grimoireUserManual">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">Grimoire user manual</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_grimoireUserManual_activate" last_modification_time="Mon, 13 Mar 2006 05:44:57 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image144">
+			      <property name="visible">True</property>
+			      <property name="stock">gnome-stock-book-green</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="grimoireProgrammingManual">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">Grimoire programming manual</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_grimoireProgrammingManual_activate" last_modification_time="Mon, 13 Mar 2006 05:44:48 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image145">
+			      <property name="visible">True</property>
+			      <property name="stock">gnome-stock-book-blue</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="grimoireHomepage">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">Grimoire homepage</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_grimoireHomepage_activate" last_modification_time="Mon, 13 Mar 2006 05:44:36 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image146">
+			      <property name="visible">True</property>
+			      <property name="stock">gtk-home</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="aboutGnomoire">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">About Gnomoire</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_aboutGnomoire_activate" last_modification_time="Sun, 12 Mar 2006 13:51:15 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image147">
+			      <property name="visible">True</property>
+			      <property name="stock">gtk-about</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+
+		      <child>
+			<widget class="GtkImageMenuItem" id="aboutGrimoire">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes">About Grimoire</property>
+			  <property name="use_underline">True</property>
+			  <signal name="activate" handler="on_aboutGrimoire_activate" last_modification_time="Sun, 12 Mar 2006 13:50:55 GMT"/>
+
+			  <child internal-child="image">
+			    <widget class="GtkImage" id="image148">
+			      <property name="visible">True</property>
+			      <property name="stock">gtk-about</property>
+			      <property name="icon_size">1</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+	    </widget>
+	  </child>
+	</widget>
+	<packing>
+	  <property name="placement">BONOBO_DOCK_TOP</property>
+	  <property name="band">0</property>
+	  <property name="position">0</property>
+	  <property name="offset">0</property>
+	  <property name="behavior">BONOBO_DOCK_ITEM_BEH_EXCLUSIVE|BONOBO_DOCK_ITEM_BEH_NEVER_VERTICAL|BONOBO_DOCK_ITEM_BEH_LOCKED</property>
+	</packing>
+      </child>
+
+      <child>
+	<widget class="BonoboDockItem" id="bonobodockitem2">
+	  <property name="visible">True</property>
+	  <property name="shadow_type">GTK_SHADOW_OUT</property>
+
+	  <child>
+	    <widget class="GtkToolbar" id="toolbar">
+	      <property name="visible">True</property>
+	      <property name="orientation">GTK_ORIENTATION_HORIZONTAL</property>
+	      <property name="toolbar_style">GTK_TOOLBAR_ICONS</property>
+	      <property name="tooltips">True</property>
+	      <property name="show_arrow">True</property>
+
+	      <child>
+		<widget class="GtkToolButton" id="newSessionButton">
+		  <property name="visible">True</property>
+		  <property name="tooltip" translatable="yes">New session</property>
+		  <property name="stock_id">gtk-new</property>
+		  <property name="visible_horizontal">True</property>
+		  <property name="visible_vertical">True</property>
+		  <property name="is_important">False</property>
+		  <signal name="clicked" handler="on_newSession_activate" last_modification_time="Mon, 30 Jan 2006 16:58:20 GMT"/>
+		</widget>
+		<packing>
+		  <property name="expand">False</property>
+		  <property name="homogeneous">True</property>
+		</packing>
+	      </child>
+
+	      <child>
+		<widget class="GtkToolButton" id="newViewButton">
+		  <property name="visible">True</property>
+		  <property name="tooltip" translatable="yes">New view</property>
+		  <property name="label" translatable="yes">New view</property>
+		  <property name="use_underline">True</property>
+		  <property name="icon">newView.png</property>
+		  <property name="visible_horizontal">True</property>
+		  <property name="visible_vertical">True</property>
+		  <property name="is_important">False</property>
+		  <signal name="clicked" handler="on_newView_activate" last_modification_time="Sun, 12 Mar 2006 13:49:12 GMT"/>
+		</widget>
+		<packing>
+		  <property name="expand">False</property>
+		  <property name="homogeneous">True</property>
+		</packing>
+	      </child>
+
+	      <child>
+		<widget class="GtkToolButton" id="newTreeViewButton">
+		  <property name="visible">True</property>
+		  <property name="tooltip" translatable="yes">New tree view</property>
+		  <property name="label" translatable="yes">New tree view</property>
+		  <property name="use_underline">True</property>
+		  <property name="icon">newTreeView.png</property>
+		  <property name="visible_horizontal">True</property>
+		  <property name="visible_vertical">True</property>
+		  <property name="is_important">False</property>
+		  <signal name="clicked" handler="on_newTreeView_activate" last_modification_time="Sun, 12 Mar 2006 13:49:25 GMT"/>
+		</widget>
+		<packing>
+		  <property name="expand">False</property>
+		  <property name="homogeneous">True</property>
+		</packing>
+	      </child>
+
+	      <child>
+		<widget class="GtkToolItem" id="toolitem1">
+		  <property name="visible">True</property>
+		  <property name="visible_horizontal">True</property>
+		  <property name="visible_vertical">True</property>
+		  <property name="is_important">False</property>
+		</widget>
+		<packing>
+		  <property name="expand">False</property>
+		  <property name="homogeneous">False</property>
+		</packing>
+	      </child>
+
+	      <child>
+		<widget class="GtkToolButton" id="backButton">
+		  <property name="tooltip" translatable="yes">New File</property>
+		  <property name="stock_id">gtk-go-back</property>
+		  <property name="visible_horizontal">True</property>
+		  <property name="visible_vertical">True</property>
+		  <property name="is_important">True</property>
+		  <signal name="clicked" handler="on_back_activate" last_modification_time="Mon, 13 Mar 2006 05:01:57 GMT"/>
+		</widget>
+		<packing>
+		  <property name="expand">False</property>
+		  <property name="homogeneous">True</property>
+		</packing>
+	      </child>
+
+	      <child>
+		<widget class="GtkToolButton" id="forwardButton">
+		  <property name="tooltip" translatable="yes">New File</property>
+		  <property name="stock_id">gtk-go-forward</property>
+		  <property name="visible_horizontal">True</property>
+		  <property name="visible_vertical">True</property>
+		  <property name="is_important">True</property>
+		  <signal name="clicked" handler="on_forward_activate" last_modification_time="Mon, 13 Mar 2006 05:01:46 GMT"/>
+		</widget>
+		<packing>
+		  <property name="expand">False</property>
+		  <property name="homogeneous">True</property>
+		</packing>
+	      </child>
+
+	      <child>
+		<widget class="GtkToolItem" id="locationToolItem">
+		  <property name="visible_horizontal">True</property>
+		  <property name="visible_vertical">True</property>
+		  <property name="is_important">True</property>
+
+		  <child>
+		    <widget class="GtkAlignment" id="alignment5">
+		      <property name="border_width">4</property>
+		      <property name="visible">True</property>
+		      <property name="xalign">0.5</property>
+		      <property name="yalign">0.5</property>
+		      <property name="xscale">1</property>
+		      <property name="yscale">1</property>
+		      <property name="top_padding">0</property>
+		      <property name="bottom_padding">0</property>
+		      <property name="left_padding">0</property>
+		      <property name="right_padding">0</property>
+
+		      <child>
+			<widget class="GtkHBox" id="hbox1">
+			  <property name="visible">True</property>
+			  <property name="homogeneous">False</property>
+			  <property name="spacing">4</property>
+
+			  <child>
+			    <widget class="GtkLabel" id="label1">
+			      <property name="visible">True</property>
+			      <property name="label" translatable="yes">Location:</property>
+			      <property name="use_underline">False</property>
+			      <property name="use_markup">False</property>
+			      <property name="justify">GTK_JUSTIFY_LEFT</property>
+			      <property name="wrap">False</property>
+			      <property name="selectable">False</property>
+			      <property name="xalign">0.5</property>
+			      <property name="yalign">0.5</property>
+			      <property name="xpad">0</property>
+			      <property name="ypad">0</property>
+			      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+			      <property name="width_chars">-1</property>
+			      <property name="single_line_mode">False</property>
+			      <property name="angle">0</property>
+			    </widget>
+			    <packing>
+			      <property name="padding">0</property>
+			      <property name="expand">False</property>
+			      <property name="fill">False</property>
+			    </packing>
+			  </child>
+
+			  <child>
+			    <widget class="GtkComboBoxEntry" id="location">
+			      <property name="visible">True</property>
+			      <property name="items" translatable="yes">_.about</property>
+			      <property name="add_tearoffs">False</property>
+			      <property name="has_frame">True</property>
+			      <property name="focus_on_click">True</property>
+			      <signal name="editing_done" handler="on_location_editing_done" last_modification_time="Sun, 12 Mar 2006 13:51:44 GMT"/>
+			    </widget>
+			    <packing>
+			      <property name="padding">0</property>
+			      <property name="expand">True</property>
+			      <property name="fill">True</property>
+			    </packing>
+			  </child>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+		</widget>
+		<packing>
+		  <property name="expand">True</property>
+		  <property name="homogeneous">False</property>
+		</packing>
+	      </child>
+	    </widget>
+	  </child>
+	</widget>
+	<packing>
+	  <property name="placement">BONOBO_DOCK_TOP</property>
+	  <property name="band">1</property>
+	  <property name="position">0</property>
+	  <property name="offset">0</property>
+	  <property name="behavior">BONOBO_DOCK_ITEM_BEH_EXCLUSIVE|BONOBO_DOCK_ITEM_BEH_LOCKED</property>
+	</packing>
+      </child>
+
+      <child>
+	<widget class="GtkHPaned" id="hpaned1">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="position">146</property>
+
+	  <child>
+	    <widget class="GtkNotebook" id="treeViewType">
+	      <property name="can_focus">True</property>
+	      <property name="show_tabs">True</property>
+	      <property name="show_border">False</property>
+	      <property name="tab_pos">GTK_POS_TOP</property>
+	      <property name="scrollable">False</property>
+	      <property name="enable_popup">False</property>
+	      <signal name="switch_page" handler="on_treeViewType_switch_page" last_modification_time="Wed, 08 Mar 2006 14:29:35 GMT"/>
+
+	      <child>
+		<widget class="GtkScrolledWindow" id="scrolledwindow5">
+		  <property name="visible">True</property>
+		  <property name="can_focus">True</property>
+		  <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+		  <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+		  <property name="shadow_type">GTK_SHADOW_NONE</property>
+		  <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
+
+		  <child>
+		    <widget class="GtkTreeView" id="methodTreeView">
+		      <property name="visible">True</property>
+		      <property name="can_focus">True</property>
+		      <property name="headers_visible">False</property>
+		      <property name="rules_hint">False</property>
+		      <property name="reorderable">False</property>
+		      <property name="enable_search">True</property>
+		      <property name="fixed_height_mode">False</property>
+		      <property name="hover_selection">False</property>
+		      <property name="hover_expand">False</property>
+		      <signal name="cursor_changed" handler="on_methodTreeView_row_activated" last_modification_time="Mon, 30 Jan 2006 17:01:46 GMT"/>
+		    </widget>
+		  </child>
+		</widget>
+		<packing>
+		  <property name="tab_expand">False</property>
+		  <property name="tab_fill">True</property>
+		</packing>
+	      </child>
+
+	      <child>
+		<widget class="GtkLabel" id="label11">
+		  <property name="visible">True</property>
+		  <property name="label" translatable="yes">Methods</property>
+		  <property name="use_underline">False</property>
+		  <property name="use_markup">False</property>
+		  <property name="justify">GTK_JUSTIFY_LEFT</property>
+		  <property name="wrap">False</property>
+		  <property name="selectable">False</property>
+		  <property name="xalign">0.5</property>
+		  <property name="yalign">0.5</property>
+		  <property name="xpad">0</property>
+		  <property name="ypad">0</property>
+		  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+		  <property name="width_chars">-1</property>
+		  <property name="single_line_mode">False</property>
+		  <property name="angle">0</property>
+		</widget>
+		<packing>
+		  <property name="type">tab</property>
+		</packing>
+	      </child>
+
+	      <child>
+		<widget class="GtkScrolledWindow" id="scrolledwindow6">
+		  <property name="visible">True</property>
+		  <property name="can_focus">True</property>
+		  <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+		  <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+		  <property name="shadow_type">GTK_SHADOW_NONE</property>
+		  <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
+
+		  <child>
+		    <widget class="GtkTreeView" id="objectTreeView">
+		      <property name="visible">True</property>
+		      <property name="can_focus">True</property>
+		      <property name="headers_visible">False</property>
+		      <property name="rules_hint">False</property>
+		      <property name="reorderable">False</property>
+		      <property name="enable_search">True</property>
+		      <property name="fixed_height_mode">False</property>
+		      <property name="hover_selection">False</property>
+		      <property name="hover_expand">False</property>
+		    </widget>
+		  </child>
+		</widget>
+		<packing>
+		  <property name="tab_expand">False</property>
+		  <property name="tab_fill">True</property>
+		</packing>
+	      </child>
+
+	      <child>
+		<widget class="GtkLabel" id="label12">
+		  <property name="visible">True</property>
+		  <property name="label" translatable="yes">Objects</property>
+		  <property name="use_underline">False</property>
+		  <property name="use_markup">False</property>
+		  <property name="justify">GTK_JUSTIFY_LEFT</property>
+		  <property name="wrap">False</property>
+		  <property name="selectable">False</property>
+		  <property name="xalign">0.5</property>
+		  <property name="yalign">0.5</property>
+		  <property name="xpad">0</property>
+		  <property name="ypad">0</property>
+		  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+		  <property name="width_chars">-1</property>
+		  <property name="single_line_mode">False</property>
+		  <property name="angle">0</property>
+		</widget>
+		<packing>
+		  <property name="type">tab</property>
+		</packing>
+	      </child>
+	    </widget>
+	    <packing>
+	      <property name="shrink">True</property>
+	      <property name="resize">False</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkScrolledWindow" id="methodInteractionPane">
+	      <property name="can_focus">True</property>
+	      <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+	      <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+	      <property name="shadow_type">GTK_SHADOW_NONE</property>
+	      <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
+
+	      <child>
+		<widget class="GtkViewport" id="viewport2">
+		  <property name="visible">True</property>
+		  <property name="shadow_type">GTK_SHADOW_IN</property>
+
+		  <child>
+		    <widget class="GtkAlignment" id="methodInteraction">
+		      <property name="visible">True</property>
+		      <property name="xalign">0</property>
+		      <property name="yalign">0</property>
+		      <property name="xscale">1</property>
+		      <property name="yscale">1</property>
+		      <property name="top_padding">10</property>
+		      <property name="bottom_padding">10</property>
+		      <property name="left_padding">10</property>
+		      <property name="right_padding">10</property>
+
+		      <child>
+			<widget class="GtkLabel" id="label14">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes"></property>
+			  <property name="use_underline">False</property>
+			  <property name="use_markup">False</property>
+			  <property name="justify">GTK_JUSTIFY_LEFT</property>
+			  <property name="wrap">False</property>
+			  <property name="selectable">False</property>
+			  <property name="xalign">0.5</property>
+			  <property name="yalign">0.5</property>
+			  <property name="xpad">0</property>
+			  <property name="ypad">0</property>
+			  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+			  <property name="width_chars">-1</property>
+			  <property name="single_line_mode">False</property>
+			  <property name="angle">0</property>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+	    </widget>
+	    <packing>
+	      <property name="shrink">True</property>
+	      <property name="resize">True</property>
+	    </packing>
+	  </child>
+	</widget>
+      </child>
+    </widget>
+    <packing>
+      <property name="padding">0</property>
+      <property name="expand">True</property>
+      <property name="fill">True</property>
+    </packing>
+  </child>
+
+  <child internal-child="appbar">
+    <widget class="GnomeAppBar" id="appbar1">
+      <property name="visible">True</property>
+      <property name="has_progress">False</property>
+      <property name="has_status">False</property>
+    </widget>
+    <packing>
+      <property name="padding">0</property>
+      <property name="expand">True</property>
+      <property name="fill">True</property>
+    </packing>
+  </child>
+</widget>
+
+<widget class="GtkAboutDialog" id="aboutDialog">
+  <property name="destroy_with_parent">False</property>
+  <property name="name" translatable="yes">Gnomoire</property>
+  <property name="copyright" translatable="yes">Ab TakeIIT
+Egil Möller
+Martin Björnsson</property>
+  <property name="comments" translatable="yes">Grimoire is a Python action tree implementation</property>
+  <property name="license" translatable="yes">This program is free software; you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place, Suite 330, Boston, MA 02111-1307 USA
+
+In addition, as a special exception, AB TakeIT gives permission
+to link the code of this program with the OpenSSL and the SSLeay libraries (or
+with modified versions of them that uses the same license), and distribute linked
+combinations including the these. You must obey the GNU General Public
+License in all respects for all of the code used other than OpenSSL/SSLeay. If
+you modify Grimoire, you may extend this exception to your version, but you are
+not obligated to do so. If you do not wish to do so, delete this exception
+statement from your version.</property>
+  <property name="website">http://home.gna.org/grimoire</property>
+  <property name="website_label" translatable="yes">Homepage</property>
+  <property name="authors">Egil Möller
+Martin Björnsson</property>
+  <property name="documenters">Egil Möller
+Martin Björnsson</property>
+  <property name="artists">Egil Möller</property>
+  <property name="translator_credits" translatable="yes" comments="TRANSLATORS: Replace this string with your names, one name per line.">Egil Möller
+Martin Björnsson</property>
+  <property name="logo">Orm.small.png</property>
+</widget>
+
+</glade-interface>

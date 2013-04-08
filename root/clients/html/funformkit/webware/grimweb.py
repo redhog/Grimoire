@@ -1,4 +1,4 @@
-import Grimoire.Performer, Grimoire.Types, Grimoire.Utils, string, types, sys, traceback
+import Grimoire.Performer, Grimoire.Types, Grimoire.Utils, string, types, sys
 
 debugParams = 1
 
@@ -6,17 +6,26 @@ class Performer(Grimoire.Performer.Base):
     class grimweb(Grimoire.Performer.Method):
         def _call(performer):
             FormPage = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase)())
-            Result = performer._callWithUnlockedTree(lambda: performer._getpath(levels=2).result())
-
-            class Selection:
-                def __init__(self):
-                    self.method = None
-                    self.form = None
-                    self.result = None
 
             class Grimweb(FormPage):
                 def __init__(self):
                     FormPage.__init__(self, [])
+
+                def parsePath(self):
+                    """Returns an object with members session, view and method."""
+                    path = self.request().extraURLPath().split('/')
+                    class Result(object): pass
+                    result = Result()
+                    result.session = result.view = ()
+                    result.method = None
+                    try:
+                        result.session = tuple(path[1].split('.'))
+                        result.view = tuple(path[2].split('.'))
+                        if path[3:] != '':
+                            result.method = tuple(path[3:])
+                    except:
+                        pass
+                    return result
 
                 def parseCommand(self):
                     sess = self.grimoireSession()
@@ -41,90 +50,29 @@ class Performer(Grimoire.Performer.Base):
                         for key, value in fields.iteritems():
                             if key not in ('expand', 'expandPath', 'collapse', 'select'):
                                 continue
-                            method = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase, 3).urlname.name2method(value))
+                            if value is None or value == 'default':
+                                method = None
+                            else:
+                                method = tuple(value.decode().split('.')[1:])
                             if method is None:
-                                method = sess.defaultMethod()
+                                method = sess.views[()].children[('tree',)].children[('methods',)].defaultMethod()
                                 method = method and tuple(method)
                             if method is not None:
-                                methodName = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase, 3).urlname.method2name(method))
                                 if key == 'expand':
-                                    sess.expand(list(method), 1)
+                                    sess.views[()].children[('tree',)].children[('methods',)].expand(list(method), 1)
                                 elif key == 'expandPath':
-                                    sess.expandPath(list(method), 1)
+                                    sess.views[()].children[('tree',)].children[('methods',)].expandPath(list(method), 1)
                                 elif key == 'collapse':
-                                    sess.collapse(list(method))
+                                    sess.views[()].children[('tree',)].children[('methods',)].collapse(list(method))
                                 elif key == 'select':
-                                    sess.selection = Selection()
-                                    sess.selection.method = method
-                                    try:
-                                        sess.selection.form = self.createForm(method)
-                                        if sess.selection.form is None:
-                                            submitted = 1
-                                            data = {}
-                                    except:
-                                        if debugParams:
-                                            traceback.print_exc()
-                                        sess.selection.result = Result()
-                                        sess.selection.result.error = sys.exc_info()[1]
+                                    sess.views[()].send.gotoPath(method)
+
                     if submitted:
-                        sess.selection.result = self.handleCall(sess.selection.method, data)
-                        if sess.selection.result.error is None:
-                            sess.selection.form = None
-
-                def renderMenu(self):
-                    return self.grimoireSession().renderTreeToHtml()
-
-                def renderFormTitle(self):
-                    sess = self.grimoireSession()
-                    if sess.selection is not None:
-                        if sess.selection.form is not None:
-                            return str(sess.getComposer()(
-                                Grimoire.Types.Formattable(
-                                    '%(comment)s:',
-                                    comment=Grimoire.Types.getComment(
-                                        self._params[sess.selection.method],
-                                        Grimoire.Types.Reducible(sess.selection.method, ' ')))))
-                        else:
-                            return ''
-                    return str(Composer('<b>Welcome to Grimoire.<br>Please select a method from the left.</b>'))
-
-                def renderForm(self):
-                    sess = self.grimoireSession()
-                    if sess.selection is not None:
-                        if sess.selection.form is not None:
-                            return self.renderableForm(
-                                formDefinition=sess.selection.form[0],
-                                defaults=sess.selection.form[1]).htFormTable(
-                                    bgcolor=self.grimoireSession().property_form_color)
-                    return ''
-
-                def renderError(self):
-                    sess = self.grimoireSession()
-                    if sess.selection is not None and sess.selection.result is not None and sess.selection.result.error is not None:
-                        return ('<em class="errorMsg">%s.</em><br>' %
-                                str(sess.getComposer()(sess.selection.result.error)))
-                    return ''
-
-                def renderResTitle(self):
-                    sess = self.grimoireSession()
-                    if sess.selection is not None and sess.selection.result is not None and sess.selection.result.result is not None:
-                        comment = Grimoire.Types.getComment(sess.selection.result.result)
-                        res = Grimoire.Types.getValue(sess.selection.result.result)
-                        if comment is None and sess.selection.method is not None:
-                            comment = Grimoire.Types.Formattable('%(method)s returned',
-                                                                 method=Grimoire.Types.Reducible(sess.selection.method, ' '))
-                        if comment is not None:
-                            return str(sess.getComposer()(comment)) + [':', '.'][res is None]
-                    return ''
-
-                def renderRes(self):
-                    sess = self.grimoireSession()
-                    if sess.selection is not None and sess.selection.result is not None and sess.selection.result.result is not None:
-                        res = Grimoire.Types.getValue(sess.selection.result.result)
-                        if res is not None:
-                            return str(sess.getComposer()(res))
-                    return ''
-                
+                        print data
+                        sess.views[()].children[('selection',)].handleCall(
+                            args = Grimoire.Types.getValue(sess.views[()].children[('selection',)].params
+                                                           )(kws = data, checkTypes = 0, falseAsAbsent = 1))
+               
                 def writeStyleSheet(self):
                     sess = self.grimoireSession()
                     self.writeln("""
@@ -158,7 +106,7 @@ class Performer(Grimoire.Performer.Base):
                     sess = self.grimoireSession()
 
                     data = filter(lambda x: x,
-                                  [self.renderError(), self.renderFormTitle(), self.renderForm(), self.renderResTitle(), self.renderRes()])
+                                  sess.views[()].children[('selection',)].renderSelection())
 
                     bordertopextension = """
                      <td class="pageDividerVExtension">
@@ -166,14 +114,14 @@ class Performer(Grimoire.Performer.Base):
                      </td>
                      """ % {'bordertopextension': sess.property_border_top_extension}
 
-                    if sess.selection and sess.selection.method is not None:
+                    if sess.views[()].children[('selection',)].method is not None:
                         relatedLink = """
                         <td class="relatedLink">
                          %(link)s
                         </td>
-                        """ % {'link': sess.getComposer()(Grimoire.Types.TitledURILink(
-                            Grimoire.Types.GrimoireReference(len(sess.selection.method),
-                                                             ['introspection', 'related'] + list(sess.selection.method)),
+                        """ % {'link': self.getComposer()(Grimoire.Types.TitledURILink(
+                            Grimoire.Types.GrimoireReference(['introspection', 'related'] + list(sess.views[()].children[('selection',)].method),
+                                                             len(sess.views[()].children[('selection',)].method)),
                             'Related methods'))}
                     else:
                         relatedLink = ''
@@ -223,7 +171,7 @@ class Performer(Grimoire.Performer.Base):
                        </tr>
                       </tbody>
                      </table>
-                     """ % {'menu': self.renderMenu(),
+                     """ % {'menu': self.grimoireSession().views[()].children[('tree',)].children[('methods',)].renderTreeToHtml(),
                             'data': dataTrs,
                             'bordertop': sess.property_border_top,
                             })
@@ -235,19 +183,11 @@ class Performer(Grimoire.Performer.Base):
                     self.writeln('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">')
                     #self.writeln('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">')
 
-                def connectGrimoire(self, *arg, **kw):
-                    sess = FormPage.connectGrimoire(self, *arg, **kw)
-                    comment = Grimoire.Types.getComment(sess)
-                    sessvalue = Grimoire.Types.getValue(sess)
-                    sessvalue.selection = Selection()
-                    sessvalue.selection.method = None
-                    sessvalue.selection.result = performer._callWithUnlockedTree(lambda: performer._getpath(Grimoire.Types.MethodBase, 1).result())()
-                    sessvalue.selection.result.result = Grimoire.Types.AnnotatedValue(None, comment)
-                    return sess
-                    
                 def reconnectGrimoire(self, *arg, **kw):
                     sess = FormPage.reconnectGrimoire(self, *arg, **kw)
-                    Grimoire.Types.getValue(sess).selection.result.error = Exception("Your Grimoire login has expired and you have thus been logged out automatically")
+                    sessvalue = Grimoire.Types.getValue(sess)
+                    sessvalue.views[()].children[('selection',)].result = sessvalue.Result(
+                        error = Exception("Your Grimoire login has expired and you have thus been logged out automatically"))
                     return sess
 
             return Grimweb

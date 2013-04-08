@@ -86,7 +86,8 @@ class UserMethod:
                 self._getpath(Grimoire.Types.MethodBase,
                               path=['list', 'ldapentries', '$ldapservername', 'ou=people'] + path)(
                     depth + 1,
-                    'objectClass=posixAccount'))
+                    'objectClass=posixAccount',
+                    addType='ou', endType='uid'))
 UM = UserMethod
 
 class GroupMethod:
@@ -103,7 +104,8 @@ class GroupMethod:
             lambda:
                 self._getpath(Grimoire.Types.MethodBase, path=['list', 'ldapentries', '$ldapservername'] + path)(
                     depth,
-                    'ou=*'))
+                    'ou=*',
+                    addType='ou'))
 GM = GroupMethod
 
 abilityLock = thread.allocate_lock()
@@ -119,8 +121,7 @@ class Performer(Grimoire.Performer.Base):
             userdn = self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(
                     ['local', 'ldap', 'user', 'dn']))
-            path = list(Grimoire.Utils.Reverse(path))
-            dn = string.join(['cn=security'] + path, ',')
+            dn = unicode(Grimoire.Types.DN(path + ['cn=security']))
             abilityLock.acquire()
             try:
                 Grimoire.root.trees.local.ldap._Ability.EntriesList.fromLDAPEntries(conn, dn).allow(
@@ -131,6 +132,27 @@ class Performer(Grimoire.Performer.Base):
                 abilityLock.release()
             return A(None,
                      'Successfully allowed access')
+        
+        def _dir(self, path, depth):
+            return self._callWithUnlockedTree(
+                lambda:
+                    self._getpath(Grimoire.Types.MethodBase, path=['list', 'ldapentries', '$ldapservername'] + path)(
+                        depth,
+                        '(| (objectClass=posixAccount) (ou=*))',
+                        stripTypes=False))
+        
+        def _params(self, path):
+            conn = self._callWithUnlockedTree(
+                lambda: self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters(
+                    ['local', 'ldap', 'admin', 'conn'], cache=True))
+            dn = unicode(Grimoire.Types.DN(path + ['cn=security']))
+            current = Grimoire.Types.Ability.List(
+                Grimoire.root.trees.local.ldap._Ability.EntriesList.fromLDAPEntries(conn, dn))
+            return A(Ps([('filter', A(Grimoire.Types.SubsetType.derive(current),
+                                      'Abilities you wish to grant'))]),
+                     Grimoire.Types.Formattable(
+                         'Grant some of your own (transferable) abilities to %(path)s',
+                         path=Grimoire.Types.DN(path)))
                 
     class change_ability_cancel_allow_dn(DNM, CAM, SM):
         __path__ = ['change', 'ability', 'cancel', 'allow', 'dn', '$ldapservername']

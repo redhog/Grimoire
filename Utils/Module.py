@@ -1,5 +1,5 @@
 from Grimoire.Utils.Types import Iter
-import types, os, sys, string, traceback
+import types, os, sys, string
 
 debugExceptions = 0
 raiseExceptions = 0
@@ -18,6 +18,7 @@ def modnamejoin(name1, name2):
 
 def loadModule(name, raiseexception=True):
     components = string.split(name, '.')
+    mod = None
     for prefix in Iter.Prefixes(components):
         name = string.join(prefix, '.')
         try:
@@ -25,6 +26,8 @@ def loadModule(name, raiseexception=True):
             break
         except [Exception, None][raiseexception]:
             pass
+    if mod is None:
+        raise NameError("Module does not exist:", name)
     for comp in components[1:]:
         if not hasattr(mod, comp):
             setattr(mod, comp, types.ModuleType(mod.__name__ + '.' + comp))
@@ -40,6 +43,7 @@ class ModuleTree:
             try:
                 self.module = loadModule(modName)
             except:
+                import traceback
                 if debugExceptions: traceback.print_exc()
                 self.error = sys.exc_value
                 self.trace = traceback.format_exception(sys.exc_type, sys.exc_value, sys.exc_traceback)

@@ -1,4 +1,4 @@
-import Grimoire.Utils, Reader, Writer, Types, SocketServer, types, exceptions, copy, sys, string, traceback, threading, thread, __builtin__
+import Grimoire.Utils, Reader, Writer, Types, SocketServer, types, exceptions, copy, sys, string, threading, thread, __builtin__
 
 debugExceptions = ()
 dontDebugExceptions = (Grimoire.Utils.UntranslatableError,)
@@ -190,6 +190,7 @@ class Binding:
                 exc_type, exc_value = sys.exc_info()[:2]
                 e = exc_value or exc_type
                 if Grimoire.Utils.isInstance(e, *debugExceptions) and not Grimoire.Utils.isInstance(e, *dontDebugExceptions):
+                    import traceback
                     traceback.print_exc()
                 res = Types.RaiseException()
             self.write(('RPCCallReturn', msg[0], res))

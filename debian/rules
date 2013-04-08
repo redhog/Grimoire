@@ -1,0 +1,140 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+#
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+#
+# Modified to make a template file for a multi-binary package with separated
+# build-arch and build-indep targets  by Bill Allombert 2001
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# This has to be exported to make some magic below work.
+export DH_OPTIONS
+
+indep_packages := grimoire-doc grimoire-conf grimoire-ldapschema-openldap
+arch_packages := grimoire grimoire-ssl grimoire-ldap grimoire-postgresql grimoire-filesystem grimoire-cyrus grimoire-cups grimoire-client grimoire-webware
+
+sysconfdir := /etc
+libdir := /usr/lib
+sbindir := /usr/sbin
+services := /var
+
+ldapdir := $(sysconfdir)/ldap
+ldapschemadir := $(ldapdir)/schema
+pyversion := $(shell python -c "import sys; print str(sys.version_info[0]) + '.' + str(sys.version_info[1])")
+pynextversion := $(shell python -c "import sys; print str(sys.version_info[0]) + '.' + str(sys.version_info[1] + 1)")
+pydir := $(libdir)/python$(pyversion)/site-packages
+webware := $(services)/www/WebWare
+apachedir := $(sysconfdir)/apache2
+
+grimroot := $(pydir)/Grimoire
+grimconf := $(sysconfdir)/Grimoire
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	touch configure-stamp
+
+
+#Architecture 
+build: build-arch build-indep
+
+build-arch: build-arch-stamp
+build-arch-stamp: configure-stamp 
+	touch build-arch-stamp
+	Tools/compilecmodules.sh
+
+build-indep: build-indep-stamp
+build-indep-stamp: configure-stamp 
+	touch build-indep-stamp
+	Tools/compiletranslations.sh
+	Tools/compiledocumentation.sh
+clean:
+	dh_testdir; dh_testroot; dh_clean
+	rm -f build-arch-stamp build-indep-stamp #CONFIGURE-STAMP#
+	Tools/clean.sh
+	Tools/log2aptlog.sh > debian/changelog
+
+install: install-indep install-arch
+install-indep:
+	dh_testdir; dh_testroot; dh_clean -k -i 
+	for package in $(indep_packages); do mkdir -p $(CURDIR)/debian/$$package; done
+
+	dh_installdocs -p grimoire-doc Documentation/*
+
+	mkdir -p $(CURDIR)/debian/grimoire-conf$(grimconf)
+	cp -r Documentation/Scripts/Config.d $(CURDIR)/debian/grimoire-conf$(grimconf)/Config.d
+	cp -r Documentation/Scripts/Client $(CURDIR)/debian/grimoire-conf$(grimconf)/Client
+	mkdir -p $(CURDIR)/debian/grimoire-conf$(sbindir)
+	cp -r Documentation/Scripts/Ldap $(CURDIR)/debian/grimoire-conf$(sbindir)/GrimConf
+
+	mkdir -p $(CURDIR)/debian/grimoire-ldapschema-openldap$(ldapschemadir)
+	cp Documentation/Scripts/Ldap/Grimoire.schema  $(CURDIR)/debian/grimoire-ldapschema-openldap$(ldapschemadir)/Grimoire.schema
+
+install-arch:
+	dh_testdir; dh_testroot; dh_clean -k -s 
+	for package in $(arch_packages); do mkdir -p $(CURDIR)/debian/$$package; done
+
+	mkdir -p $(CURDIR)/debian/grimoire$(pydir)
+	mkdir -p $(CURDIR)/debian/grimoire$(sbindir)
+	mkdir -p $(CURDIR)/debian/grimoire$(sysconfdir)/init.d
+	tla inventory -s -d | sed -e "s+(sp)+ +g"| while read dir; do mkdir -p "$(CURDIR)/debian/grimoire$(grimroot)/$$dir"; cp -a "$$dir/.arch-ids" "$(CURDIR)/debian/grimoire$(grimroot)/$$dir"; done
+	tla inventory -s -f | sed -e "s+(sp)+ +g" | while read file; do cp -a -P "$$file" "$(CURDIR)/debian/grimoire$(grimroot)/$$file"; done
+	chmod ugo+x $(CURDIR)/debian/grimoire$(grimroot)/root/clients/cli.py
+	ln -s $(grimroot)/root/clients/cli.py $(CURDIR)/debian/grimoire$(sbindir)/grimoire
+	cp Documentation/Scripts/grimoire.init.d.debian $(CURDIR)/debian/grimoire$(sysconfdir)/init.d/grimoire
+	chmod ugo+x $(CURDIR)/debian/grimoire$(sysconfdir)/init.d/grimoire
+
+	mkdir -p $(CURDIR)/debian/grimoire-webware$(webware)/Configs/Application.d
+	mkdir -p $(CURDIR)/debian/grimoire-webware$(apachedir)/mods-available
+	echo "Contexts['GrimWeb'] = '$(grimroot)/root/clients/html/funformkit/webware/_grimwebcontext'" > $(CURDIR)/debian/grimoire-webware$(webware)/Configs/Application.d/GrimWeb.config
+	echo "Alias /GrimWeb-static $(grimroot)/root/clients/html/funformkit/webware/_grimwebcontext" > $(CURDIR)/debian/grimoire-webware$(apachedir)/mods-available/grimweb.conf
+
+
+# Must not depend on anything. This is to be called by
+# binary-arch/binary-indep
+# in another 'make' thread.
+binary-common:
+	dh_testdir; dh_testroot
+
+	dh_installchangelogs 
+	dh_installdocs
+#	dh_installexamples
+#	dh_installmenu
+#	dh_installdebconf	
+#	dh_installlogrotate	
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+#	dh_installman
+#	dh_link
+#	dh_strip
+#	dh_compress 
+#	dh_fixperms
+#	dh_perl
+	dh_python
+	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol -- -Vpyversion=$(pyversion) -Vpynextversion=$(pynextversion)
+	dh_md5sums
+	dh_builddeb
+
+# Build architecture independant packages using the common target.
+binary-indep: build-indep install-indep
+	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-common
+
+# Build architecture dependant packages using the common target.
+binary-arch: build-arch install-arch
+	$(MAKE) -f debian/rules DH_OPTIONS=-a binary-common
+
+binary: binary-arch binary-indep
+.PHONY: build clean binary-indep binary-arch binary install install-indep install-arch configure

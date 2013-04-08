@@ -1,0 +1,8 @@
+#! /bin/sh
+
+ {
+  echo skeleton(skeleton(cyrus_mail_server_varname)_password)
+  sleep 1 # Uggly hack
+  echo skeleton(skeleton(cyrus_mail_server_varname)_password)
+ } |
+  passwd cyrus

@@ -2,17 +2,6 @@ import Grimoire.Utils, Grimoire.Performer, Grimoire.Types, types, os, stat, errn
 
 copyBufferSize = 1024
 
-
-if hasattr(os, 'lstat'):
-    statFn = os.lstat
-else:
-    statFn = os.stat
-
-if hasattr(os, 'lchown'):
-    chownFn = os.lchown
-else:
-    chownFn = os.chown
-
 def manglePath(src, dst):
     return dst
 
@@ -41,7 +30,7 @@ class Performer(Grimoire.Performer.Base):
                 srcPathStr = unicode(base + srcRoot + src)
                 dstPathStr = unicode(base + dstRoot + dst)
 
-                statInfo = statFn(srcPathStr)
+                statInfo = Grimoire.Utils.lstat(srcPathStr)
 
                 dstUid = [uid, statInfo.st_uid][uid is None]
                 dstGid = [gid, statInfo.st_gid][gid is None]
@@ -65,7 +54,7 @@ class Performer(Grimoire.Performer.Base):
                     srcFile.close()
                     dstFile.close()
                     os.chmod(dstPathStr, stat.S_IMODE(statInfo.st_mode))
-                    chownFn(dstPathStr, dstUid, dstGid)
+                    Grimoire.Utils.lchown(dstPathStr, dstUid, dstGid)
                 elif stat.S_ISDIR(statInfo.st_mode):
                     for name in os.listdir(srcPathStr):
                         copytree(src + [name], dst + [name])
@@ -172,7 +161,7 @@ class Performer(Grimoire.Performer.Base):
                     ['local', 'filesystem', 'basepath'], []))
             dstPath = root + path
             srcPath = None
-            for prefixPath in Grimoire.Utils.Prefixes(dstPath['relative']):
+            for prefixPath in Grimoire.Utils.Prefixes(list(dstPath['relative'])):
                 prefixPath = root + prefixPath + skel
                 if os.access(unicode(prefixPath), os.F_OK):
                     srcPath = prefixPath
@@ -182,7 +171,7 @@ class Performer(Grimoire.Performer.Base):
             return self._callWithUnlockedTree(
                 lambda: self._getpath(Grimoire.Types.MethodBase, path=['var replace copy'] + ['$fileservername'] + path
                                       )(name,
-                                        srcPath['relative'],
+                                        list(srcPath['relative']),
                                         uid = uid,
                                         gid = gid,
                                         **variables))

@@ -1,0 +1,63 @@
+#! /bin/sh
+
+# Lists ppp connections in the format:
+#
+# pid   if   local ip     remote ip      netmask         peer-name
+# 28464,ppp1,192.168.10.1,192.168.10.221,255.255.255.255,dsl-provider
+#
+# Note that peer-name will be absent for any ppp connection that
+# doesn't use a peer-file (e.g. VPN connections)
+
+{
+ ps -o pid,cmd ax |
+  grep "pppd[ ]call" |
+  sed -e "s+^ *\([0-9]*\) .*pppd[ ]call \(.*\)$+\1,,,,,\2+g"
+
+ ls /var/run/ppp*.pid 2> /dev/null |
+  while read pidfile; do
+   if=$(echo $pidfile |sed -e "s+/var/run/++g" -e "s+.pid++g")
+   pid=$(cat $pidfile)
+   name=$(
+    ps -o pid,cmd ax |
+     grep -e "^ *$pid" |
+     grep -e "pppd[ ]call" |
+     sed -e "s+.* call ++g"
+    )
+   ips=$(
+    ifconfig $if 2> /dev/null |
+     grep "inet addr" |
+     sed -e "s+.*inet addr:\([^ ]*\) *P-t-P:\([^ ]*\) *Mask:\([^ ]*\)+\1,\2,\3+g"
+    )
+   [ "$ips" ] || ips=",,"
+   echo "$pid,$if,$ips,$name"
+  done
+} |
+ sort |
+ {
+  # Merge the info from the two sources above (ps and /var/run)
+  # Yes, this is rather uggly code, but there isn't much else to do in bash...
+  while read line; do
+   ip="$(echo $line | sed -e "s+^\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\)$+\1+g")"
+   if="$(echo $line | sed -e "s+^\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\)$+\2+g")"
+   local="$(echo $line | sed -e "s+^\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\)$+\3+g")"
+   remote="$(echo $line | sed -e "s+^\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\)$+\4+g")"
+   netmask="$(echo $line | sed -e "s+^\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\)$+\5+g")"
+   name="$(echo $line | sed -e "s+^\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\),\([^,]*\)$+\6+g")"
+   if [ "$ip" != "$oldip" ]; then
+    [ "$oldip$oldif$oldlocal$oldremote$oldnetmask$oldname" ] && echo "$oldip,$oldif,$oldlocal,$oldremote,$oldnetmask,$oldname"
+    oldip="$ip"
+    oldif="$if"
+    oldlocal="$local"
+    oldremote="$remote"
+    oldnetmask="$netmask"
+    oldname="$name"
+   else
+    [ "$if" ] && oldif="$if"
+    [ "$local" ] && oldlocal="$local"
+    [ "$remote" ] && oldremote="$remote"
+    [ "$netmask" ] && oldnetmask="$netmask"
+    [ "$name" ] && oldname="$name"
+   fi
+  done
+  [ "$oldip$oldif$oldlocal$oldremote$oldnetmask$oldname" ] && echo "$oldip,$oldif,$oldlocal,$oldremote,$oldnetmask,$oldname"
+ }

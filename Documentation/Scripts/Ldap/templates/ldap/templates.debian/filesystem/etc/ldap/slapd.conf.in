@@ -1,0 +1,140 @@
+######## Template configuration file for an OpenLDAP server to be used in conjunction with Grimoire ########
+# This template is instantiated by the setup.sh script.
+
+#######################################################################
+# Global Directives:
+
+# Features to permit
+#allow bind_v2
+
+# Schema and objectClass definitions
+# Required for basic functionality
+# FIXME: Add check for each of these if the corresponding
+# functionality is to be installed on any node in the cluster!
+include		skeleton(ldap_configdir)/schema/core.schema
+include		skeleton(ldap_configdir)/schema/cosine.schema
+include		skeleton(ldap_configdir)/schema/inetorgperson.schema
+include		skeleton(ldap_configdir)/schema/nis.schema
+include         skeleton(ldap_configdir)/schema/samba.schema
+include         skeleton(ldap_configdir)/schema/courier.schema
+include         skeleton(ldap_configdir)/schema/Grimoire.schema
+include         skeleton(ldap_configdir)/schema/horde.schema
+
+# Schema check allows for forcing entries to
+# match schemas for their objectClasses's
+schemacheck     on
+
+# Where the pid file is put. The init.d script
+# will not stop the server if you change this.
+pidfile         /var/run/slapd/slapd.pid
+
+# List of arguments that were passed to the server
+argsfile        /var/run/slapd.args
+
+# Read slapd.conf(5) for possible values
+loglevel        0
+
+# Where the dynamically loaded modules are stored
+modulepath	/usr/lib/ldap
+moduleload	back_bdb
+
+#######################################################################
+# Specific Backend Directives for bdb:
+# Backend specific directives apply to this backend until another
+# 'backend' directive occurs
+backend		bdb
+checkpoint 512 30
+
+#######################################################################
+# Specific Backend Directives for 'other':
+# Backend specific directives apply to this backend until another
+# 'backend' directive occurs
+#backend		<other>
+
+#######################################################################
+# Specific Directives for database #1, of type bdb:
+# Database specific directives apply to this databasse until another
+# 'database' directive occurs
+database        bdb
+
+# The base of your directory in database #1
+suffix          "skeleton(ldap_realm)"
+
+# Where the database file are physically stored for database #1
+directory       "skeleton(ldap_dbdir)/skeleton(ldap_realm_dnsname)"
+
+# Indices to maintain for this database
+index objectClass                       eq,pres
+index ou,cn,mail,surname,givenname      eq,pres,sub
+index uidNumber,gidNumber,loginShell    eq,pres
+index uid,memberUid                     eq,pres,sub
+index nisMapName,nisMapEntry            eq,pres,sub
+
+# Courier/Postfix mail
+index maildrop                          eq,pres,sub
+index mailbox                           eq,pres
+
+## required to support pdb_getsambapwrid()
+index displayName             		pres,sub,eq
+index sambaSID              		eq
+index sambaPrimaryGroupSID  		eq
+index sambaDomainName       		eq
+index default               		sub
+
+# Save the time that the entry gets modified, for database #1
+lastmod         on
+
+# Where to store the replica logs for database #1
+# replogfile	/var/lib/ldap/replog
+
+rootdn		"cn=admin,skeleton(ldap_realm)"
+skeleton(rootpassword)
+
+### Horde attributes
+access to attrs=hordePrefs,impPrefs,kronolithPrefs
+	by dn="cn=admin,skeleton(ldap_realm)" write
+        by self write
+        by * read
+
+### Grimoire attributes
+# Social security number for Swedish citizens
+access to attrs=grimoireSwedishIDNumber
+        by dn="cn=admin,skeleton(ldap_realm)" write
+        by self read
+        by * none
+
+# Grimoire rights management attributes
+access to attrs=grimoireAbility,grimoireAbilityAllow,grimoireAbilityDeny,grimoireAbilityIgnore
+        by dn="cn=admin,skeleton(ldap_realm)" write
+        by * none
+
+access to attrs=grimoireInitCommand
+        by dn="cn=admin,skeleton(ldap_realm)" write
+	by self read
+        by * none
+
+# Printer credits management
+access to attrs=grimoirePrinterCredits,grimoirePrinterCreditLimit
+        by dn="cn=admin,skeleton(ldap_realm)" write
+	by self read
+        by * none
+
+### Samba 3 ACLs
+# Samba passwords need only be accessible by the Samba LDAP admin
+access to attrs=sambaLMPassword,sambaNTPassword
+	by dn="cn=admin,skeleton(ldap_realm)" write
+	by * none
+
+
+### General LDAP ACLs
+access to attrs=userPassword
+        by dn="cn=admin,skeleton(ldap_realm)" write
+        by anonymous auth
+        by * none
+
+### Catch-all
+# The admin dn has full write access and users have read access to
+# attributes not restricted above
+access to *
+        by dn="cn=admin,skeleton(ldap_realm)" write
+        by * read

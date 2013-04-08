@@ -178,8 +178,11 @@ class Performer(Grimoire.Performer.Base):
         __path__ = ['nonpath', '$sqlentries', '$sqlservername']
         def _call(self, tables = [], columns = [], where = 'true', orderBy = None, orderWay = 0, distinct = 0, prettyPrint = True):
             if prettyPrint and not columns:
-                # FIXME: Handle where clauses (that references several tables) correctly
-                # Show the whole shebang
+                #### fixme ####
+                # description = """Handle where clauses (that
+                # references several tables) correctly Show the whole
+                # shebang"""
+                #### end ####
                 res = []
                 for table in tables:
                     res.extend(self._getpath(Grimoire.Types.MethodBase,

@@ -15,7 +15,7 @@ class Performer(Grimoire.Performer.Base):
         def _dir(self, path, depth):
             # Nyahehehe! This creates an infinite tree!
             if not path and not depth:
-                return [(0, [])]
+                return [(False, []), (True, [])]
             return self._call(path, depth)
         def _params(self, path):
             return A(Ps([('depth',
@@ -40,12 +40,15 @@ class Performer(Grimoire.Performer.Base):
                     depth=Grimoire.Performer.UnlimitedDepth,
                     objectPath=path, objectDepth=depth))
         def _params(self, path):
-            return A(Ps([('method',
-                          A(Grimoire.Types.GrimoirePath,
-                            'Method(s) to limit search to')),
-                         ('depth',
+            return A(Ps([('depth',
                           A(types.IntType,
                             'Search depth (-1 means unlimited)')),
+                         ('method',
+                          A(Grimoire.Types.GrimoirePath,
+                            'Method(s) to limit search to')),
+                         ('methodDepth',
+                          A(types.IntType,
+                            'Limit search to methods this far from the specified one (-1 means unlimited)')),
                          ],
                         0),
                      'List methods on an object or objects for a method')
@@ -53,17 +56,23 @@ class Performer(Grimoire.Performer.Base):
     class object(Grimoire.Performer.SubMethod):
         __related_group__ = ['object']
         def _call(self, path):
-            return Grimoire.Types.AnnotatedValue(Grimoire.Types.Lines(*[Grimoire.Types.TitledURILink(self._physicalGetpath(path=path)._reference(self._physicalGetpath(Grimoire.Types.TreeRoot, path=methodPath)),
-                                                                                                     Grimoire.Types.GrimoirePath(description))
-                                                                        for (leaf, objectPath, description, methodPath) in self._getpath(Grimoire.Types.MethodBase, path=['objdir'] + path)() if leaf]),
-                                                 Grimoire.Types.Formattable("Methods for the object %(object)s",
-                                                                            object=Grimoire.Types.GrimoirePath(path)))
+            return Grimoire.Types.AnnotatedValue(
+                Grimoire.Types.Lines(*[Grimoire.Types.TitledURILink(
+                    self._physicalGetpath(path=path)._reference(self._physicalGetpath(Grimoire.Types.TreeRoot,
+                                                                                      path=methodPath)),
+                                                                    Grimoire.Types.GrimoirePath(description))
+                                       for (leaf, objectPath, description, methodPath)
+                                       in self._getpath(Grimoire.Types.MethodBase,
+                                                        path=['objdir'] + path)()
+                                       if leaf]),
+                Grimoire.Types.Formattable("Methods for the object %(object)s",
+                                           object=Grimoire.Types.GrimoirePath(path)))
         def _dir(self, path, depth):
             return Grimoire.Utils.Map(
                 lambda (leaf, objectPath, description, methodPath): (leaf, objectPath),
                 self._physicalGetpath(Grimoire.Types.TreeRoot)._treeOp(
                     [], 'related',
-                    depth=Grimoire.Performer.UnlimitedDepth,
+                    depth=Grimoire.Performer.MethodBaseDepth,
                     objectPath=path, objectDepth=depth))
         def _params(self, path):
             return Ps()
@@ -72,10 +81,19 @@ class Performer(Grimoire.Performer.Base):
         __related_group__ = ['method']
         def _call(self, path):
             return Grimoire.Types.AnnotatedValue(
-                Grimoire.Types.Lines(
-                *[self._getpath(Grimoire.Types.MethodBase, path=['object'] + objectPath)()
-                  for (leaf, objectPath, description, methodPath) in self._getpath(Grimoire.Types.MethodBase, path=['objdir'])(Grimoire.Performer.UnlimitedDepth, path, 0)]),
-                Grimoire.Types.Formattable("Methods related to the method %(method)s", method=Grimoire.Types.GrimoirePath(path)))
+                Grimoire.Types.Lines(*[(lambda links: type(links)(
+                    Grimoire.Types.Lines(*[type(link)(self._physicalGetpath(path=path
+                                                                            )._reference(self._physicalGetpath(Grimoire.Types.MethodBase,
+                                                                                                               path = ['object'] + objectPath + Grimoire.Types.getValue(link))),
+                                                      Grimoire.Types.getComment(link))
+                                           for link in Grimoire.Types.getValue(links)]),
+                    Grimoire.Types.getComment(links))
+                                        )(self._getpath(Grimoire.Types.MethodBase, path=['object'] + objectPath)())
+                                       for (leaf, objectPath, description, methodPath)
+                                       in self._getpath(Grimoire.Types.MethodBase, path=['objdir']
+                                                        )(Grimoire.Performer.UnlimitedDepth, path, 0)]),
+                Grimoire.Types.Formattable("Methods related to the method %(method)s",
+                                           method=Grimoire.Types.GrimoirePath(path)))
         def _dir(self, path, depth):
             if not path and not depth:
                 return [(0, [])]
@@ -90,8 +108,6 @@ class Performer(Grimoire.Performer.Base):
             return self._physicalGetpath(Grimoire.Types.TreeRoot)._treeOp(prefix, 'params')
         __dir_allowall__ = False
         def _dir(self, path, depth):
-            if not path and not depth:
-                return [(0, [])]
             return self._getpath(Grimoire.Types.MethodBase, path=['dir'] + path)(depth)
         def _params(self, path):
             return A(Ps(),
@@ -103,8 +119,6 @@ class Performer(Grimoire.Performer.Base):
         def _call(self, prefix):
             return (1, []) in self._physicalGetpath(Grimoire.Types.TreeRoot)._treeOp(prefix, 'dir', depth=0)
         def _dir(self, path, depth):
-            if not path and not depth:
-                return [(0, [])]
             return self._getpath(Grimoire.Types.MethodBase, path=['dir'] + path)(depth)
         def _params(self, path):
             return A(Ps(),

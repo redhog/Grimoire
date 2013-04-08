@@ -11,13 +11,14 @@ class Performer(Grimoire.Performer.Base):
         def _call(self, category):
             conn = self._callWithUnlockedTree(self._getpath(Grimoire.Types.TreeRoot).directory.get.parameters,
                                               ['local', 'ldap', 'admin', 'conn'])
-            dn = 'cn=maxId,' + conn.realm
             category = Grimoire.Utils.encode(category, 'ascii')
 
             getUniqueIdLock.acquire()
             try:
-                id = conn.search(dn, ldap.SCOPE_BASE, attrlist=[category])
-                res = conn.result(id)[1][0][1][category][0]
+                id = conn.search(conn.realm, ldap.SCOPE_SUBTREE, filterstr='objectClass=grimoireLowestAvailIDNumbers', attrlist=[category])
+                res = conn.result(id)
+                dn = res[1][0][0]
+                res = res[1][0][1][category][0]
                 res = int(res)
                 conn.modify_s(dn, [(ldap.MOD_REPLACE, category, Grimoire.Utils.encode(res + 1, 'ascii'))])
                 return res

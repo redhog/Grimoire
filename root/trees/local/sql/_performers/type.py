@@ -15,8 +15,10 @@ class ReferenceType(Grimoire.Types.RestrictedType):
         return super(Grimoire.Types.ValuedType, cls).getTag(name, bases, dict, (Grimoire.Types.getDefAttr(bases, dict, 'table'),) + tag)
     getTag = classmethod(getTag)
 
-# FIXME: Remove inheritance of types.IntType when DerivedType can
-# handle parentType set in the geric class
+#### fixme ####
+# description = """Remove inheritance of types.IntType when
+# DerivedType can handle parentType set in the geric class"""
+#### end ####
 class GenericReferenceType(Grimoire.Types.GenericRestrictedType, types.IntType):
     __metaclass__ = ReferenceType
     parentType = types.IntType

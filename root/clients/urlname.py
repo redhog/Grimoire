@@ -1,4 +1,4 @@
-import Grimoire.Performer, Grimoire.Types, urllib, string
+import Grimoire.Performer, Grimoire.Types, string
 
 A = Grimoire.Types.AnnotatedValue
 Ps = Grimoire.Types.ParamsType.derive
@@ -8,6 +8,7 @@ Ps = Grimoire.Types.ParamsType.derive
 class Performer(Grimoire.Performer.Base):
     class urlname_method2name(Grimoire.Performer.Method):
         def _call(self, method):
+            import urllib
             if method is None:
                 return None
             return urllib.quote_plus(Grimoire.Utils.encode(string.join(('',) + tuple(method), '.')))
@@ -17,6 +18,7 @@ class Performer(Grimoire.Performer.Base):
 
     class urlname_name2method(Grimoire.Performer.Method):
         def _call(self, name):
+            import urllib
             if name is None or name == 'default':
                 return None
             return tuple(urllib.unquote_plus(name).decode().split('.')[1:])
